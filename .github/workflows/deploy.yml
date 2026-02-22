@@ -11,9 +11,18 @@ on:
         default: false
 
 jobs:
-  deploy:
-    uses: madsnorgaard/contabo-infrastructure/.github/workflows/deploy-wordpress.yml@main
-    with:
-      project_dir: madsnorgaard.net
-      force_recreate: ${{ inputs.force_recreate || false }}
-    secrets: inherit
+  trigger-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger deploy
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          token: ${{ secrets.DEPLOY_TOKEN }}
+          repository: madsnorgaard/contabo-infrastructure
+          event-type: deploy
+          client-payload: |
+            {
+              "project_dir": "madsnorgaard.net",
+              "project_type": "wordpress",
+              "force_recreate": "${{ inputs.force_recreate || false }}"
+            }
