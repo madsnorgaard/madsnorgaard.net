@@ -1,0 +1,19 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      force_recreate:
+        description: 'Force recreate containers'
+        type: boolean
+        default: false
+
+jobs:
+  deploy:
+    uses: madsnorgaard/contabo-infrastructure/.github/workflows/deploy-wordpress.yml@main
+    with:
+      project_dir: madsnorgaard.net
+      force_recreate: ${{ inputs.force_recreate || false }}
+    secrets: inherit
