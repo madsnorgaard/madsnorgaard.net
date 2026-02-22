@@ -1,0 +1,11 @@
+.env
+*.env
+!.env.example
+wp-content/uploads/
+wp-content/upgrade/
+wp-content/backup-db/
+wordpress.sql
+*.sql
+*.sql.gz
+db-backups/
+docker-compose.yml.save
