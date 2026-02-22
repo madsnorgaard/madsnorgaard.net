@@ -9,3 +9,7 @@ wordpress.sql
 *.sql.gz
 db-backups/
 docker-compose.yml.save
+# DDEV local overrides (never commit)
+.ddev/.gitignore
+.ddev/config.*.yaml
+.ddev/.homeadditions

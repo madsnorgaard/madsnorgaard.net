@@ -1,0 +1,19 @@
+name: madsnorgaard.net
+type: wordpress
+docroot: ""
+php_version: "8.2"
+webserver_type: nginx-fpm
+xdebug_enabled: false
+additional_hostnames: []
+additional_fqdns: []
+database:
+    type: mysql
+    version: "8.0"
+use_dns_when_possible: true
+composer_version: "2"
+web_environment: []
+upload_dirs:
+    - wp-content/uploads
+hooks:
+    post-start:
+        - exec: wp core is-installed 2>/dev/null && echo "WordPress ready" || echo "WordPress not yet installed - import DB or run wp core install"
