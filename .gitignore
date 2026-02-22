@@ -13,3 +13,16 @@ docker-compose.yml.save
 .ddev/.gitignore
 .ddev/config.*.yaml
 .ddev/.homeadditions
+
+# WordPress core (managed by ddev/wp-cli, not tracked)
+wp-admin/
+wp-includes/
+wp-*.php
+index.php
+xmlrpc.php
+license.txt
+readme.html
+
+# wp-content: track themes and plugins, not generated content
+wp-content/cache/
+wp-content/backup*/
