@@ -6,8 +6,8 @@ Also serves `photo.madsnorgaard.net` from the same container.
 
 ## Stack
 
-- **WordPress** 6.7 on Docker
-- **MySQL** 5.7 (planned upgrade to 8.x before Drupal migration)
+- **WordPress** 6.9.1 on PHP 8.4 (Docker)
+- **MySQL** 8.4
 - **phpMyAdmin** for database management
 - **Traefik v2** for SSL termination and routing
 - **Let's Encrypt** for automatic HTTPS
@@ -44,6 +44,21 @@ docker compose up -d
 
 WordPress will be available at `https://yourdomain.com` and `https://www.yourdomain.com`.
 phpMyAdmin at `https://phpmyadmin.yourdomain.com`.
+
+## WP-CLI
+
+A `cli` service is included for scripted management. It does not auto-start:
+
+```bash
+# Run any WP-CLI command on production
+docker compose run --rm cli wp core version
+docker compose run --rm cli wp plugin update --all
+docker compose run --rm cli wp theme update --all
+docker compose run --rm cli wp cache flush
+
+# Local (DDEV)
+ddev wp plugin update --all
+```
 
 ## wp-content
 
