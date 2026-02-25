@@ -22,7 +22,7 @@ services:
       - traefik.enable=false
 
    madsnorgaard_phpmyadmin:
-     image: phpmyadmin/phpmyadmin
+     image: phpmyadmin/phpmyadmin:5.2
      restart: always
      env_file:
       - .env
@@ -46,7 +46,7 @@ services:
    madsnorgaard_wordpress:
      depends_on:
        - madsnorgaard_db
-     image: wordpress:6.7
+     image: wordpress:php8.4-apache
      restart: always
      environment:
        WORDPRESS_DB_HOST: madsnorgaard_db:3306
@@ -68,6 +68,24 @@ services:
      networks:
        - internal
        - web
+
+   cli:
+     image: wordpress:cli-php8.4
+     container_name: ${WORDPRESS_DOMAIN}_cli
+     env_file: .env
+     environment:
+       WORDPRESS_DB_HOST: madsnorgaard_db:3306
+       WORDPRESS_DB_USER: "${MYSQL_USER}"
+       WORDPRESS_DB_PASSWORD: "${MYSQL_PASSWORD}"
+       WORDPRESS_DB_NAME: "${MYSQL_DATABASE}"
+     volumes:
+       - ./wp-content:/var/www/html/wp-content
+     networks:
+       - internal
+     depends_on:
+       - madsnorgaard_db
+     profiles:
+       - cli
 
 volumes:
     db_data: {}

@@ -26,3 +26,8 @@ readme.html
 # wp-content: track themes and plugins, not generated content
 wp-content/cache/
 wp-content/backup*/
+wp-content/wflogs/
+wp-content/updraft/
+wp-content/oci/
+wp-content/disabled_plugins/
+wp-content/upgrade-temp-backup/
