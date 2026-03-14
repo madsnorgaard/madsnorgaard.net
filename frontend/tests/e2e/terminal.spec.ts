@@ -6,7 +6,7 @@ async function focusTerminal(page: import('@playwright/test').Page) {
     const el = document.querySelector('.terminal__hidden-input') as HTMLInputElement | null
     return el?.type === 'text'
   })
-  // Focus directly via JS — pointer-events: none blocks Playwright click, not JS focus
+  // Focus directly via JS; pointer-events: none blocks Playwright click, not JS focus
   await page.evaluate(() => {
     ;(document.querySelector('.terminal__hidden-input') as HTMLInputElement)?.focus()
   })
@@ -29,14 +29,14 @@ test.describe('Terminal', () => {
     await expect(page.locator('.terminal__prompt')).toContainText('visitor@madsnorgaard.net:~$')
   })
 
-  test('whoami — returns name and bio', async ({ page }) => {
+  test('whoami: returns name and bio', async ({ page }) => {
     await runCommand(page, 'whoami')
     const output = page.locator('.terminal__history-item').last().locator('.terminal__output-text')
     await expect(output).toContainText('Mads Nørgaard')
     await expect(output).toContainText('Skanderborg, Denmark')
   })
 
-  test('help — lists available commands', async ({ page }) => {
+  test('help: lists available commands', async ({ page }) => {
     await runCommand(page, 'help')
     const output = page.locator('.terminal__history-item').last().locator('.terminal__output-text')
     await expect(output).toContainText('Available commands')
@@ -45,25 +45,25 @@ test.describe('Terminal', () => {
     await expect(output).toContainText('contact')
   })
 
-  test('sudo — reports to sudoers', async ({ page }) => {
+  test('sudo: reports to sudoers', async ({ page }) => {
     await runCommand(page, 'sudo')
     const output = page.locator('.terminal__history-item').last().locator('.terminal__output-text')
     await expect(output).toContainText('sudoers')
   })
 
-  test('git blame — returns witty response', async ({ page }) => {
+  test('git blame: returns witty response', async ({ page }) => {
     await runCommand(page, 'git blame')
     const output = page.locator('.terminal__history-item').last().locator('.terminal__output-text')
     await expect(output).toContainText('your fault')
   })
 
-  test('exit — refuses to let you leave', async ({ page }) => {
+  test('exit: refuses to let you leave', async ({ page }) => {
     await runCommand(page, 'exit')
     const output = page.locator('.terminal__history-item').last().locator('.terminal__output-text')
     await expect(output).toContainText('You cannot leave')
   })
 
-  test('unknown command — shows not found message', async ({ page }) => {
+  test('unknown command: shows not found message', async ({ page }) => {
     await runCommand(page, 'foobar')
     const output = page.locator('.terminal__history-item').last().locator('.terminal__output-text')
     await expect(output).toContainText('command not found')
@@ -87,26 +87,26 @@ test.describe('Terminal', () => {
     await expect(page.locator('.terminal__input-display')).toContainText('whoami')
   })
 
-  test('skills — lists technologies', async ({ page }) => {
+  test('skills: lists technologies', async ({ page }) => {
     await runCommand(page, 'skills')
     const output = page.locator('.terminal__history-item').last().locator('.terminal__output-text')
     await expect(output).toContainText('Drupal')
     await expect(output).toContainText('Docker')
   })
 
-  test('contact — shows email', async ({ page }) => {
+  test('contact: shows email', async ({ page }) => {
     await runCommand(page, 'contact')
     const output = page.locator('.terminal__history-item').last().locator('.terminal__output-text')
     await expect(output).toContainText('mads@madsnorgaard.net')
   })
 
-  test('git status — shows clean working tree', async ({ page }) => {
+  test('git status: shows clean working tree', async ({ page }) => {
     await runCommand(page, 'git status')
     const output = page.locator('.terminal__history-item').last().locator('.terminal__output-text')
     await expect(output).toContainText('nothing to commit')
   })
 
-  test('clear — empties history', async ({ page }) => {
+  test('clear: empties history', async ({ page }) => {
     await runCommand(page, 'whoami')
     await expect(page.locator('.terminal__history-item')).toHaveCount(1)
 

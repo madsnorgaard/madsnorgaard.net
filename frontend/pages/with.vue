@@ -34,7 +34,7 @@ const stack = [
   {
     label: 'What I work with daily',
     items: [
-      { name: 'Drupal 11',     note: 'primary craft — building on it for 15+ years' },
+      { name: 'Drupal 11',     note: 'primary craft, building on it for 15+ years' },
       { name: 'Vue / Nuxt 3',  note: 'this site runs on it' },
       { name: 'Docker',        note: 'everything I touch lives in a container' },
       { name: 'GitHub Actions', note: 'automated the boring parts' },
@@ -58,7 +58,7 @@ const stack = [
     items: [
       { name: 'Symfony',  note: '2019–2021' },
       { name: 'React',    note: 'occasional, prefer Vue' },
-      { name: 'WordPress', note: 'migrating away — still maintaining 6 sites' },
+      { name: 'WordPress', note: 'migrating away, still maintaining 6 sites' },
       { name: 'Python',   note: 'AI-assisted metadata work at SAHO' },
     ],
   },
@@ -73,11 +73,11 @@ const stack = [
     label: 'Retired',
     items: [
       { name: 'WordPress (primary)', note: 'not gone, just less interesting now' },
-      { name: 'Drupal 7',            note: 'EOL in 2025 — finally' },
+      { name: 'Drupal 7',            note: 'EOL in 2025 (finally)' },
       { name: 'jQuery',              note: 'you know what you did' },
     ],
   },
 ]
 
-useHead({ title: 'Stack — Mads Nørgaard' })
+useHead({ title: 'Stack | Mads Nørgaard' })
 </script>

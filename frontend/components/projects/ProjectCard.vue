@@ -7,7 +7,7 @@
     @keydown.space.prevent="flipped = !flipped"
     tabindex="0"
     role="button"
-    :aria-label="`${project.title} — click for details`"
+    :aria-label="`${project.title}: click for details`"
     :aria-expanded="flipped"
   >
     <!-- Front face -->

@@ -88,6 +88,6 @@ function formatYear(dateString?: string) {
 const window = process.client ? globalThis.window : null
 
 useHead({
-  title: 'CV — Mads Nørgaard',
+  title: 'CV | Mads Nørgaard',
 })
 </script>

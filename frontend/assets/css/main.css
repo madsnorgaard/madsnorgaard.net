@@ -1,4 +1,4 @@
-/* madsnorgaard.net — main.css */
+/* madsnorgaard.net: main.css */
 
 /* ─── Design tokens ─────────────────────────────────────────────────── */
 
@@ -409,4 +409,16 @@ a {
     gap: 0.5rem;
     text-align: center;
   }
+}
+
+/* ─── Custom cursor (desktop only) ──────────────────────────────── */
+
+@media (hover: hover) and (pointer: fine) {
+  body { cursor: none; }
+  .app-cursor { position: fixed; top: 0; left: 0; pointer-events: none; z-index: 9999; }
+  .app-cursor__dot { position: absolute; width: 6px; height: 6px; border-radius: 50%; background: var(--color-accent); will-change: transform; transition: opacity 0.15s; }
+  .app-cursor__ring { position: absolute; width: 28px; height: 28px; border-radius: 50%; border: 1px solid rgba(196,30,58,0.45); will-change: transform; transition: width 0.2s, height 0.2s, border-color 0.2s, background 0.2s; }
+  .app-cursor__ring--hover { width: 44px; height: 44px; background: rgba(196,30,58,0.08); border-color: rgba(196,30,58,0.7); }
+  .app-cursor__ring--hover + .app-cursor__dot { opacity: 0; }
+  .app-cursor__ring--click { transition: transform 0.1s, opacity 0.1s; transform: translate3d(var(--rx), var(--ry), 0) scale(1.5) !important; opacity: 0.4; }
 }

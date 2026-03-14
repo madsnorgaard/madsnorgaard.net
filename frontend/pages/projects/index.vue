@@ -40,7 +40,7 @@
         >
           <div>
             <span class="repo-row__name">{{ repo.name }}</span>
-            <span v-if="repo.description" class="repo-row__desc"> — {{ repo.description }}</span>
+            <span v-if="repo.description" class="repo-row__desc">: {{ repo.description }}</span>
           </div>
           <div class="repo-row__meta">
             <span v-if="repo.language" class="repo-row__lang">{{ repo.language }}</span>
@@ -65,7 +65,7 @@ const civicProjects = computed(() =>
   allProjects.value?.filter((p) => p.category === 'civic') ?? []
 )
 
-useHead({ title: 'Projects — Mads Nørgaard' })
+useHead({ title: 'Projects | Mads Nørgaard' })
 </script>
 
 <style scoped>

@@ -34,7 +34,7 @@ test.describe('StatusBlock', () => {
   })
 
   test('last commit row appears when data is available', async ({ page }) => {
-    // The row is conditionally rendered — check it exists if present
+    // The row is conditionally rendered; check it exists if present
     const row = page.locator('.status-block__row').filter({ hasText: 'last commit' })
     const count = await row.count()
     if (count > 0) {

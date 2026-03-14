@@ -106,6 +106,6 @@ function formatDate(dateString: string) {
 }
 
 useHead({
-  title: 'Mads Nørgaard — Developer + DevOps',
+  title: 'Mads Nørgaard: Developer + DevOps',
 })
 </script>

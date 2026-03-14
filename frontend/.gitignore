@@ -13,7 +13,7 @@ node_modules/
 logs
 *.log
 
-# Env — never commit real secrets
+# Env: never commit real secrets
 .env
 .env.*
 !.env.example

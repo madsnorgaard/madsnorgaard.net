@@ -24,7 +24,7 @@
             aria-hidden="true"
           />
           {{ availabilityLabel }}
-          <span v-if="status?.availabilityNote" class="status-block__note"> — {{ status.availabilityNote }}</span>
+          <span v-if="status?.availabilityNote" class="status-block__note"> ({{ status.availabilityNote }})</span>
         </dd>
       </div>
 

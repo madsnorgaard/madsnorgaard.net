@@ -15,7 +15,7 @@ export default defineEventHandler(async (event) => {
     return null
   }
 
-  // WP REST API returns total in header X-WP-Total — use a random offset
+  // WP REST API returns total in header X-WP-Total; use a random offset
   // Since we can't easily get headers with $fetch, use a fixed page count estimate
   // and pick a random page. The photo site should have <= 200 photos initially.
   const randomOffset = Math.floor(Math.random() * 50)

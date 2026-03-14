@@ -82,7 +82,7 @@ function formatDate(dateString: string) {
   })
 }
 
-useHead({ title: 'Writing — Mads Nørgaard' })
+useHead({ title: 'Writing | Mads Nørgaard' })
 </script>
 
 <style scoped>

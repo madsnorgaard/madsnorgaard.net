@@ -4,7 +4,7 @@
       <span class="terminal__dot terminal__dot--red" />
       <span class="terminal__dot terminal__dot--yellow" />
       <span class="terminal__dot terminal__dot--green" />
-      <span class="terminal__label">visitor@madsnorgaard.net — bash</span>
+      <span class="terminal__label">visitor@madsnorgaard.net: bash</span>
     </div>
 
     <div ref="outputEl" class="terminal__output">
@@ -140,13 +140,13 @@ function runCommand(input: string): string {
     case 'help':
       return `<pre>Available commands:
 
-  whoami      — who is this person
-  skills      — technologies and proficiency
-  work        — work history
-  contact     — how to reach me
-  ls          — list things
-  clear       — clear terminal
-  man mads    — manual page
+  whoami      : who is this person
+  skills      : technologies and proficiency
+  work        : work history
+  contact     : how to reach me
+  ls          : list things
+  clear       : clear terminal
+  man mads    : manual page
 
 …or just explore. Some commands have surprises.</pre>`
 
@@ -155,13 +155,13 @@ function runCommand(input: string): string {
 
 Senior developer and DevOps engineer based in Skanderborg, Denmark.
 Self-taught. 15 years building on Drupal, PHP, Docker, Linux.
-Currently at Eksponent — Danish development agency.
+Currently at Eksponent, Danish development agency.
 Technical lead for South African History Online since 2010.
 Documentary photographer.</pre>`
 
     case 'skills':
       return `<pre>Daily
-  Drupal 11      primary craft — 15+ years
+  Drupal 11      primary craft (15+ years)
   PHP 8          still here, still fast
   Docker         everything lives in a container
   GitHub Actions automated the boring parts
@@ -182,14 +182,14 @@ Retired
 
     case 'work':
       return `<pre>Senior Developer + DevOps
-  Eksponent — 2024–present (employed)
+  Eksponent, 2024-present (employed)
   Drupal multisite management, production server admin.
   DDoS investigation and mitigation.
   AI crawler mitigation (Rudersdal Kommune, Skoletjenesten).
-  ÅbenForms — headless Drupal 11 + Nuxt 3 for Danish municipalities.
+  ÅbenForms: headless Drupal 11 + Nuxt 3 for Danish municipalities.
 
 Technical Lead
-  South African History Online — 2010–present (volunteer)
+  South African History Online, 2010-present (volunteer)
   15-year archival commitment. One of South Africa's most significant
   documentary photography archives.
   Solr infrastructure on AlmaLinux.

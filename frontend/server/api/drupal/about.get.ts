@@ -39,7 +39,7 @@ export default defineEventHandler(async (event) => {
 
 function resolveImage(ref: any, included: any[]): DrupalAbout['profileImage'] {
   if (!ref) return undefined
-  // ref is a media entity — find image file within included
+  // ref is a media entity; find image file within included
   const media = included.find((i: any) => i.type === ref.type && i.id === ref.id)
   if (!media) return undefined
   const fileRef = media.relationships?.field_media_image?.data

@@ -9,7 +9,7 @@ export default defineNuxtConfig({
   ],
 
   runtimeConfig: {
-    // Private — server only
+    // Private: server only
     drupalBaseUrl: process.env.DRUPAL_BASE_URL || 'http://drupal:80',
     githubToken: process.env.GITHUB_TOKEN || '',
     photoSiteUrl: process.env.PHOTO_SITE_URL || 'https://photo.madsnorgaard.net',
@@ -20,7 +20,7 @@ export default defineNuxtConfig({
 
   app: {
     head: {
-      title: 'Mads Nørgaard — Developer + DevOps',
+      title: 'Mads Nørgaard: Developer + DevOps',
       meta: [
         { charset: 'utf-8' },
         { name: 'viewport', content: 'width=device-width, initial-scale=1' },
@@ -45,7 +45,7 @@ export default defineNuxtConfig({
           href: 'https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,700i&family=IBM+Plex+Mono:wght@400;500&display=swap',
         },
       ],
-      // HTML easter egg — visible in View Source
+      // HTML easter egg, visible in View Source
       script: [
         {
           type: 'text/plain',

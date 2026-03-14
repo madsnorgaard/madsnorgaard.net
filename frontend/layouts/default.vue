@@ -23,12 +23,14 @@
 
     <!-- Site Footer -->
     <footer class="site-footer container">
-      <span>Mads Nørgaard — Skanderborg, Denmark</span>
+      <span>Mads Nørgaard, Skanderborg, Denmark</span>
       <span>
         <a href="mailto:mads@madsnorgaard.net">mads@madsnorgaard.net</a>
         ·
         <a href="https://github.com/madsnorgaard" target="_blank" rel="noopener noreferrer">github.com/madsnorgaard</a>
       </span>
     </footer>
+
+    <AppCursor />
   </div>
 </template>

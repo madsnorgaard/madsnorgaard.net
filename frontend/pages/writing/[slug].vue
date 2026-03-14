@@ -28,7 +28,7 @@
         </div>
       </header>
 
-      <!-- Post body — Drupal provides sanitized HTML -->
+      <!-- Post body: Drupal provides sanitized HTML -->
       <!-- eslint-disable-next-line vue/no-v-html -->
       <div class="post-body" v-html="post.body" />
     </div>
@@ -57,7 +57,7 @@ function formatDate(dateString: string) {
 }
 
 useHead(() => ({
-  title: post.value ? `${post.value.title} — Mads Nørgaard` : 'Writing — Mads Nørgaard',
+  title: post.value ? `${post.value.title} | Mads Nørgaard` : 'Writing | Mads Nørgaard',
 }))
 </script>
 

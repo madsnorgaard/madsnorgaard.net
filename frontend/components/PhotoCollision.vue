@@ -11,7 +11,7 @@
       <span class="photo-collision__title">{{ photo.title }}</span>
     </div>
     <a href="https://photo.madsnorgaard.net" class="photo-collision__link">
-      — photo.madsnorgaard.net →
+      // photo.madsnorgaard.net →
     </a>
   </div>
 </template>
