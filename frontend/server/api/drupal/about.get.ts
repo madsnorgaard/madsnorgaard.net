@@ -27,8 +27,10 @@ export default defineEventHandler(async (event) => {
     included
   )
 
+  const rawIntro = node.attributes?.body?.summary || node.attributes?.body?.value || ''
+
   return {
-    intro: node.attributes?.body?.value ?? '',
+    intro: rawIntro.replace(/<[^>]+>/g, '').trim(),
     currentFocus: node.attributes?.field_current_focus ?? '',
     location: node.attributes?.field_location ?? '',
     profileImage,
