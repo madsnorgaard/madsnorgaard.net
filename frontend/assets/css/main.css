@@ -1,0 +1,412 @@
+/* madsnorgaard.net — main.css */
+
+/* ─── Design tokens ─────────────────────────────────────────────────── */
+
+:root {
+  --font-display: 'Playfair Display', Georgia, serif;
+  --font-mono:    'IBM Plex Mono', 'Courier New', monospace;
+  --font-ui:      system-ui, -apple-system, sans-serif;
+
+  --color-bg:          #0E0E0E;
+  --color-surface:     #161616;
+  --color-border:      #2A2A2A;
+  --color-text:        #F0EDE6;
+  --color-muted:       #6B6763;
+  --color-accent:      #C41E3A;
+  --color-accent-dim:  rgba(196, 30, 58, 0.15);
+}
+
+/* ─── Reset ─────────────────────────────────────────────────────────── */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-ui);
+  font-size: 1rem;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* ─── Typography scale ───────────────────────────────────────────────── */
+
+.text-display {
+  font-family: var(--font-display);
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+}
+
+.text-display--hero {
+  font-size: clamp(3rem, 8vw, 6rem);
+}
+
+.text-display--section {
+  font-size: clamp(1.5rem, 4vw, 2.5rem);
+}
+
+.text-mono {
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+}
+
+.text-mono--sm {
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+}
+
+.text-label {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--color-muted);
+}
+
+/* ─── Layout ─────────────────────────────────────────────────────────── */
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+.container--narrow {
+  max-width: 800px;
+}
+
+.container--reading {
+  max-width: 640px;
+}
+
+/* ─── Site Header ────────────────────────────────────────────────────── */
+
+.site-header {
+  border-bottom: 1px solid var(--color-border);
+  padding: 1rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  background: var(--color-bg);
+  z-index: 100;
+}
+
+.site-header__logo {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-text);
+}
+
+.site-header__logo .accent {
+  color: var(--color-accent);
+}
+
+.site-nav {
+  display: flex;
+  gap: 1.5rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.site-nav a {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-muted);
+  transition: color 150ms;
+}
+
+.site-nav a:hover,
+.site-nav a.router-link-active {
+  color: var(--color-text);
+}
+
+/* ─── Site Footer ────────────────────────────────────────────────────── */
+
+.site-footer {
+  border-top: 1px solid var(--color-border);
+  padding: 2rem 1.5rem;
+  margin-top: 6rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--color-muted);
+}
+
+/* ─── Hero section ───────────────────────────────────────────────────── */
+
+.hero {
+  padding: 5rem 0 4rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.hero__name {
+  font-family: var(--font-display);
+  font-size: clamp(3rem, 8vw, 6rem);
+  font-weight: 700;
+  line-height: 1.0;
+  letter-spacing: -0.02em;
+  margin: 0 0 1rem;
+}
+
+.hero__role {
+  font-size: 1.25rem;
+  min-height: 2rem;
+  margin: 0 0 2rem;
+}
+
+.hero__intro {
+  max-width: 640px;
+  font-size: 1.1rem;
+  line-height: 1.7;
+  color: var(--color-muted);
+}
+
+/* ─── Section headings ───────────────────────────────────────────────── */
+
+.section {
+  padding: 4rem 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.section__header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+}
+
+.section__number {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--color-accent);
+  margin-right: 0.75rem;
+}
+
+.section__title {
+  font-family: var(--font-display);
+  font-size: clamp(1.5rem, 4vw, 2.25rem);
+  font-weight: 700;
+  margin: 0;
+  display: inline;
+}
+
+.section__all-link {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--color-muted);
+  transition: color 150ms;
+}
+
+.section__all-link:hover {
+  color: var(--color-accent);
+}
+
+/* ─── Post card ──────────────────────────────────────────────────────── */
+
+.post-card {
+  border-bottom: 1px solid var(--color-border);
+  padding: 1.5rem 0;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 1rem;
+  align-items: start;
+}
+
+.post-card__date {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--color-muted);
+  white-space: nowrap;
+}
+
+.post-card__title {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 0 0 0.4rem;
+  line-height: 1.2;
+}
+
+.post-card__title a:hover {
+  color: var(--color-accent);
+}
+
+.post-card__teaser {
+  font-size: 0.9375rem;
+  color: var(--color-muted);
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* ─── Projects grid ──────────────────────────────────────────────────── */
+
+.projects-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+/* ─── CV work entries ────────────────────────────────────────────────── */
+
+.work-entry {
+  padding: 2.5rem 0;
+  border-bottom: 1px solid var(--color-border);
+  display: grid;
+  grid-template-columns: 160px 1fr;
+  gap: 2rem;
+}
+
+.work-entry__meta {
+  padding-top: 0.2rem;
+}
+
+.work-entry__dates {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--color-muted);
+}
+
+.work-entry__type-badge {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-accent);
+  margin-top: 0.4rem;
+}
+
+.work-entry__role {
+  font-family: var(--font-display);
+  font-size: 1.375rem;
+  font-weight: 700;
+  margin: 0 0 0.25rem;
+  line-height: 1.2;
+}
+
+.work-entry__employer {
+  font-size: 1rem;
+  color: var(--color-muted);
+  margin: 0 0 1rem;
+}
+
+.work-entry__employer a:hover {
+  color: var(--color-text);
+}
+
+.work-entry__description {
+  font-size: 0.9375rem;
+  color: var(--color-muted);
+  line-height: 1.7;
+  margin: 0 0 1rem;
+}
+
+.work-entry__tech-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.work-entry__tech-tag {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  padding: 0.2em 0.6em;
+  border: 1px solid var(--color-border);
+  color: var(--color-muted);
+}
+
+/* ─── Page transitions ───────────────────────────────────────────────── */
+
+.page-enter-active,
+.page-leave-active {
+  transition: opacity 250ms ease, transform 250ms ease;
+}
+
+.page-enter-from {
+  opacity: 0;
+  transform: translateY(8px);
+}
+
+.page-leave-to {
+  opacity: 0;
+  transform: translateY(-8px);
+}
+
+/* ─── Print stylesheet for /cv ───────────────────────────────────────── */
+
+@media print {
+  body {
+    background: white;
+    color: black;
+    font-size: 11pt;
+  }
+
+  .site-header,
+  .site-footer,
+  .section:has(.terminal),
+  .photo-collision {
+    display: none;
+  }
+
+  .work-entry {
+    grid-template-columns: 120px 1fr;
+    gap: 1rem;
+    page-break-inside: avoid;
+  }
+
+  .work-entry__description {
+    color: #333;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  a[href]::after {
+    content: '';
+  }
+}
+
+/* ─── Responsive ─────────────────────────────────────────────────────── */
+
+@media (max-width: 768px) {
+  .work-entry {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+  }
+
+  .site-footer {
+    flex-direction: column;
+    gap: 0.5rem;
+    text-align: center;
+  }
+}

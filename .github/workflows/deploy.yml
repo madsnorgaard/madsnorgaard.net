@@ -23,6 +23,6 @@ jobs:
           client-payload: |
             {
               "project_dir": "madsnorgaard.net",
-              "project_type": "wordpress",
+              "project_type": "nuxt",
               "force_recreate": "${{ inputs.force_recreate || false }}"
             }

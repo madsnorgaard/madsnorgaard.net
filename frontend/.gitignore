@@ -1,0 +1,32 @@
+# Nuxt dev/build outputs
+.output
+.data
+.nuxt
+.nitro
+.cache
+dist
+
+# Node
+node_modules/
+
+# Logs
+logs
+*.log
+
+# Env — never commit real secrets
+.env
+.env.*
+!.env.example
+
+# Editor
+.DS_Store
+.idea/
+*.swp
+*.swo
+
+# TypeScript
+*.tsbuildinfo
+
+# Playwright
+playwright-report/
+test-results/
