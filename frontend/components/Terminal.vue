@@ -1264,7 +1264,7 @@ onUnmounted(() => {
   height: 1em;
   background: #F0EDE6;
   vertical-align: text-bottom;
-  animation: blink 1s step-end infinite;
+  animation: blink-invert 1s step-end infinite;
 }
 
 /* ── Hint strip ──────────────────────────────────────────────────────── */
@@ -1475,9 +1475,9 @@ onUnmounted(() => {
 
 /* ── Keyframes ───────────────────────────────────────────────────────── */
 
-@keyframes blink {
-  0%, 100% { opacity: 1; }
-  50%       { opacity: 0; }
+@keyframes blink-invert {
+  0%, 100% { background: #F0EDE6; }
+  50%       { background: #D0243E; }
 }
 
 @keyframes pulse {
