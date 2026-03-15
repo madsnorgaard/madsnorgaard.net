@@ -86,12 +86,20 @@ const currentInput = ref('')
 const history      = ref<HistoryItem[]>([])
 const cmdHistory   = ref<string[]>([])
 const historyIndex = ref(-1)
-const cmdCount     = ref(0)
-const vimOpen      = ref(false)
-const glitching    = ref(false)
-const booted       = ref(false)
-const bootLines    = ref<string[]>([])
-const hintIndex    = ref(0)
+const cmdCount          = ref(0)
+const vimOpen           = ref(false)
+const glitching         = ref(false)
+const booted            = ref(false)
+const bootLines         = ref<string[]>([])
+const hintIndex         = ref(0)
+const glitchQuestStage  = ref(0)   // 0=not started 1=glitch run 2=trace run 3=locate run 4=complete
+const glitchFragment    = ref('')
+
+function randomHex(len = 4): string {
+  return Array.from({ length: len }, () =>
+    Math.floor(Math.random() * 16).toString(16).toUpperCase()
+  ).join('')
+}
 
 const HINTS = [
   '[ TAB ] autocomplete  ·  [ ↑↓ ] command history',
@@ -99,6 +107,7 @@ const HINTS = [
   '[ neofetch ] system info  ·  [ fortune ] developer wisdom',
   '[ map ] infrastructure topology  ·  [ decode ] ???',
   '[ achievements ] track your progress  ·  [ man mads ] RTFM',
+  '[ glitch ] initiate signal disruption  ·  follow the trail',
 ]
 
 // ── Boot sequence ─────────────────────────────────────────────────────────────
@@ -188,7 +197,7 @@ const ALL_COMMANDS = [
   'help', 'whoami', 'skills', 'work', 'contact', 'ls', 'clear', 'man', 'sudo', 'rm',
   'git', 'curl', 'exit', 'pwd', 'uname', 'docker', 'ssh', 'vim', 'cat', 'history',
   'date', 'uptime', 'neofetch', 'achievements', 'fortune', 'ping', 'top', 'cowsay',
-  'ops', 'map', 'decode', 'glitch',
+  'ops', 'map', 'decode', 'glitch', 'trace', 'locate', 'transmit',
 ]
 
 function tabComplete() {
@@ -216,22 +225,25 @@ function escapeHtml(s: string): string {
 // ── Achievement system ─────────────────────────────────────────────────────────
 
 const ACHIEVEMENT_DEFS = [
-  { id: 'first_blood',    name: 'first blood',    desc: 'ran your first command' },
-  { id: 'who_am_i',       name: 'identity crisis', desc: 'asked whoami' },
-  { id: 'not_root',       name: 'not root',        desc: 'tried sudo' },
-  { id: 'no_exit',        name: 'no exit',         desc: 'tried to leave' },
-  { id: 'vim_survivor',   name: 'vim survivor',    desc: 'escaped vim (most cannot)' },
-  { id: 'points_fingers', name: 'points fingers',  desc: 'ran git blame' },
-  { id: 'container_ship', name: 'container ship',  desc: 'inspected docker ps' },
-  { id: 'locked_out',     name: 'locked out',      desc: 'tried to SSH in' },
-  { id: 'dotfile_fan',    name: 'dotfile fan',     desc: 'read ~/.bashrc' },
-  { id: 'nice_try',       name: 'nice try',        desc: 'attempted rm -rf' },
-  { id: 'rice_inspector', name: 'rice inspector',  desc: 'ran neofetch' },
-  { id: 'intel_officer',  name: 'intel officer',   desc: 'pulled live Drupal data' },
-  { id: 'cartographer',   name: 'cartographer',    desc: 'mapped the infrastructure' },
-  { id: 'signal_lost',    name: 'signal lost',     desc: 'initiated the glitch' },
-  { id: 'explorer',       name: 'explorer',        desc: 'ran 5+ commands' },
-  { id: 'archaeologist',  name: 'archaeologist',   desc: 'ran 10+ commands' },
+  { id: 'first_blood',      name: 'first blood',      desc: 'ran your first command' },
+  { id: 'who_am_i',         name: 'identity crisis',  desc: 'asked whoami' },
+  { id: 'not_root',         name: 'not root',         desc: 'tried sudo' },
+  { id: 'no_exit',          name: 'no exit',          desc: 'tried to leave' },
+  { id: 'vim_survivor',     name: 'vim survivor',     desc: 'escaped vim (most cannot)' },
+  { id: 'points_fingers',   name: 'points fingers',   desc: 'ran git blame' },
+  { id: 'container_ship',   name: 'container ship',   desc: 'inspected docker ps' },
+  { id: 'locked_out',       name: 'locked out',       desc: 'tried to SSH in' },
+  { id: 'dotfile_fan',      name: 'dotfile fan',      desc: 'read ~/.bashrc' },
+  { id: 'nice_try',         name: 'nice try',         desc: 'attempted rm -rf' },
+  { id: 'rice_inspector',   name: 'rice inspector',   desc: 'ran neofetch' },
+  { id: 'intel_officer',    name: 'intel officer',    desc: 'pulled live Drupal data' },
+  { id: 'cartographer',     name: 'cartographer',     desc: 'mapped the infrastructure' },
+  { id: 'signal_lost',      name: 'signal lost',      desc: 'initiated the glitch' },
+  { id: 'signal_traced',    name: 'signal traced',    desc: 'followed the corrupted carrier wave' },
+  { id: 'source_located',   name: 'source located',   desc: 'found where the signal came from' },
+  { id: 'ghost_in_machine', name: 'ghost in machine', desc: 'received the full transmission' },
+  { id: 'explorer',         name: 'explorer',         desc: 'ran 5+ commands' },
+  { id: 'archaeologist',    name: 'archaeologist',    desc: 'ran 10+ commands' },
 ]
 
 const unlockedAchievements = ref(new Set<string>())
@@ -262,6 +274,9 @@ function checkAchievements(cmd: string, output: string): string[] {
   if (c === 'ops')                                                   add('intel_officer')
   if (c === 'map')                                                   add('cartographer')
   if (c === 'glitch')                                                add('signal_lost')
+  if (c === 'trace' && glitchQuestStage.value >= 2)                 add('signal_traced')
+  if (c === 'locate' && glitchQuestStage.value >= 3)                add('source_located')
+  if (c === 'transmit' && glitchQuestStage.value >= 4)              add('ghost_in_machine')
   if (cmdCount.value >= 5)                                           add('explorer')
   if (cmdCount.value >= 10)                                          add('archaeologist')
 
@@ -382,7 +397,7 @@ function runCommand(input: string): string | Promise<string> {
   ops           live intel from Drupal backend ★
   map           infrastructure topology
   fortune       developer wisdom
-  achievements  what you have unlocked [${achievementCount.value}/${ACHIEVEMENT_DEFS.length}]
+  achievements  what you have found  [${achievementCount.value}/${ACHIEVEMENT_DEFS.length}]
   clear         clear terminal
   man mads      manual page
 ──────────────────────────────────────────────
@@ -683,15 +698,121 @@ Monitoring: Grafana · Prometheus · Loki · cAdvisor</pre>`
       return runDecode()
 
     case 'glitch': {
+      const frag = `${randomHex(4)}-${randomHex(4)}`
+      glitchFragment.value = frag
+      const corruptPct = (Math.random() * 2.8 + 0.1).toFixed(1)
+      const nodes = Math.floor(Math.random() * 4) + 3
+      const noiseAddr = randomHex(8)
       glitching.value = true
       setTimeout(() => { glitching.value = false }, 950)
+      if (glitchQuestStage.value < 1) glitchQuestStage.value = 1
       return `<pre>G̸̤͋L̷̰͝I̸̛̻T̵͓̀C̵̞͌H̸̩͝ ̷̨͑I̸̢͒N̴͕̿I̵̫̐T̴̠͒I̶̜͛A̵͎͝T̷̩̚E̷̘̚D̸̝̓
 
   signal disrupted for 0.9 seconds
+  corruption   : ${corruptPct}%  (non-critical)
   no data was corrupted
   probably
 
+  ░░▓████ CARRIER WAVE DETECTED ████▓░░
+
+  fragment id  : ${frag}
+  origin       : [SIGNAL CORRUPTED — ${noiseAddr}]
+  bounced      : ${nodes} nodes
+
+  something is transmitting on this frequency.
+  run: trace
+
   (this was intentional)</pre>`
+    }
+
+    case 'trace': {
+      if (glitchQuestStage.value < 1) {
+        return '<pre>trace: no active signal\nrun: glitch</pre>'
+      }
+      if (glitchQuestStage.value < 2) glitchQuestStage.value = 2
+      const frag = glitchFragment.value || `${randomHex(4)}-${randomHex(4)}`
+      return (async () => {
+        await delay(600)
+        return `<pre>TRACING SIGNAL...
+  fragment: ${frag}
+──────────────────────────────────────────────
+  NODE 01  ████████████████████  cleared
+  NODE 02  ██████████████░░░░░░  degraded
+  NODE 03  ████████░░░░░░░░░░░░  [CORRUPTED]
+  NODE 04  [BLOCKED] ←─── origin
+──────────────────────────────────────────────
+  partial coordinates extracted from header:
+
+    5̷6̴.̵0̶░░°N   9̸.̵9̴░°E
+
+  signal is point-source.
+  not automated.
+  someone is there.
+
+  run: locate</pre>`
+      })()
+    }
+
+    case 'locate': {
+      if (glitchQuestStage.value < 2) {
+        return '<pre>locate: no coordinates to resolve\nrun trace first</pre>'
+      }
+      if (glitchQuestStage.value < 3) glitchQuestStage.value = 3
+      return (async () => {
+        await delay(800)
+        return `<pre>RESOLVING COORDINATES...
+
+  56.04°N   9.92°E
+  ┌─────────────────────────────────────┐
+  │                                     │
+  │     SKANDERBORG, DENMARK            │
+  │                                     │
+  │     population  : ~17,000           │
+  │     elevation   : 72m               │
+  │     timezone    : CET  (UTC+1)      │
+  │                                     │
+  │     signal source confirmed.        │
+  │     1 transmission pending.         │
+  │                                     │
+  └─────────────────────────────────────┘
+
+  run: transmit</pre>`
+      })()
+    }
+
+    case 'transmit': {
+      if (glitchQuestStage.value < 3) {
+        return '<pre>transmit: no active transmission\ncomplete the signal trace first</pre>'
+      }
+      if (glitchQuestStage.value < 4) glitchQuestStage.value = 4
+      return (async () => {
+        await delay(1200)
+        return `<pre>RECEIVING TRANSMISSION...
+
+  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  100%
+
+  FROM : mads@madsnorgaard.net
+  TO   : visitor
+  DATE : ${new Date().toISOString().slice(0, 10)}
+──────────────────────────────────────────────
+
+  "you found me.
+
+   i build things because it matters —
+   not because it's clever,
+   not because the tools are cool.
+
+   because somewhere, someone
+   reads the archive,
+   submits the form,
+   finds the answer they needed.
+
+   that's why the signal is always on."
+
+──────────────────────────────────────────────
+  transmission ends.
+  quest complete.</pre>`
+      })()
     }
 
     default:
@@ -946,8 +1067,42 @@ onUnmounted(() => {
   100% { clip-path: none;               transform: none;                }
 }
 
+/* whole-terminal effects during glitch */
+.terminal--glitch {
+  animation: glitch-terminal 0.9s steps(1) forwards;
+}
+
+@keyframes glitch-terminal {
+  0%   { filter: none; }
+  8%   { filter: brightness(1.4) hue-rotate(180deg); }
+  14%  { filter: none; }
+  22%  { filter: brightness(0.7) saturate(4) hue-rotate(-90deg); }
+  28%  { filter: none; }
+  38%  { filter: brightness(1.2) hue-rotate(60deg); }
+  44%  { filter: none; }
+  100% { filter: none; }
+}
+
+/* chromatic aberration + clip-path slices */
 .terminal--glitch .terminal__output {
   animation: glitch-clip 0.14s steps(1) 4;
+  text-shadow: 1px 0 rgba(255, 0, 64, 0.6), -1px 0 rgba(0, 255, 255, 0.5);
+}
+
+/* spectrum stripe strobes wider during glitch */
+.terminal--glitch .terminal__spectrum {
+  animation: spectrum-strobe 0.9s steps(1) forwards;
+}
+
+@keyframes spectrum-strobe {
+  0%   { opacity: 0.5; width: 3px; }
+  10%  { opacity: 1;   width: 8px; }
+  20%  { opacity: 0.1; width: 3px; }
+  35%  { opacity: 1;   width: 12px; }
+  50%  { opacity: 0.3; width: 3px; }
+  65%  { opacity: 0.9; width: 6px; }
+  80%  { opacity: 0.4; width: 3px; }
+  100% { opacity: 0.5; width: 3px; }
 }
 
 /* ── Hidden input ────────────────────────────────────────────────────── */
