@@ -334,7 +334,8 @@ async function runLsWriting(): Promise<string> {
       const slug = p.slug ?? ''
       return `  ${date}  ${title}\n             /writing/${escapeHtml(slug)}`
     }).join('\n')
-    return `<pre>writing/  [${posts.length} of ${data.total ?? posts.length}]\n\n${lines}</pre>`
+    const total = data.total > 0 ? data.total : posts.length
+    return `<pre>writing/  [${posts.length} of ${total}]\n\n${lines}</pre>`
   } catch {
     return '<pre>writing/  (could not reach backend)</pre>'
   }
