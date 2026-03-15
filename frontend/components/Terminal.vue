@@ -43,6 +43,13 @@
           <div v-if="item.output" class="terminal__output-text" v-html="item.output" />
         </div>
 
+        <!-- Ghost bleed-through — fades in then out, no interaction needed -->
+        <Transition name="ghost">
+          <div v-if="ghostMessage" class="terminal__ghost-line" aria-hidden="true">
+            {{ ghostMessage }}
+          </div>
+        </Transition>
+
         <!-- Current prompt -->
         <div class="terminal__prompt-line terminal__current">
           <span class="terminal__prompt">visitor@madsnorgaard.net:~$ </span>
@@ -97,6 +104,15 @@ const hintIndex         = ref(0)
 const glitchQuestStage  = ref(0)   // 0=not started 1=glitch run 2=trace run 3=locate run 4=complete
 const glitchFragment    = ref('')
 const glitchLevel       = ref(1)   // 1–4, drives CSS intensity class
+const ghostMessage      = ref('')  // bleeds through output, fades out
+let ghostTimer: ReturnType<typeof setTimeout> | null = null
+
+function showGhost() {
+  if (glitchQuestStage.value > 0) return  // quest already found, no more hints
+  ghostMessage.value = `// ${randomHex(4)}-${randomHex(4)} · carrier detected`
+  if (ghostTimer) clearTimeout(ghostTimer)
+  ghostTimer = setTimeout(() => { ghostMessage.value = '' }, 5000)
+}
 
 function randomHex(len = 4): string {
   return Array.from({ length: len }, () =>
@@ -118,7 +134,6 @@ const HINTS = [
   '[ neofetch ] system info  ·  [ fortune ] developer wisdom',
   '[ map ] infrastructure topology  ·  [ decode ] ???',
   '[ achievements ] track your progress  ·  [ man mads ] RTFM',
-  '[ glitch ] initiate signal disruption  ·  follow the trail',
 ]
 
 // ── Boot sequence ─────────────────────────────────────────────────────────────
@@ -149,7 +164,14 @@ async function runBootSequence() {
   for (let i = 0; i < BOOT_SEQUENCE.length; i++) {
     const wait = i === 0 ? 150 : i < 4 ? 55 : i < 11 ? 75 : 130
     await delay(wait)
-    bootLines.value.push(BOOT_SEQUENCE[i])
+    // Auth line glitches briefly before resolving — first hint something is leaking
+    if (i === 8) {
+      bootLines.value.push('  V̵I̶S̷I̸T̵O̷R̶ ̵A̴U̶T̴H̷E̸N̴T̷I̶C̵A̸T̶I̷O̵N̴.̶.̷.̵B̸Y̷P̶A̴S̶S̷E̸D̴')
+      await delay(320)
+      bootLines.value[bootLines.value.length - 1] = BOOT_SEQUENCE[i]
+    } else {
+      bootLines.value.push(BOOT_SEQUENCE[i])
+    }
   }
   await delay(520)
   booted.value = true
@@ -352,6 +374,11 @@ async function submitCommand() {
   cmdCount.value++
   currentInput.value = ''
 
+  // After 3rd command, bleed a ghost fragment through — hints something is transmitting
+  if (cmdCount.value === 3) {
+    setTimeout(showGhost, 800)
+  }
+
   const rawOutput = runCommand(cmd)
 
   if (rawOutput instanceof Promise) {
@@ -412,7 +439,9 @@ function runCommand(input: string): string | Promise<string> {
   clear         clear terminal
   man mads      manual page
 ──────────────────────────────────────────────
-Some commands have surprises. Explore.</pre>`
+Some commands have surprises. Explore.
+
+<span class="terminal__static">░░ ${randomHex(4)}-${randomHex(4)} ░░</span></pre>`
 
     case 'whoami':
       return `<pre>Mads Nørgaard.
@@ -854,6 +883,7 @@ onMounted(() => {
 
 onUnmounted(() => {
   if (hintTimer) clearInterval(hintTimer)
+  if (ghostTimer) clearTimeout(ghostTimer)
 })
 </script>
 
@@ -1205,6 +1235,48 @@ onUnmounted(() => {
 .terminal--glitch-4 .terminal__spectrum {
   animation: spectrum-strobe 4s steps(1) forwards;
   filter: brightness(3) saturate(2);
+}
+
+/* ── Ghost bleed-through ─────────────────────────────────────────────── */
+
+.terminal__ghost-line {
+  font-size: 0.72rem;
+  color: rgba(196, 30, 58, 0.35);
+  padding: 0.15rem 0 0.4rem;
+  letter-spacing: 0.04em;
+}
+
+/* Vue <Transition name="ghost"> */
+.ghost-enter-active {
+  animation: ghost-flicker 5s ease forwards;
+}
+.ghost-leave-active {
+  transition: opacity 0.4s ease;
+}
+.ghost-leave-to {
+  opacity: 0;
+}
+
+@keyframes ghost-flicker {
+  0%   { opacity: 0; }
+  8%   { opacity: 0.9; }
+  12%  { opacity: 0.2; }
+  16%  { opacity: 0.8; }
+  20%  { opacity: 1; }
+  75%  { opacity: 1; }
+  90%  { opacity: 0.4; }
+  100% { opacity: 0; }
+}
+
+/* ── Help static artifact ────────────────────────────────────────────── */
+
+.terminal__output-text :deep(.terminal__static) {
+  display: block;
+  margin-top: 0.5rem;
+  color: rgba(255, 255, 255, 0.07);
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  user-select: none;
 }
 
 /* ── Hidden input ────────────────────────────────────────────────────── */
