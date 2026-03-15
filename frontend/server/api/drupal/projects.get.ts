@@ -13,8 +13,9 @@ export default defineEventHandler(async (event) => {
   if (query.featured === 'true') {
     filters.push('filter[field_featured]=1')
   }
-  if (query.category) {
-    filters.push(`filter[field_project_category]=${query.category}`)
+  const VALID_CATEGORIES = ['civic', 'open-source', 'personal', 'professional']
+  if (query.category && typeof query.category === 'string' && VALID_CATEGORIES.includes(query.category)) {
+    filters.push(`filter[field_project_category]=${encodeURIComponent(query.category)}`)
   }
 
   const url = [

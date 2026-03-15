@@ -15,7 +15,26 @@
       <div v-if="project.coverImage" class="project-card__image">
         <img :src="project.coverImage.url" :alt="project.coverImage.alt || project.title" loading="lazy" />
       </div>
-      <div v-else class="project-card__image project-card__image--placeholder" />
+      <div v-else class="project-card__image project-card__image--placeholder">
+        <svg :id="`proj-bg-${project.id}`" viewBox="0 0 300 200"
+             xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <defs>
+            <pattern :id="`dots-${project.id}`" x="0" y="0" width="18" height="18"
+                     patternUnits="userSpaceOnUse">
+              <circle cx="1" cy="1" r="1" fill="#252525"/>
+            </pattern>
+          </defs>
+          <rect width="300" height="200" fill="#141414"/>
+          <rect width="300" height="200" :fill="`url(#dots-${project.id})`"/>
+          <text x="150" y="95" font-family="IBM Plex Mono, monospace" font-size="44"
+                font-weight="500" fill="#C41E3A" text-anchor="middle"
+                opacity="0.55">{{ initials }}</text>
+          <text x="150" y="128" font-family="IBM Plex Mono, monospace" font-size="9"
+                fill="#4A4A4A" text-anchor="middle" letter-spacing="2">
+            {{ project.category.toUpperCase() }}
+          </text>
+        </svg>
+      </div>
 
       <div class="project-card__body">
         <span
@@ -63,7 +82,7 @@
           >Live site →</a>
         </div>
 
-        <span class="project-card__status project-card__status--{{ project.status }}">
+        <span class="project-card__status" :class="`project-card__status--${project.status}`">
           {{ project.status }}
         </span>
       </div>
@@ -79,6 +98,15 @@ const props = defineProps<{
 }>()
 
 const flipped = ref(false)
+
+const initials = computed(() =>
+  props.project.title
+    .split(/[\s\-_\.]+/)
+    .filter(Boolean)
+    .slice(0, 3)
+    .map(w => w[0]?.toUpperCase() ?? '')
+    .join('')
+)
 
 const categoryLabel = computed(() => {
   const map: Record<string, string> = {
@@ -142,7 +170,15 @@ const categoryLabel = computed(() => {
 }
 
 .project-card__image--placeholder {
-  background: #1A1A1A;
+  background: #141414;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.project-card__image--placeholder svg {
+  width: 100%;
+  height: 100%;
 }
 
 .project-card__body {
@@ -167,9 +203,9 @@ const categoryLabel = computed(() => {
   border-color: var(--color-accent, #C41E3A);
 }
 
-.project-card__badge--professional { color: #6B6763; }
-.project-card__badge--personal     { color: #6B6763; }
-.project-card__badge--open-source  { color: #6B6763; }
+.project-card__badge--professional { color: var(--color-muted); }
+.project-card__badge--personal     { color: var(--color-muted); }
+.project-card__badge--open-source  { color: var(--color-muted); }
 
 .project-card__title {
   font-family: var(--font-display, 'Playfair Display', serif);
@@ -190,7 +226,7 @@ const categoryLabel = computed(() => {
 .project-card__hint {
   font-family: var(--font-mono, 'IBM Plex Mono', monospace);
   font-size: 0.7rem;
-  color: #3A3A3A;
+  color: #6C6864;  /* 3.3:1 on surface — intentionally ghostly but legible */
   text-transform: uppercase;
   letter-spacing: 0.06em;
   margin-top: auto;

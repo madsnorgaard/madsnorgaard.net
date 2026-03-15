@@ -22,7 +22,7 @@
           >
             <div class="work-entry__meta">
               <div class="work-entry__dates">
-                {{ formatYear(entry.startDate) }}–{{ entry.isCurrent ? 'present' : formatYear(entry.endDate) }}
+                {{ formatYear(entry.startDate) }}–{{ entry.isCurrent ? 'present' : (formatYear(entry.endDate) || '?') }}
               </div>
               <div class="work-entry__type-badge">{{ entry.type }}</div>
             </div>

@@ -8,34 +8,48 @@
 
       <!-- Post header -->
       <header style="margin-bottom: 3rem; border-bottom: 1px solid var(--color-border); padding-bottom: 2rem;">
+        <div v-if="post.series" class="post-header__series">{{ post.series.name }}</div>
+
         <h1
           class="text-display"
           style="font-size: clamp(2rem, 5vw, 3rem); margin-bottom: 1rem;"
         >{{ post.title }}</h1>
 
-        <div style="display: flex; gap: 1.5rem; align-items: center; flex-wrap: wrap;">
+        <div class="post-header__meta">
           <time class="text-mono text-mono--sm" style="color: var(--color-muted);" :datetime="post.date">
             {{ formatDate(post.date) }}
           </time>
-          <div v-if="post.tags?.length" style="display: flex; gap: 0.4rem;">
-            <span
+          <span class="post-header__reading-time">· {{ readingTime(post.body) }} min read</span>
+          <div v-if="post.tags?.length" style="display: flex; gap: 0.4rem; flex-wrap: wrap;">
+            <NuxtLink
               v-for="tag in post.tags"
               :key="tag.id"
-              class="text-mono text-mono--sm"
-              style="color: var(--color-muted);"
-            >#{{ tag.name }}</span>
+              :to="`/writing?tag=${tag.slug}`"
+              class="post-tag-link"
+            >#{{ tag.name }}</NuxtLink>
           </div>
         </div>
       </header>
 
       <!-- Post body: Drupal provides sanitized HTML -->
       <!-- eslint-disable-next-line vue/no-v-html -->
-      <div class="post-body" v-html="post.body" />
+      <article class="post-body" v-html="post.body" />
     </div>
 
-    <div v-else class="container" style="padding-top: 4rem;">
-      <p class="text-mono" style="color: var(--color-muted);">Post not found.</p>
-      <NuxtLink to="/writing">← Back to writing</NuxtLink>
+    <!-- 404 state -->
+    <div v-else class="container container--reading" style="padding-top: 4rem; padding-bottom: 4rem;">
+      <NuxtLink to="/writing" class="text-mono text-mono--sm" style="color: var(--color-muted); display: block; margin-bottom: 2rem;">
+        ← All writing
+      </NuxtLink>
+      <div class="post-404">
+        <p class="post-404__prompt">> GET /writing/{{ route.params.slug }} HTTP/1.1</p>
+        <p class="post-404__status">&lt; 404 Not Found</p>
+        <p class="post-404__message">"Post not found — it may have moved or been unpublished."</p>
+        <div class="post-404__actions">
+          <NuxtLink to="/writing">← All writing</NuxtLink>
+          <NuxtLink to="/">↑ Home</NuxtLink>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -56,8 +70,23 @@ function formatDate(dateString: string) {
   })
 }
 
+function readingTime(html: string): number {
+  if (!html) return 1
+  const words = html.replace(/<[^>]+>/g, '').trim().split(/\s+/).filter(Boolean).length
+  return Math.max(1, Math.round(words / 200))
+}
+
 useHead(() => ({
   title: post.value ? `${post.value.title} | Mads Nørgaard` : 'Writing | Mads Nørgaard',
+  meta: post.value
+    ? [
+        { name: 'description', content: post.value.teaser },
+        { property: 'og:title', content: post.value.title },
+        { property: 'og:description', content: post.value.teaser },
+        { property: 'og:type', content: 'article' },
+        { property: 'article:published_time', content: post.value.date },
+      ]
+    : [],
 }))
 </script>
 

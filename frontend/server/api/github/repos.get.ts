@@ -17,7 +17,7 @@ export default defineEventHandler(async (event) => {
   const raw = await $fetch<any[]>(
     'https://api.github.com/users/madsnorgaard/repos?sort=pushed&per_page=30&type=public',
     { headers }
-  )
+  ).catch(() => [])
 
   return raw
     .filter((r) => !r.fork)

@@ -1,5 +1,5 @@
 // GET /api/drupal/blog/:slug
-// Resolves a blog post by slug (path alias) via decoupled_router, then fetches the node
+// Resolves a blog post by slug by scanning path aliases, then fetches full node by UUID
 
 import type { DrupalBlogPost } from '~/types/drupal'
 
@@ -12,38 +12,42 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, statusMessage: 'Slug is required' })
   }
 
-  // Try to resolve path alias via decoupled_router (try both /article/ and /blog/ prefixes)
-  let nodeId: string | null = null
+  // Resolve slug → UUID by scanning path aliases with pagination (Drupal default max is 50)
+  let match: any = null
+  let offset = 0
+  const pageSize = 50
 
-  for (const prefix of ['article', 'blog']) {
-    const routeData = await $fetch<any>(
-      `${base}/router/translate-path?path=${encodeURIComponent(`/${prefix}/${slug}`)}`,
-      { headers: { Accept: 'application/json' } }
-    ).catch(() => null)
-    if (routeData?.entity?.uuid) {
-      nodeId = routeData.entity.uuid
-      break
-    }
-  }
-
-  if (!nodeId) {
-    // Fallback: query by path alias directly via JSON:API filter
-    const fallback = await $fetch<any>(
-      `${base}/jsonapi/node/article?filter[path.alias]=/article/${encodeURIComponent(slug)}&filter[status]=1&page[limit]=1&include=field_tags,field_image`,
+  while (!match) {
+    const scan = await $fetch<any>(
+      `${base}/jsonapi/node/article?filter[status]=1&page[limit]=${pageSize}&page[offset]=${offset}&fields[node--article]=id,path`,
       { headers: { Accept: 'application/vnd.api+json' } }
     ).catch(() => null)
 
-    if (fallback?.data?.[0]) {
-      return transformNode(fallback.data[0], fallback.included ?? [])
-    }
+    if (!scan?.data?.length) break
 
+    match = scan.data.find((node: any) => {
+      const alias = node.attributes?.path?.alias ?? ''
+      return alias === `/article/${slug}` || alias === `/blog/${slug}`
+    })
+
+    if (scan.data.length < pageSize) break
+    offset += pageSize
+  }
+
+  if (!match) {
     throw createError({ statusCode: 404, statusMessage: 'Post not found' })
   }
 
+  const nodeId = match.id
+
   const data = await $fetch<any>(
-    `${base}/jsonapi/node/article/${nodeId}?include=field_tags,field_image`,
+    `${base}/jsonapi/node/article/${nodeId}?include=field_tags,field_cover_image,field_cover_image.field_media_image`,
     { headers: { Accept: 'application/vnd.api+json' } }
-  )
+  ).catch(() => null)
+
+  if (!data?.data) {
+    throw createError({ statusCode: 404, statusMessage: 'Post not found' })
+  }
 
   return transformNode(data.data, data.included ?? [])
 })
@@ -83,7 +87,7 @@ function resolveTags(refs: any[], included: any[]) {
     return {
       id: ref.id,
       name: term?.attributes?.name ?? '',
-      slug: ref.id,
+      slug: term?.attributes?.path?.alias?.replace(/^\/tags\//, '') ?? term?.attributes?.name ?? ref.id,
     }
   })
 }
@@ -91,5 +95,9 @@ function resolveTags(refs: any[], included: any[]) {
 function resolveSingleTerm(ref: any, included: any[]) {
   if (!ref) return undefined
   const term = included.find((i: any) => i.type === ref.type && i.id === ref.id)
-  return term ? { id: ref.id, name: term.attributes?.name ?? '', slug: ref.id } : undefined
+  return term ? {
+    id: ref.id,
+    name: term.attributes?.name ?? '',
+    slug: term.attributes?.path?.alias?.replace(/^\/series\//, '') ?? term.attributes?.name ?? ref.id,
+  } : undefined
 }

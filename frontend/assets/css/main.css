@@ -11,9 +11,9 @@
   --color-surface:     #161616;
   --color-border:      #2A2A2A;
   --color-text:        #F0EDE6;
-  --color-muted:       #6B6763;
-  --color-accent:      #C41E3A;
-  --color-accent-dim:  rgba(196, 30, 58, 0.15);
+  --color-muted:       #8C8680;  /* 5.4:1 on bg, 5.0:1 on surface — WCAG AA ✓ */
+  --color-accent:      #D0243E;  /* 3.7:1 — passes UI component non-text threshold */
+  --color-accent-dim:  rgba(208, 36, 62, 0.15);
 }
 
 /* ─── Reset ─────────────────────────────────────────────────────────── */
@@ -119,6 +119,7 @@ a {
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: var(--color-text);
+  white-space: nowrap;
 }
 
 .site-header__logo .accent {
@@ -164,7 +165,8 @@ a {
 /* ─── Hero section ───────────────────────────────────────────────────── */
 
 .hero {
-  padding: 5rem 0 4rem;
+  padding-top: 5rem;
+  padding-bottom: 4rem;
   border-bottom: 1px solid var(--color-border);
 }
 
@@ -193,7 +195,8 @@ a {
 /* ─── Section headings ───────────────────────────────────────────────── */
 
 .section {
-  padding: 4rem 0;
+  padding-top: 4rem;
+  padding-bottom: 4rem;
   border-bottom: 1px solid var(--color-border);
 }
 
@@ -409,7 +412,92 @@ a {
     gap: 0.5rem;
     text-align: center;
   }
+
+  /* ── Nav ── */
+  .site-header {
+    padding: 0.75rem 1rem;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .site-header__logo {
+    white-space: nowrap;
+  }
+
+  .site-nav {
+    gap: 1rem;
+  }
+
+  /* ── Post list card ── */
+  .post-card {
+    grid-template-columns: 1fr;
+    gap: 0.25rem;
+  }
+
+  .post-card__date {
+    margin-top: 0.5rem;
+  }
+
+  /* ── Project cards ── */
+  .project-card {
+    height: 340px;
+  }
+
+  .project-card__image {
+    height: 150px;
+  }
 }
+
+/* ─── Article page additions ─────────────────────────────────────── */
+
+.post-header__meta {
+  display: flex;
+  gap: 1.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.post-header__reading-time {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--color-muted);
+}
+
+.post-header__series {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-accent);
+  margin-bottom: 0.75rem;
+}
+
+.post-tag-link {
+  color: var(--color-muted);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  transition: color 150ms;
+}
+
+.post-tag-link:hover { color: var(--color-accent); }
+
+/* ─── Terminal-style 404 ─────────────────────────────────────────── */
+
+.post-404 {
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  padding: 2rem;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  margin-top: 4rem;
+}
+
+.post-404__prompt { color: var(--color-muted); margin-bottom: 0.75rem; }
+.post-404__status { color: var(--color-accent); margin-bottom: 1.5rem; }
+.post-404__message { color: var(--color-muted); margin-bottom: 2rem; }
+.post-404__actions { display: flex; gap: 1.5rem; flex-wrap: wrap; }
+.post-404__actions a { color: var(--color-text); transition: color 150ms; }
+.post-404__actions a:hover { color: var(--color-accent); }
 
 /* ─── Custom cursor (desktop only) ──────────────────────────────── */
 

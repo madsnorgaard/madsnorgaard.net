@@ -8,13 +8,13 @@ export default defineEventHandler(async (event) => {
   const base = config.drupalBaseUrl
   const query = getQuery(event)
 
-  const page = Number(query.page ?? 1)
-  const limit = Number(query.limit ?? 10)
+  const page = Math.max(1, Math.min(Number(query.page ?? 1) || 1, 1000))
+  const limit = Math.max(1, Math.min(Number(query.limit ?? 10) || 10, 100))
   const offset = (page - 1) * limit
 
   const filters: string[] = ['filter[status]=1']
-  if (query.tag) {
-    filters.push(`filter[field_tags.name]=${query.tag}`)
+  if (query.tag && typeof query.tag === 'string') {
+    filters.push(`filter[field_tags.name]=${encodeURIComponent(query.tag)}`)
   }
 
   const url = [
@@ -63,7 +63,7 @@ function resolveTags(refs: any[], included: any[]) {
     return {
       id: ref.id,
       name: term?.attributes?.name ?? '',
-      slug: term?.attributes?.path?.alias?.replace(/^\/tags\//, '') ?? ref.id,
+      slug: term?.attributes?.path?.alias?.replace(/^\/tags\//, '') ?? term?.attributes?.name ?? ref.id,
     }
   })
 }

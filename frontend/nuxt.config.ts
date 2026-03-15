@@ -70,6 +70,28 @@ export default defineNuxtConfig({
 
   css: ['~/assets/css/main.css'],
 
+  // HTTP security headers for all pages
+  routeRules: {
+    '/**': {
+      headers: {
+        'X-Frame-Options': 'SAMEORIGIN',
+        'X-Content-Type-Options': 'nosniff',
+        'Referrer-Policy': 'strict-origin-when-cross-origin',
+        'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
+        // CSP: allow Nuxt SSR inline scripts, Google Fonts, self for everything else
+        'Content-Security-Policy': [
+          "default-src 'self'",
+          "script-src 'self' 'unsafe-inline'",
+          "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+          "font-src 'self' https://fonts.gstatic.com",
+          "img-src 'self' data: https:",
+          "connect-src 'self'",
+          "frame-ancestors 'none'",
+        ].join('; '),
+      },
+    },
+  },
+
   nitro: {
     // Ensure server routes can reach internal Docker services
     routeRules: {

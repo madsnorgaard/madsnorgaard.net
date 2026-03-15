@@ -45,7 +45,8 @@
       </article>
     </div>
     <p v-else class="text-mono" style="color: var(--color-muted); padding: 3rem 0;">
-      No posts yet.
+      <template v-if="currentTag">No posts tagged "{{ currentTag }}".</template>
+      <template v-else>No posts yet.</template>
     </p>
   </div>
 </template>

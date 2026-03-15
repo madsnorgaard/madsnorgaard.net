@@ -59,12 +59,14 @@ export default defineEventHandler(async (event) => {
   let availability: StatusBlock['availability'] = 'available'
   let availabilityNote: string | undefined
   let location = 'Skanderborg, Denmark'
+  let employer = 'Eksponent'
   if (aboutRaw.status === 'fulfilled') {
     const node = aboutRaw.value?.data?.[0]
     if (node) {
       availability = node.attributes?.field_availability ?? 'available'
       availabilityNote = node.attributes?.field_availability_note ?? undefined
       location = node.attributes?.field_location ?? location
+      employer = node.attributes?.field_employer ?? employer
     }
   }
 
@@ -90,7 +92,7 @@ export default defineEventHandler(async (event) => {
     availability,
     availabilityNote,
     location,
-    employer: 'Eksponent',
+    employer,
   } satisfies StatusBlock
 })
 
