@@ -230,7 +230,9 @@ const ALL_COMMANDS = [
   'help', 'whoami', 'skills', 'work', 'contact', 'ls', 'clear', 'man', 'sudo', 'rm',
   'git', 'curl', 'exit', 'pwd', 'uname', 'docker', 'ssh', 'vim', 'cat', 'history',
   'date', 'uptime', 'neofetch', 'achievements', 'fortune', 'ping', 'top', 'cowsay',
-  'ops', 'map', 'decode', 'glitch', 'trace', 'locate', 'transmit',
+  'ops', 'map', 'decode', 'glitch', 'trace', 'locate', 'transmit', 'sahistory',
+  // aurora is intentionally NOT listed — tab-complete reveals it to the very curious
+  'aurora',
 ]
 
 function tabComplete() {
@@ -277,6 +279,7 @@ const ACHIEVEMENT_DEFS = [
   { id: 'ghost_in_machine', name: 'ghost in machine', desc: 'received the full transmission' },
   { id: 'explorer',         name: 'explorer',         desc: 'ran 5+ commands' },
   { id: 'archaeologist',    name: 'archaeologist',    desc: 'ran 10+ commands' },
+  { id: 'found_designer',   name: 'found the designer', desc: '???' },
 ]
 
 const unlockedAchievements = ref(new Set<string>())
@@ -310,6 +313,7 @@ function checkAchievements(cmd: string, output: string): string[] {
   if (c === 'trace' && glitchQuestStage.value >= 2)                 add('signal_traced')
   if (c === 'locate' && glitchQuestStage.value >= 3)                add('source_located')
   if (c === 'transmit' && glitchQuestStage.value >= 4)              add('ghost_in_machine')
+  if (c === 'aurora')                                                add('found_designer')
   if (cmdCount.value >= 5)                                           add('explorer')
   if (cmdCount.value >= 10)                                          add('archaeologist')
 
@@ -317,6 +321,24 @@ function checkAchievements(cmd: string, output: string): string[] {
 }
 
 // ── Async commands ─────────────────────────────────────────────────────────────
+
+async function runLsWriting(): Promise<string> {
+  try {
+    const data = await $fetch<{ posts: any[]; total: number }>('/api/drupal/blog?page=1&limit=5')
+    const posts = data.posts ?? []
+    if (!posts.length) return '<pre>writing/  (no published posts)</pre>'
+    const lines = posts.map((p) => {
+      const date = p.date ? new Date(p.date).toISOString().slice(0, 10) : '????-??-??'
+      const raw = p.title ?? 'untitled'
+      const title = escapeHtml(raw.length > 46 ? raw.slice(0, 45) + '…' : raw)
+      const slug = p.slug ?? ''
+      return `  ${date}  ${title}\n             /writing/${escapeHtml(slug)}`
+    }).join('\n')
+    return `<pre>writing/  [${posts.length} of ${data.total ?? posts.length}]\n\n${lines}</pre>`
+  } catch {
+    return '<pre>writing/  (could not reach backend)</pre>'
+  }
+}
 
 async function runOps(): Promise<string> {
   try {
@@ -436,10 +458,12 @@ function runCommand(input: string): string | Promise<string> {
   map           infrastructure topology
   fortune       developer wisdom
   achievements  what you have found  [${achievementCount.value}/${ACHIEVEMENT_DEFS.length}]
+  sahistory     South African History Online
   clear         clear terminal
   man mads      manual page
 ──────────────────────────────────────────────
 Some commands have surprises. Explore.
+Try: cat about.txt  ·  ls writing/  ·  ls -la
 
 <span class="terminal__static">░░ ${randomHex(4)}-${randomHex(4)} ░░</span></pre>`
 
@@ -489,23 +513,80 @@ Technical Lead
   AI-assisted metadata system for 14,000+ history entries.</pre>`
 
     case 'contact':
-      return '<pre>mads@madsnorgaard.net\n\ngithub.com/madsnorgaard</pre>'
+      return `<pre>Email   mads@madsnorgaard.net
+GitHub  github.com/madsnorgaard
+CV      madsnorgaard.net/cv
 
-    case 'ls':
+──────────────────────────────────
+I'm available for new work.
+Drupal, DevOps, infrastructure, headless CMS.
+Based in Denmark — work remotely across Europe.
+
+If you're building something that matters,
+I want to hear about it.</pre>`
+
+    case 'ls': {
       if (arg === 'photos' || arg === '-la photos' || arg.includes('photo')) {
         return '<pre>ls: photos: Permission denied\n\nTry: photo.madsnorgaard.net</pre>'
       }
-      if (arg === 'projects' || arg.includes('project')) {
+      if (arg === 'projects' || arg === 'projects/' || arg.includes('project')) {
         return `<pre>ÅbenForms/         headless Drupal 11 + Nuxt 3, civic tech
 MitID-mocks/       serviceplatformen mock services
 madsnorgaard.net/  this site (you are here)
 sahistory-web/     South African History Online</pre>`
       }
+      if (arg === 'writing' || arg === 'writing/') {
+        return runLsWriting()
+      }
+      if (arg === '-la' || arg === '-al' || arg === '-l') {
+        return `<pre>total 48
+drwxr-xr-x  mads  staff   160  .
+drwxr-xr-x  mads  staff   480  ..
+-rw-r--r--  mads  staff  1.2K  about.txt
+-rw-r--r--  mads  staff   640  cv.md
+drwxr-xr-x  mads  staff   320  projects/
+lrwxrwxrwx  mads  staff     -  photos -> photo.madsnorgaard.net
+drwxr-xr-x  mads  staff     -  writing/</pre>`
+      }
       return `<pre>about.txt  cv.md  projects/  photos -> photo.madsnorgaard.net  writing/</pre>`
+    }
 
     case 'man':
       if (arg === 'mads') {
-        return '<pre>No manual entry for mads.\n\nTry: /about or just say hello.</pre>'
+        return `<pre>MADS(1)                   User Commands                   MADS(1)
+
+NAME
+       mads - Mads Nørgaard, developer and DevOps engineer
+
+SYNOPSIS
+       mads [--drupal] [--docker] [--linux] [--camera] [--coffee]
+
+DESCRIPTION
+       Self-taught since 2009. Started with WordPress because he
+       needed a website. Graduated to Drupal and never looked back.
+
+       Builds systems for organisations that can't afford agencies:
+       archives, municipalities, NGOs, communities.
+
+       Believes infrastructure should outlast the trends that built it.
+
+OPTIONS
+       --drupal      15+ years, primary craft
+       --docker       everything lives in a container
+       --linux        comfortable in the dark
+       --camera       documentary photographer
+       --coffee       necessary dependency
+
+ENVIRONMENT
+       Located in Skanderborg, Denmark.
+       Available remotely across Europe.
+
+SEE ALSO
+       whoami(1), work(1), contact(1), cat(about.txt)
+
+BUGS
+       Occasionally SSHes into production to test things.
+       Known issue. Will not fix.</pre>`
       }
       return `<pre>No manual entry for ${escapeHtml(arg) || '(nothing)'}.</pre>`
 
@@ -618,6 +699,46 @@ alias dps='docker ps --format "table {{.Names}}\t{{.Status}}"'
 
 # Note to self: stop SSHing into prod to test things
 export EDITOR=vim  # yes, vim</pre>`
+      }
+      if (arg === 'about.txt') {
+        return `<pre>Self-taught developer since 2009.
+Started with WordPress because I needed a website.
+Discovered Drupal and haven't fully escaped since.
+
+I build things for organisations that can't afford
+to hire agencies: archives, communities, NGOs.
+I believe infrastructure should last longer than trends.
+
+Based in Skanderborg, Denmark.
+Documentary photographer in my other life.
+Parent. Reader. Occasional sleeper.
+
+──────────────────────────────────
+  This terminal was built together with Aurora,
+  my daughter, on an afternoon in March 2026.
+  She suggested the glitch quest.
+  She was right.
+──────────────────────────────────</pre>`
+      }
+      if (arg === 'cv.md') {
+        return `<pre># Mads Nørgaard — CV
+
+Senior Developer + DevOps
+  Eksponent · 2024–present · employed
+
+Technical Lead (volunteer)
+  South African History Online · 2010–present
+
+Freelance / independent
+  2009–2024 · Drupal, WordPress, PHP, infrastructure
+
+Education
+  Self-taught.
+  15 years.
+  Still learning.
+
+──────────────────────────────────
+Full version: madsnorgaard.net/cv</pre>`
       }
       return `<pre>cat: ${escapeHtml(arg)}: No such file or directory</pre>`
 
@@ -737,18 +858,80 @@ Monitoring: Grafana · Prometheus · Loki · cAdvisor</pre>`
     case 'decode':
       return runDecode()
 
+    case 'sahistory':
+      return `<pre>SOUTH AFRICAN HISTORY ONLINE
+──────────────────────────────────────────────
+  sahistory.org.za
+
+  One of South Africa's most significant
+  documentary history archives.
+  Free. Open. Permanent.
+
+  14,000+ entries.
+  Millions of monthly readers.
+
+  I have been technical lead since 2010.
+  Volunteer. No salary.
+
+  Started because someone asked.
+  Stayed because it matters.
+
+  Some commitments don't have exit conditions.
+──────────────────────────────────────────────
+  → run: map  to see where it lives in the stack</pre>`
+
+    case 'aurora':
+      return `<pre>aurora: permission denied.
+
+  ...
+
+  actually, no. she has full permissions here.
+
+──────────────────────────────────────────────
+  SIGNAL DESIGNER : Aurora
+  DATE            : March 2026
+
+  "what if it's like a glitch quest?"
+  — Aurora
+
+  she suggested the whole thing.
+  the glitch. the trail. the transmission.
+  she was right about every part of it.
+
+  this terminal exists partly because
+  of an afternoon conversation with
+  a person who sees things clearly.
+──────────────────────────────────────────────</pre>`
+
     case 'glitch': {
+      const level = Math.min(Math.max(glitchQuestStage.value, 1), 4)
+      glitchLevel.value = level
+      const { ms, display } = glitchTime(level)
+      glitching.value = true
+      setTimeout(() => { glitching.value = false }, ms)
+
+      // Quest complete — signal is at rest
+      if (glitchQuestStage.value >= 4) {
+        return `<pre>G̷L̶I̸T̵C̷H̴ — signal quiet.
+
+  transmission received.
+  origin confirmed: Skanderborg, Denmark.
+
+  you know where it came from now.
+
+  disruption duration : ${display} seconds
+  data corrupted      : 0 bytes
+  status              : at rest
+
+  (probably.)</pre>`
+      }
+
       const frag = `${randomHex(4)}-${randomHex(4)}`
       glitchFragment.value = frag
       const corruptPct = (Math.random() * 2.8 + 0.1).toFixed(1)
       const nodes = Math.floor(Math.random() * 4) + 3
       const noiseAddr = randomHex(8)
       if (glitchQuestStage.value < 1) glitchQuestStage.value = 1
-      const level = Math.min(glitchQuestStage.value, 4)
-      glitchLevel.value = level
-      const { ms, display } = glitchTime(level)
-      glitching.value = true
-      setTimeout(() => { glitching.value = false }, ms)
       return `<pre>G̸̤͋L̷̰͝I̸̛̻T̵͓̀C̵̞͌H̸̩͝ ̷̨͑I̸̢͒N̴͕̿I̵̫̐T̴̠͒I̶̜͛A̵͎͝T̷̩̚E̷̘̚D̸̝̓
 
   signal disrupted for ${display} seconds
