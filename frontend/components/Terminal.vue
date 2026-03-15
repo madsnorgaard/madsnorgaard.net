@@ -1,5 +1,7 @@
 <template>
-  <div ref="termEl" class="terminal" :class="{ 'terminal--glitch': glitching }" @click="focusInput">
+  <div ref="termEl" class="terminal"
+       :class="[{ 'terminal--glitch': glitching }, glitching ? `terminal--glitch-${glitchLevel}` : '']"
+       @click="focusInput">
     <!-- Arc Raiders–inspired spectrum stripe -->
     <div class="terminal__spectrum" aria-hidden="true" />
 
@@ -94,11 +96,20 @@ const bootLines         = ref<string[]>([])
 const hintIndex         = ref(0)
 const glitchQuestStage  = ref(0)   // 0=not started 1=glitch run 2=trace run 3=locate run 4=complete
 const glitchFragment    = ref('')
+const glitchLevel       = ref(1)   // 1–4, drives CSS intensity class
 
 function randomHex(len = 4): string {
   return Array.from({ length: len }, () =>
     Math.floor(Math.random() * 16).toString(16).toUpperCase()
   ).join('')
+}
+
+// Returns { ms, display } scaled to quest level (1–4)
+function glitchTime(level: number): { ms: number; display: string } {
+  const ranges: [number, number][] = [[650, 1100], [1200, 1900], [2000, 3000], [3500, 5000]]
+  const [lo, hi] = ranges[Math.min(level - 1, 3)]
+  const ms = Math.floor(Math.random() * (hi - lo) + lo)
+  return { ms, display: (ms / 1000).toFixed(1) }
 }
 
 const HINTS = [
@@ -703,12 +714,15 @@ Monitoring: Grafana · Prometheus · Loki · cAdvisor</pre>`
       const corruptPct = (Math.random() * 2.8 + 0.1).toFixed(1)
       const nodes = Math.floor(Math.random() * 4) + 3
       const noiseAddr = randomHex(8)
-      glitching.value = true
-      setTimeout(() => { glitching.value = false }, 950)
       if (glitchQuestStage.value < 1) glitchQuestStage.value = 1
+      const level = Math.min(glitchQuestStage.value, 4)
+      glitchLevel.value = level
+      const { ms, display } = glitchTime(level)
+      glitching.value = true
+      setTimeout(() => { glitching.value = false }, ms)
       return `<pre>G̸̤͋L̷̰͝I̸̛̻T̵͓̀C̵̞͌H̸̩͝ ̷̨͑I̸̢͒N̴͕̿I̵̫̐T̴̠͒I̶̜͛A̵͎͝T̷̩̚E̷̘̚D̸̝̓
 
-  signal disrupted for 0.9 seconds
+  signal disrupted for ${display} seconds
   corruption   : ${corruptPct}%  (non-critical)
   no data was corrupted
   probably
@@ -1067,33 +1081,6 @@ onUnmounted(() => {
   100% { clip-path: none;               transform: none;                }
 }
 
-/* whole-terminal effects during glitch */
-.terminal--glitch {
-  animation: glitch-terminal 0.9s steps(1) forwards;
-}
-
-@keyframes glitch-terminal {
-  0%   { filter: none; }
-  8%   { filter: brightness(1.4) hue-rotate(180deg); }
-  14%  { filter: none; }
-  22%  { filter: brightness(0.7) saturate(4) hue-rotate(-90deg); }
-  28%  { filter: none; }
-  38%  { filter: brightness(1.2) hue-rotate(60deg); }
-  44%  { filter: none; }
-  100% { filter: none; }
-}
-
-/* chromatic aberration + clip-path slices */
-.terminal--glitch .terminal__output {
-  animation: glitch-clip 0.14s steps(1) 4;
-  text-shadow: 1px 0 rgba(255, 0, 64, 0.6), -1px 0 rgba(0, 255, 255, 0.5);
-}
-
-/* spectrum stripe strobes wider during glitch */
-.terminal--glitch .terminal__spectrum {
-  animation: spectrum-strobe 0.9s steps(1) forwards;
-}
-
 @keyframes spectrum-strobe {
   0%   { opacity: 0.5; width: 3px; }
   10%  { opacity: 1;   width: 8px; }
@@ -1103,6 +1090,121 @@ onUnmounted(() => {
   65%  { opacity: 0.9; width: 6px; }
   80%  { opacity: 0.4; width: 3px; }
   100% { opacity: 0.5; width: 3px; }
+}
+
+/* ── Level 1 — mild (first contact) ─────────────────────────────────── */
+
+.terminal--glitch-1 {
+  animation: glitch-l1 0.9s steps(1) forwards;
+}
+@keyframes glitch-l1 {
+  0%   { filter: none; }
+  8%   { filter: brightness(1.4) hue-rotate(180deg); }
+  14%  { filter: none; }
+  22%  { filter: brightness(0.7) saturate(4) hue-rotate(-90deg); }
+  28%  { filter: none; }
+  38%  { filter: brightness(1.2) hue-rotate(60deg); }
+  44%  { filter: none; }
+  100% { filter: none; }
+}
+.terminal--glitch-1 .terminal__output {
+  animation: glitch-clip 0.14s steps(1) 4;
+  text-shadow: 1px 0 rgba(255, 0, 64, 0.55), -1px 0 rgba(0, 255, 255, 0.45);
+}
+.terminal--glitch-1 .terminal__spectrum {
+  animation: spectrum-strobe 0.9s steps(1) forwards;
+}
+
+/* ── Level 2 — medium (signal traced) ───────────────────────────────── */
+
+.terminal--glitch-2 {
+  animation: glitch-l2 1.4s steps(1) forwards;
+}
+@keyframes glitch-l2 {
+  0%   { filter: none;  transform: none; }
+  6%   { filter: brightness(1.6) hue-rotate(200deg);  transform: translateX(-3px); }
+  12%  { filter: none;  transform: none; }
+  20%  { filter: brightness(0.6) saturate(6) hue-rotate(-180deg); transform: translateX(3px); }
+  26%  { filter: none;  transform: none; }
+  34%  { filter: hue-rotate(90deg); transform: translateX(-2px) translateY(1px); }
+  40%  { filter: none;  transform: none; }
+  52%  { filter: brightness(1.3) hue-rotate(45deg); transform: translateX(2px); }
+  58%  { filter: none;  transform: none; }
+  100% { filter: none;  transform: none; }
+}
+.terminal--glitch-2 .terminal__output {
+  animation: glitch-clip 0.15s steps(1) 6;
+  text-shadow: 2px 0 rgba(255, 0, 64, 0.75), -2px 0 rgba(0, 255, 255, 0.65);
+}
+.terminal--glitch-2 .terminal__spectrum {
+  animation: spectrum-strobe 1.4s steps(1) forwards;
+}
+
+/* ── Level 3 — intense (source located) ─────────────────────────────── */
+
+.terminal--glitch-3 {
+  animation: glitch-l3 2.1s steps(1) forwards;
+}
+@keyframes glitch-l3 {
+  0%   { filter: none;  transform: none; }
+  4%   { filter: brightness(2) hue-rotate(270deg) saturate(8); transform: translateX(-5px) translateY(-2px); }
+  8%   { filter: none;  transform: none; }
+  14%  { filter: brightness(0.4) saturate(8) hue-rotate(-270deg); transform: translateX(5px) translateY(2px); }
+  20%  { filter: none;  transform: none; }
+  26%  { filter: hue-rotate(180deg) brightness(1.8); transform: translateX(-3px) translateY(3px); }
+  32%  { filter: none;  transform: none; }
+  40%  { filter: invert(0.15) hue-rotate(90deg); transform: translateX(4px) translateY(-2px); }
+  46%  { filter: none;  transform: none; }
+  55%  { filter: brightness(1.5) saturate(5) hue-rotate(-90deg); transform: translateX(-2px); }
+  60%  { filter: none;  transform: none; }
+  70%  { filter: brightness(0.8) hue-rotate(30deg); transform: none; }
+  76%  { filter: none;  transform: none; }
+  100% { filter: none;  transform: none; }
+}
+.terminal--glitch-3 .terminal__output {
+  animation: glitch-clip 0.16s steps(1) 8;
+  text-shadow: 3px 0 rgba(255, 0, 64, 0.9), -3px 0 rgba(0, 255, 255, 0.8),
+               0 2px rgba(255, 220, 0, 0.25);
+}
+.terminal--glitch-3 .terminal__spectrum {
+  animation: spectrum-strobe 2.1s steps(1) forwards;
+}
+
+/* ── Level 4 — maximum (quest complete) ─────────────────────────────── */
+
+.terminal--glitch-4 {
+  animation: glitch-l4 4s steps(1) forwards;
+}
+@keyframes glitch-l4 {
+  0%   { filter: none;  transform: none; }
+  3%   { filter: invert(1) hue-rotate(180deg); transform: translateX(-6px) translateY(-3px) skewX(-2deg); }
+  6%   { filter: none;  transform: none; }
+  10%  { filter: brightness(3) saturate(10) hue-rotate(360deg); transform: translateX(6px) translateY(3px); }
+  14%  { filter: none;  transform: none; }
+  18%  { filter: invert(0.8) hue-rotate(-180deg) saturate(8); transform: translateX(-4px) skewX(3deg); }
+  22%  { filter: none;  transform: none; }
+  26%  { filter: brightness(0.2) hue-rotate(90deg); transform: translateX(5px) translateY(-3px); }
+  30%  { filter: none;  transform: none; }
+  36%  { filter: invert(0.5) hue-rotate(270deg) saturate(6); transform: translateX(-3px) translateY(2px) skewX(-1deg); }
+  40%  { filter: none;  transform: none; }
+  46%  { filter: brightness(2.5) hue-rotate(-90deg); transform: translateX(4px); }
+  50%  { filter: none;  transform: none; }
+  56%  { filter: invert(0.3) saturate(8); transform: translateX(-5px) translateY(1px); }
+  62%  { filter: none;  transform: none; }
+  68%  { filter: brightness(1.8) hue-rotate(45deg); transform: translateX(2px); }
+  74%  { filter: none;  transform: none; }
+  80%  { filter: hue-rotate(20deg); transform: none; }
+  86%  { filter: none;  transform: none; }
+  100% { filter: none;  transform: none; }
+}
+.terminal--glitch-4 .terminal__output {
+  animation: glitch-clip 0.18s steps(1) 12;
+  text-shadow: 4px 0 rgba(255, 0, 64, 1), -4px 0 rgba(0, 255, 255, 0.95),
+               0 3px rgba(255, 220, 0, 0.4), 0 -3px rgba(180, 0, 255, 0.35);
+}
+.terminal--glitch-4 .terminal__spectrum {
+  animation: spectrum-strobe 4s steps(1) forwards;
+  filter: brightness(3) saturate(2);
 }
 
 /* ── Hidden input ────────────────────────────────────────────────────── */
