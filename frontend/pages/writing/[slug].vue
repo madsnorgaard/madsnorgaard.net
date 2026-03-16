@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div v-if="post" class="container container--reading" style="padding-top: 4rem; padding-bottom: 4rem;">
+    <div class="container container--reading" style="padding-top: 4rem; padding-bottom: 4rem;">
       <!-- Back link -->
       <NuxtLink to="/writing" class="text-mono text-mono--sm" style="color: var(--color-muted); display: block; margin-bottom: 2rem;">
         ← All writing
@@ -35,22 +35,6 @@
       <!-- eslint-disable-next-line vue/no-v-html -->
       <article class="post-body" v-html="post.body" />
     </div>
-
-    <!-- 404 state -->
-    <div v-else class="container container--reading" style="padding-top: 4rem; padding-bottom: 4rem;">
-      <NuxtLink to="/writing" class="text-mono text-mono--sm" style="color: var(--color-muted); display: block; margin-bottom: 2rem;">
-        ← All writing
-      </NuxtLink>
-      <div class="post-404">
-        <p class="post-404__prompt">> GET /writing/{{ route.params.slug }} HTTP/1.1</p>
-        <p class="post-404__status">&lt; 404 Not Found</p>
-        <p class="post-404__message">"Post not found — it may have moved or been unpublished."</p>
-        <div class="post-404__actions">
-          <NuxtLink to="/writing">← All writing</NuxtLink>
-          <NuxtLink to="/">↑ Home</NuxtLink>
-        </div>
-      </div>
-    </div>
   </div>
 </template>
 
@@ -59,7 +43,11 @@ import type { DrupalBlogPost } from '~/types/drupal'
 
 const route = useRoute()
 
-const { data: post } = await useFetch<DrupalBlogPost>(`/api/drupal/blog/${route.params.slug}`)
+const { data: post, error } = await useFetch<DrupalBlogPost>(`/api/drupal/blog/${route.params.slug}`)
+
+if (error.value) {
+  throw createError({ statusCode: 404, statusMessage: 'Post not found' })
+}
 
 function formatDate(dateString: string) {
   if (!dateString) return ''
@@ -77,16 +65,14 @@ function readingTime(html: string): number {
 }
 
 useHead(() => ({
-  title: post.value ? `${post.value.title} | Mads Nørgaard` : 'Writing | Mads Nørgaard',
-  meta: post.value
-    ? [
-        { name: 'description', content: post.value.teaser },
-        { property: 'og:title', content: post.value.title },
-        { property: 'og:description', content: post.value.teaser },
-        { property: 'og:type', content: 'article' },
-        { property: 'article:published_time', content: post.value.date },
-      ]
-    : [],
+  title: `${post.value!.title} | Mads Nørgaard`,
+  meta: [
+    { name: 'description', content: post.value!.teaser },
+    { property: 'og:title', content: post.value!.title },
+    { property: 'og:description', content: post.value!.teaser },
+    { property: 'og:type', content: 'article' },
+    { property: 'article:published_time', content: post.value!.date },
+  ],
 }))
 </script>
 
