@@ -101,6 +101,7 @@ services:
        NODE_ENV: production
        DRUPAL_BASE_URL: http://madsnorgaard_drupal:80
        PHOTO_SITE_URL: https://photo.madsnorgaard.net
+       WP_BASE_URL: http://madsnorgaard_wordpress
      container_name: ${WORDPRESS_DOMAIN}_nuxt
      labels:
        - traefik.http.routers.madsnorgaard_nuxt.rule=Host(`${WORDPRESS_DOMAIN}`) || Host(`www.${WORDPRESS_DOMAIN}`)
@@ -109,6 +110,7 @@ services:
        - traefik.http.services.madsnorgaard_nuxt.loadbalancer.server.port=3000
      networks:
        - web
+       - internal
        - drupalmadsnorgaardnet_internal
 
 volumes:

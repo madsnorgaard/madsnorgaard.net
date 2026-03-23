@@ -1,7 +1,8 @@
 <template>
   <div v-if="photo" class="photo-collision">
     <img
-      :src="photo.thumbnail ?? ''"
+      v-if="photo.thumbnail"
+      :src="photo.thumbnail"
       :alt="photo.title"
       class="photo-collision__image"
       loading="lazy"

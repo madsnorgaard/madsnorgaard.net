@@ -11,20 +11,31 @@ export default defineEventHandler(async (event) => {
   if (!endpoint) return null
 
   const { base, total } = endpoint
-  const offset = Math.floor(Math.random() * total)
 
-  const photos = await $fetch<any[]>(
-    `${photoBase}/wp-json/wp/v2/${base}?per_page=1&offset=${offset}&_fields=id,title,slug,link,meta&_embed=wp:featuredmedia`,
-    { headers: { Accept: 'application/json' } }
-  ).catch(() => null)
+  // Try up to 5 random picks to find one with a thumbnail
+  let photo: any = null
+  let thumbnail: string | null = null
+  for (let attempt = 0; attempt < 5; attempt++) {
+    const offset = Math.floor(Math.random() * total)
+    const photos = await $fetch<any[]>(
+      `${photoBase}/wp-json/wp/v2/${base}?per_page=1&offset=${offset}&_embed=wp:featuredmedia`,
+      { headers: { Accept: 'application/json' } }
+    ).catch(() => null)
 
-  const photo = photos?.[0]
+    photo = photos?.[0]
+    if (!photo) continue
+
+    thumbnail =
+      photo._embedded?.['wp:featuredmedia']?.[0]?.media_details?.sizes?.large?.source_url ??
+      photo._embedded?.['wp:featuredmedia']?.[0]?.media_details?.sizes?.medium_large?.source_url ??
+      photo._embedded?.['wp:featuredmedia']?.[0]?.media_details?.sizes?.medium?.source_url ??
+      photo._embedded?.['wp:featuredmedia']?.[0]?.source_url ??
+      null
+
+    if (thumbnail) break
+  }
+
   if (!photo) return null
-
-  const thumbnail =
-    photo._embedded?.['wp:featuredmedia']?.[0]?.media_details?.sizes?.medium?.source_url ??
-    photo._embedded?.['wp:featuredmedia']?.[0]?.source_url ??
-    null
 
   const archiveNumber = photo.meta?.archive_number ?? null
 
