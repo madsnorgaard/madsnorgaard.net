@@ -8,7 +8,7 @@
       <p class="hero__role">
         <RoleRotation />
       </p>
-      <p v-if="about" class="hero__intro">{{ about.intro }}</p>
+      <p class="hero__intro">{{ about?.intro ?? 'Self-taught senior developer and DevOps engineer. 15 years building on Drupal, PHP, Docker, and Linux. Currently at Eksponent as technical lead. Also technical lead for South African History Online since 2010. Documentary photographer.' }}</p>
     </section>
 
     <!-- ─── Status block ─────────────────────────────────────────────── -->
@@ -47,7 +47,7 @@
     </section>
 
     <!-- ─── One picture story ────────────────────────────────────────── -->
-    <div v-if="story" style="margin: 3rem 0;">
+    <div v-if="story" class="container" style="margin: 3rem auto;">
       <OnePictureStory :story="story" />
     </div>
 
