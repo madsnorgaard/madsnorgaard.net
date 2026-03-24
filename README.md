@@ -1,71 +1,46 @@
 # madsnorgaard.net
 
-Personal site and photography portfolio for Mads Nørgaard. Currently running WordPress on Docker with Traefik, with an active migration to Drupal underway.
+Personal site. Developer + photographer. The site is the project.
 
-Also serves `photo.madsnorgaard.net` from the same container.
+Drupal 11 as the content API. WordPress as the photo and story backend. Nuxt 3 as the frontend that ties it together. Self-hosted on a Contabo VPS, deployed via GitHub Actions on every push.
 
 ## Stack
 
-- **WordPress** 6.9.1 on PHP 8.4 (Docker)
-- **MySQL** 8.4
-- **phpMyAdmin** for database management
-- **Traefik v2** for SSL termination and routing
-- **Let's Encrypt** for automatic HTTPS
+- **Nuxt 3** — SSR frontend, IBM Plex Mono, dark terminal aesthetic
+- **Drupal 11** — headless CMS via JSON:API (writing, projects, CV, about)
+- **WordPress** — headless photo backend for photo.madsnorgaard.net
+- **MySQL 8.4**
+- **Docker + Traefik v2** — routing, SSL, Let's Encrypt
+- **GitHub Actions** — CI/CD, builds Nuxt image and deploys to VPS2
 
 ## Setup
 
-### 1. Prerequisites
-
-- Docker and Docker Compose installed
-- Traefik running with the `web` network: `docker network create web`
-- Domain pointing to your server
-
-### 2. Configure environment
-
 ```bash
 cp .env.example .env
-```
-
-Edit `.env` with your values:
-
-```env
-WORDPRESS_DOMAIN=yourdomain.com
-MYSQL_ROOT_PASSWORD=secure_root_password
-MYSQL_USER=wordpress
-MYSQL_PASSWORD=secure_password
-MYSQL_DATABASE=wordpress
-```
-
-### 3. Start
-
-```bash
 docker compose up -d
 ```
 
-WordPress will be available at `https://yourdomain.com` and `https://www.yourdomain.com`.
-phpMyAdmin at `https://phpmyadmin.yourdomain.com`.
-
 ## WP-CLI
 
-A `cli` service is included for scripted management. It does not auto-start:
+```bash
+docker compose run --rm cli wp plugin update --all
+docker compose run --rm cli wp cache flush
+```
+
+## Nuxt frontend
 
 ```bash
-# Run any WP-CLI command on production
-docker compose run --rm cli wp core version
-docker compose run --rm cli wp plugin update --all
-docker compose run --rm cli wp theme update --all
-docker compose run --rm cli wp cache flush
-
-# Local (DDEV)
-ddev wp plugin update --all
+cd frontend
+npm install
+npm run dev
 ```
+
+Requires `NUXT_GITHUB_TOKEN` in `.env` for GitHub status API.
+
+## Deploy
+
+Push to `main`. GitHub Actions builds the Nuxt image on VPS2 and restarts the stack. No manual steps.
 
 ## wp-content
 
-The `wp-content/` directory (themes, plugins, uploads) is gitignored. Manage via the WordPress admin or deploy separately.
-
-## Roadmap
-
-Active migration to **Drupal** - this site will become a Drupal-based CV and photography portfolio. The Docker and Traefik infrastructure carries over unchanged; only the application layer changes.
-
-Target architecture: [drupal.madsnorgaard.net](https://github.com/madsnorgaard/drupal.madsnorgaard.net)
+Themes and plugins are tracked. Uploads, cache, and generated files are not.
