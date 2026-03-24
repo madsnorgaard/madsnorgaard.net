@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!-- Terminal-style favicon: dark bg, MN in site red, cursor underline -->
+  <rect width="32" height="32" fill="#0A0908"/>
+  <text
+    x="16" y="21"
+    text-anchor="middle"
+    font-family="'Courier New',Courier,monospace"
+    font-size="15"
+    font-weight="700"
+    letter-spacing="1"
+    fill="#C41E3A">MN</text>
+  <!-- Cursor underline -->
+  <rect x="9" y="24" width="14" height="2" fill="#C41E3A" opacity="0.55"/>
+</svg>
