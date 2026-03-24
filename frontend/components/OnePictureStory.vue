@@ -75,8 +75,7 @@ function formatDate(dateString: string) {
 .ops__frame {
   position: relative;
   display: block;
-  width: fit-content;
-  max-width: 100%;
+  width: 100%;
   padding: 0;
   border: none;
   background: none;
@@ -86,10 +85,8 @@ function formatDate(dateString: string) {
 
 .ops__image {
   display: block;
-  /* Full image visible — no cropping */
-  max-width: 100vw;
-  max-height: 75vh;
-  width: auto;
+  /* Full frame — no cropping, no height cap. Width-constrained by container. */
+  width: 100%;
   height: auto;
   transition: filter 400ms ease;
 }

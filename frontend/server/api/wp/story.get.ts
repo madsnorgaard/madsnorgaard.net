@@ -41,14 +41,14 @@ export default defineEventHandler(async (event) => {
     if (!media) continue
 
     const image = {
+      // Use full original — documentary photography must not be cropped by WP thumbnails
       src:
+        media.source_url ??
         media.media_details?.sizes?.large?.source_url ??
-        media.media_details?.sizes?.medium_large?.source_url ??
-        media.media_details?.sizes?.medium?.source_url ??
-        media.source_url,
+        media.media_details?.sizes?.medium_large?.source_url,
       alt: media.alt_text || post.title?.rendered || '',
-      width: media.media_details?.sizes?.large?.width ?? media.media_details?.width ?? null,
-      height: media.media_details?.sizes?.large?.height ?? media.media_details?.height ?? null,
+      width: media.media_details?.width ?? null,
+      height: media.media_details?.height ?? null,
     }
 
     if (!image.src) continue
