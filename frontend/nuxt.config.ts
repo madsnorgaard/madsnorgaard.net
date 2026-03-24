@@ -6,20 +6,7 @@ export default defineNuxtConfig({
   modules: [
     '@nuxt/image',
     '@vueuse/nuxt',
-    'nuxt-og-image',
   ],
-
-  ogImage: {
-    siteUrl: 'https://madsnorgaard.net',
-    fonts: [
-      'IBM+Plex+Mono:400',
-      'IBM+Plex+Mono:700',
-    ],
-  },
-
-  site: {
-    url: 'https://madsnorgaard.net',
-  },
 
   runtimeConfig: {
     // Private: server only

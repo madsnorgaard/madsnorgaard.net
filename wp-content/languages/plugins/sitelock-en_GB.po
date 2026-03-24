@@ -1,0 +1,73 @@
+# Translation of Plugins - SiteLock Security - Stable (latest release) in English (UK)
+# This file is distributed under the same license as the Plugins - SiteLock Security - Stable (latest release) package.
+msgid ""
+msgstr ""
+"PO-Revision-Date: 2019-05-13 18:06:02+0000\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"X-Generator: GlotPress/2.4.0-alpha\n"
+"Language: en_GB\n"
+"Project-Id-Version: Plugins - SiteLock Security - Stable (latest release)\n"
+
+#: admin/class-sitelock-admin.php:608
+msgid "Source Code Scan"
+msgstr "Source Code Scan"
+
+#: admin/class-sitelock-admin.php:570
+msgid "Scan Summary"
+msgstr "Scan Summary"
+
+#: admin/class-sitelock-admin.php:425
+msgid "Pages scanned."
+msgid_plural "%s pages scanned."
+msgstr[0] "Pages scanned."
+msgstr[1] "%s pages scanned."
+
+#: admin/class-sitelock-admin.php:210
+msgid "Export"
+msgstr "Export"
+
+#: admin/class-sitelock-admin.php:207
+msgid "Find malware in code"
+msgstr "Find malware in code"
+
+#: admin/class-sitelock-admin.php:205
+msgid "Clean malware in code"
+msgstr "Clean malware in code"
+
+#: admin/class-sitelock-admin.php:202
+msgid "Scan with SiteLock - Find"
+msgstr "Scan with SiteLock - Find"
+
+#. Author URI of the plugin/theme
+msgid "http://www.sitelock.com"
+msgstr "http://www.sitelock.com"
+
+#. Description of the plugin/theme
+msgid "Offers deep scan and site compliance"
+msgstr "Offers deep scan and site compliance"
+
+#. Plugin URI of the plugin/theme
+msgid "http://www.sitelock.com/wordpress"
+msgstr "http://www.sitelock.com/wordpress"
+
+#. #-#-#-#-#  tmp-sitelock.pot (SiteLock 4.0.5)  #-#-#-#-#
+#. Plugin Name of the plugin/theme
+#. #-#-#-#-#  tmp-sitelock.pot (SiteLock 4.0.5)  #-#-#-#-#
+#. Author of the plugin/theme
+msgid "SiteLock"
+msgstr "SiteLock"
+
+#: admin/class-sitelock-admin.php:687
+msgid "SiteLock Security Status"
+msgstr "SiteLock Security Status"
+
+#: admin/class-sitelock-admin.php:595
+msgid "TrueShield Configuration"
+msgstr "TrueShield Configuration"
+
+#: admin/class-sitelock-admin.php:581
+msgid "Badge Settings"
+msgstr "Badge Settings"

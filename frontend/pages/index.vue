@@ -106,12 +106,19 @@ function formatDate(dateString: string) {
   })
 }
 
+const ogAvailability = status.value?.availability ?? 'available'
+const ogNote = status.value?.availabilityNote ?? ''
+const ogImageUrl = `https://madsnorgaard.net/og-image.png?availability=${ogAvailability}${ogNote ? `&note=${encodeURIComponent(ogNote)}` : ''}`
+
 useHead({
   title: 'Mads Nørgaard: Developer + DevOps',
-})
-
-defineOgImageComponent('Terminal', {
-  availability: status.value?.availability ?? 'available',
-  availabilityNote: status.value?.availabilityNote,
+  meta: [
+    { property: 'og:image',        content: ogImageUrl },
+    { property: 'og:image:type',   content: 'image/png' },
+    { property: 'og:image:width',  content: '1200' },
+    { property: 'og:image:height', content: '630' },
+    { name:     'twitter:card',    content: 'summary_large_image' },
+    { name:     'twitter:image',   content: ogImageUrl },
+  ],
 })
 </script>

@@ -1,0 +1,93 @@
+[12-Jun-2018 06:34:13 UTC] retrieving redirect rules
+[12-Jun-2018 06:34:13 UTC] retrieving redirect rules
+[12-Jun-2018 06:34:24 UTC] PHP Notice:  Undefined index: portfolio_demo_layout in /customers/9/9/7/madsnorgaard.net/httpd.www/wp-content/themes/mauer-stills/functions.php on line 523
+[12-Jun-2018 06:34:38 UTC] https://wpapi.one.com/api/v1.0/stats/plugins/onecom-themes-plugins/activate
+[12-Jun-2018 06:35:30 UTC] https://wpapi.one.com/api/v1.0/stats/plugins/onecom-themes-plugins/deactivate
+[12-Jun-2018 06:35:42 UTC] PHP Notice:  Undefined index: portfolio_demo_layout in /customers/9/9/7/madsnorgaard.net/httpd.www/wp-content/themes/mauer-stills/functions.php on line 523
+[12-Jun-2018 06:36:03 UTC] https://wpapi.one.com/api/v1.0/stats/plugins/onecom-themes-plugins/activate
+[12-Jun-2018 06:36:06 UTC] ** Detecting configuration **
+[12-Jun-2018 06:36:06 UTC] plugin version: 3.0.1
+[12-Jun-2018 06:36:06 UTC] Already on SSL, start detecting configuration
+[12-Jun-2018 06:36:06 UTC] Opening testpage to check server configuration: https://www.madsnorgaard.net/wp-content/plugins/really-simple-ssl/ssl-test-page.php
+[12-Jun-2018 06:36:06 UTC] test page url, enter in browser to check manually: https://www.madsnorgaard.net/wp-content/plugins/really-simple-ssl/ssl-test-page.php
+[12-Jun-2018 06:36:06 UTC] SSL test page loaded successfully
+[12-Jun-2018 06:36:06 UTC] SSL type: LOADBALANCER
+[12-Jun-2018 06:36:18 UTC] ** Detecting configuration **
+[12-Jun-2018 06:36:18 UTC] plugin version: 3.0.1
+[12-Jun-2018 06:36:18 UTC] Already on SSL, start detecting configuration
+[12-Jun-2018 06:36:18 UTC] Opening testpage to check server configuration: https://www.madsnorgaard.net/wp-content/plugins/really-simple-ssl/ssl-test-page.php
+[12-Jun-2018 06:36:18 UTC] test page url, enter in browser to check manually: https://www.madsnorgaard.net/wp-content/plugins/really-simple-ssl/ssl-test-page.php
+[12-Jun-2018 06:36:18 UTC] SSL test page loaded successfully
+[12-Jun-2018 06:36:18 UTC] SSL type: LOADBALANCER
+[12-Jun-2018 06:36:21 UTC] converting siteurl and homeurl to https
+[12-Jun-2018 06:36:21 UTC] ** Detecting configuration **
+[12-Jun-2018 06:36:21 UTC] plugin version: 3.0.1
+[12-Jun-2018 06:36:21 UTC] Already on SSL, start detecting configuration
+[12-Jun-2018 06:36:21 UTC] Opening testpage to check server configuration: https://www.madsnorgaard.net/wp-content/plugins/really-simple-ssl/ssl-test-page.php
+[12-Jun-2018 06:36:22 UTC] test page url, enter in browser to check manually: https://www.madsnorgaard.net/wp-content/plugins/really-simple-ssl/ssl-test-page.php
+[12-Jun-2018 06:36:22 UTC] SSL test page loaded successfully
+[12-Jun-2018 06:36:22 UTC] SSL type: LOADBALANCER
+[12-Jun-2018 06:36:22 UTC] converting siteurl and homeurl to https
+[12-Jun-2018 06:36:22 UTC] ** Configuring SSL **
+[12-Jun-2018 06:36:22 UTC] testing htaccess rules...
+[12-Jun-2018 06:36:22 UTC] test page url, enter in browser to check manually: https://www.madsnorgaard.net/wp-content/plugins/really-simple-ssl/testssl/loadbalancer/ssl-test-page.html
+[12-Jun-2018 06:36:22 UTC] htaccess rules tested successfully.
+[12-Jun-2018 06:36:22 UTC] checking if .htaccess can or should be edited...
+[12-Jun-2018 06:36:22 UTC] .htaccess does not contain default Really Simple SSL redirect
+[12-Jun-2018 06:36:22 UTC] retrieving redirect rules
+[12-Jun-2018 06:36:22 UTC] converting siteurl and homeurl to https
+[12-Jun-2018 06:36:22 UTC] converting siteurl and homeurl to https
+[12-Jun-2018 06:40:36 UTC] PHP Warning:  set_time_limit(): Cannot set max execution time limit due to system policy in /customers/9/9/7/madsnorgaard.net/httpd.www/wp-content/plugins/jetpack/class.jetpack.php on line 5191
+[12-Jun-2018 06:40:39 UTC] PHP Warning:  Cannot modify header information - headers already sent by (output started at /customers/9/9/7/madsnorgaard.net/httpd.www/wp-content/plugins/jetpack/class.jetpack.php:5191) in /customers/9/9/7/madsnorgaard.net/httpd.www/wp-includes/pluggable.php on line 1216
+[12-Jun-2018 06:40:53 UTC] PHP Warning:  set_time_limit(): Cannot set max execution time limit due to system policy in /customers/9/9/7/madsnorgaard.net/httpd.www/wp-content/plugins/jetpack/class.jetpack.php on line 5191
+[12-Jun-2018 06:40:55 UTC] PHP Warning:  Cannot modify header information - headers already sent by (output started at /customers/9/9/7/madsnorgaard.net/httpd.www/wp-content/plugins/jetpack/class.jetpack.php:5191) in /customers/9/9/7/madsnorgaard.net/httpd.www/wp-includes/pluggable.php on line 1216
+[12-Jun-2018 07:18:46 UTC] PHP Warning:  set_time_limit(): Cannot set max execution time limit due to system policy in /customers/9/9/7/madsnorgaard.net/httpd.www/wp-content/plugins/jetpack/class.jetpack.php on line 5191
+[12-Jun-2018 07:18:48 UTC] PHP Warning:  Cannot modify header information - headers already sent by (output started at /customers/9/9/7/madsnorgaard.net/httpd.www/wp-content/plugins/jetpack/class.jetpack.php:5191) in /customers/9/9/7/madsnorgaard.net/httpd.www/wp-includes/pluggable.php on line 1216
+[12-Jun-2018 07:19:45 UTC] PHP Warning:  set_time_limit(): Cannot set max execution time limit due to system policy in /customers/9/9/7/madsnorgaard.net/httpd.www/wp-content/plugins/jetpack/class.jetpack.php on line 5191
+[12-Jun-2018 07:19:47 UTC] PHP Warning:  Cannot modify header information - headers already sent by (output started at /customers/9/9/7/madsnorgaard.net/httpd.www/wp-content/plugins/jetpack/class.jetpack.php:5191) in /customers/9/9/7/madsnorgaard.net/httpd.www/wp-includes/pluggable.php on line 1216
+[12-Jun-2018 07:29:45 UTC] retrieving redirect rules
+[12-Jun-2018 08:39:48 UTC] PHP Notice:  Trying to get property of non-object in /customers/9/9/7/madsnorgaard.net/httpd.www/wp-content/themes/mauer-stills/functions.php on line 369
+[12-Jun-2018 08:49:10 UTC] PHP Notice:  Trying to get property of non-object in /customers/9/9/7/madsnorgaard.net/httpd.www/wp-content/themes/mauer-stills/functions.php on line 369
+[12-Jun-2018 08:50:00 UTC] PHP Notice:  Trying to get property of non-object in /customers/9/9/7/madsnorgaard.net/httpd.www/wp-content/themes/mauer-stills/functions.php on line 369
+[12-Jun-2018 08:52:18 UTC] PHP Notice:  Trying to get property of non-object in /customers/9/9/7/madsnorgaard.net/httpd.www/wp-content/themes/mauer-stills/functions.php on line 369
+[12-Jun-2018 08:52:41 UTC] PHP Notice:  Trying to get property of non-object in /customers/9/9/7/madsnorgaard.net/httpd.www/wp-content/themes/mauer-stills/functions.php on line 369
+[12-Jun-2018 08:53:15 UTC] PHP Notice:  Trying to get property of non-object in /customers/9/9/7/madsnorgaard.net/httpd.www/wp-content/themes/mauer-stills/functions.php on line 369
+[12-Jun-2018 08:59:39 UTC] PHP Notice:  Trying to get property of non-object in /customers/9/9/7/madsnorgaard.net/httpd.www/wp-content/themes/mauer-stills/functions.php on line 369
+[12-Jun-2018 09:00:18 UTC] PHP Notice:  Trying to get property of non-object in /customers/9/9/7/madsnorgaard.net/httpd.www/wp-content/themes/mauer-stills/functions.php on line 369
+[12-Jun-2018 09:00:29 UTC] PHP Notice:  Trying to get property of non-object in /customers/9/9/7/madsnorgaard.net/httpd.www/wp-content/themes/mauer-stills/functions.php on line 369
+[12-Jun-2018 09:01:06 UTC] PHP Notice:  Trying to get property of non-object in /customers/9/9/7/madsnorgaard.net/httpd.www/wp-content/themes/mauer-stills/functions.php on line 369
+[12-Jun-2018 09:01:15 UTC] PHP Notice:  Trying to get property of non-object in /customers/9/9/7/madsnorgaard.net/httpd.www/wp-content/themes/mauer-stills/functions.php on line 369
+[12-Jun-2018 09:02:09 UTC] PHP Notice:  Trying to get property of non-object in /customers/9/9/7/madsnorgaard.net/httpd.www/wp-content/themes/mauer-stills/functions.php on line 369
+[12-Jun-2018 09:02:36 UTC] PHP Notice:  Trying to get property of non-object in /customers/9/9/7/madsnorgaard.net/httpd.www/wp-content/themes/mauer-stills/functions.php on line 369
+[12-Jun-2018 09:03:26 UTC] PHP Notice:  Trying to get property of non-object in /customers/9/9/7/madsnorgaard.net/httpd.www/wp-content/themes/mauer-stills/functions.php on line 369
+[12-Jun-2018 09:27:25 UTC] PHP Notice:  Trying to get property of non-object in /customers/9/9/7/madsnorgaard.net/httpd.www/wp-content/themes/mauer-stills/functions.php on line 369
+[12-Jun-2018 09:27:47 UTC] PHP Notice:  Trying to get property of non-object in /customers/9/9/7/madsnorgaard.net/httpd.www/wp-content/themes/mauer-stills/functions.php on line 369
+[12-Jun-2018 09:28:10 UTC] PHP Notice:  Trying to get property of non-object in /customers/9/9/7/madsnorgaard.net/httpd.www/wp-content/themes/mauer-stills/functions.php on line 369
+[12-Jun-2018 09:29:12 UTC] PHP Notice:  Trying to get property of non-object in /customers/9/9/7/madsnorgaard.net/httpd.www/wp-content/themes/mauer-stills/functions.php on line 369
+[12-Jun-2018 09:53:04 UTC] PHP Notice:  Trying to get property of non-object in /customers/9/9/7/madsnorgaard.net/httpd.www/wp-content/themes/mauer-stills/functions.php on line 369
+[12-Jun-2018 09:53:21 UTC] PHP Notice:  Trying to get property of non-object in /customers/9/9/7/madsnorgaard.net/httpd.www/wp-content/themes/mauer-stills/functions.php on line 369
+[12-Jun-2018 09:53:57 UTC] PHP Notice:  Trying to get property of non-object in /customers/9/9/7/madsnorgaard.net/httpd.www/wp-content/themes/mauer-stills/functions.php on line 369
+[12-Jun-2018 09:53:58 UTC] PHP Notice:  Trying to get property of non-object in /customers/9/9/7/madsnorgaard.net/httpd.www/wp-content/themes/mauer-stills/functions.php on line 369
+[12-Jun-2018 09:53:59 UTC] PHP Notice:  Trying to get property of non-object in /customers/9/9/7/madsnorgaard.net/httpd.www/wp-content/themes/mauer-stills/functions.php on line 369
+[12-Jun-2018 09:54:01 UTC] PHP Notice:  Trying to get property of non-object in /customers/9/9/7/madsnorgaard.net/httpd.www/wp-content/themes/mauer-stills/functions.php on line 369
+[12-Jun-2018 09:54:10 UTC] PHP Notice:  Trying to get property of non-object in /customers/9/9/7/madsnorgaard.net/httpd.www/wp-content/themes/mauer-stills/functions.php on line 369
+[12-Jun-2018 09:54:10 UTC] PHP Notice:  Trying to get property of non-object in /customers/9/9/7/madsnorgaard.net/httpd.www/wp-content/themes/mauer-stills/functions.php on line 369
+[12-Jun-2018 09:54:11 UTC] PHP Notice:  Trying to get property of non-object in /customers/9/9/7/madsnorgaard.net/httpd.www/wp-content/themes/mauer-stills/functions.php on line 369
+[12-Jun-2018 09:54:14 UTC] PHP Notice:  Trying to get property of non-object in /customers/9/9/7/madsnorgaard.net/httpd.www/wp-content/themes/mauer-stills/functions.php on line 369
+[12-Jun-2018 09:54:15 UTC] PHP Notice:  Trying to get property of non-object in /customers/9/9/7/madsnorgaard.net/httpd.www/wp-content/themes/mauer-stills/functions.php on line 369
+[12-Jun-2018 09:54:23 UTC] PHP Notice:  Trying to get property of non-object in /customers/9/9/7/madsnorgaard.net/httpd.www/wp-content/themes/mauer-stills/functions.php on line 369
+[12-Jun-2018 09:54:27 UTC] PHP Notice:  Trying to get property of non-object in /customers/9/9/7/madsnorgaard.net/httpd.www/wp-content/themes/mauer-stills/functions.php on line 369
+[12-Jun-2018 09:54:27 UTC] PHP Notice:  Trying to get property of non-object in /customers/9/9/7/madsnorgaard.net/httpd.www/wp-content/themes/mauer-stills/functions.php on line 369
+[12-Jun-2018 09:55:28 UTC] PHP Notice:  Trying to get property of non-object in /customers/9/9/7/madsnorgaard.net/httpd.www/wp-content/themes/mauer-stills/functions.php on line 369
+[12-Jun-2018 09:55:29 UTC] PHP Notice:  Trying to get property of non-object in /customers/9/9/7/madsnorgaard.net/httpd.www/wp-content/themes/mauer-stills/functions.php on line 369
+[12-Jun-2018 09:55:35 UTC] PHP Notice:  Trying to get property of non-object in /customers/9/9/7/madsnorgaard.net/httpd.www/wp-content/themes/mauer-stills/functions.php on line 369
+[12-Jun-2018 09:55:39 UTC] PHP Notice:  Trying to get property of non-object in /customers/9/9/7/madsnorgaard.net/httpd.www/wp-content/themes/mauer-stills/functions.php on line 369
+[12-Jun-2018 09:55:40 UTC] PHP Notice:  Trying to get property of non-object in /customers/9/9/7/madsnorgaard.net/httpd.www/wp-content/themes/mauer-stills/functions.php on line 369
+[12-Jun-2018 09:55:44 UTC] PHP Notice:  Trying to get property of non-object in /customers/9/9/7/madsnorgaard.net/httpd.www/wp-content/themes/mauer-stills/functions.php on line 369
+[12-Jun-2018 09:55:48 UTC] PHP Notice:  Trying to get property of non-object in /customers/9/9/7/madsnorgaard.net/httpd.www/wp-content/themes/mauer-stills/functions.php on line 369
+[12-Jun-2018 09:55:51 UTC] PHP Notice:  Trying to get property of non-object in /customers/9/9/7/madsnorgaard.net/httpd.www/wp-content/themes/mauer-stills/functions.php on line 369
+[12-Jun-2018 11:20:18 UTC] PHP Notice:  get_userdatabylogin is <strong>deprecated</strong> since version 3.3.0! Use get_user_by('login') instead. in /customers/9/9/7/madsnorgaard.net/httpd.www/wp-includes/functions.php on line 3840
+[12-Jun-2018 11:32:41 UTC] PHP Notice:  Undefined property: WP_Error::$version in /customers/9/9/7/madsnorgaard.net/httpd.www/wp-admin/includes/plugin-install.php on line 426
+[12-Jun-2018 11:32:41 UTC] PHP Notice:  Undefined property: WP_Error::$version in /customers/9/9/7/madsnorgaard.net/httpd.www/wp-admin/includes/plugin-install.php on line 428
+[12-Jun-2018 11:33:14 UTC] PHP Notice:  Undefined property: WP_Error::$version in /customers/9/9/7/madsnorgaard.net/httpd.www/wp-admin/includes/plugin-install.php on line 426
+[12-Jun-2018 11:33:14 UTC] PHP Notice:  Undefined property: WP_Error::$version in /customers/9/9/7/madsnorgaard.net/httpd.www/wp-admin/includes/plugin-install.php on line 428
