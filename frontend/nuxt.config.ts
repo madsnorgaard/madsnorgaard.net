@@ -43,7 +43,7 @@ export default defineNuxtConfig({
         },
         {
           rel: 'stylesheet',
-          href: 'https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,700i&family=IBM+Plex+Mono:wght@400;500&display=swap',
+          href: 'https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,700&family=IBM+Plex+Mono:wght@400;500&display=swap',
         },
       ],
       // HTML easter egg, visible in View Source
