@@ -27,6 +27,24 @@ function timeAgo(date: Date): string {
   return `${months} month${months > 1 ? 's' : ''} ago`
 }
 
+// Schedule-based default location (Europe/Copenhagen timezone)
+function getScheduleLocation(): string {
+  const parts = new Intl.DateTimeFormat('en-GB', {
+    timeZone: 'Europe/Copenhagen',
+    weekday: 'long',
+    hour: 'numeric',
+    hour12: false,
+  }).formatToParts(new Date())
+  const weekday = parts.find(p => p.type === 'weekday')?.value ?? ''
+  const hour = parseInt(parts.find(p => p.type === 'hour')?.value ?? '0')
+
+  if (weekday === 'Monday') return 'Eksponent HQ, Copenhagen'
+  if (['Tuesday', 'Wednesday', 'Thursday', 'Friday'].includes(weekday) && hour >= 15) {
+    return 'Eksponent (WFH)'
+  }
+  return 'Skanderborg, Denmark'
+}
+
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig(event)
 
@@ -87,7 +105,7 @@ export default defineEventHandler(async (event) => {
   // Availability — GitHub profile status is source of truth; Drupal is fallback
   let availability: StatusBlock['availability'] = 'available'
   let availabilityNote: string | undefined
-  let location = 'Skanderborg, Denmark'
+  let location = getScheduleLocation()
   let employer = 'Eksponent'
 
   // Drupal provides location + employer (availability overridden below)

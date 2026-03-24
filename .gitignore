@@ -31,3 +31,9 @@ wp-content/updraft/
 wp-content/oci/
 wp-content/disabled_plugins/
 wp-content/upgrade-temp-backup/
+wp-content/advanced-cache.php
+wp-content/autoptimize_404_handler.php
+wp-content/changelog.txt
+wp-content/debug.log
+wp-content/languages/
+wp-content/**/.DS_Store
