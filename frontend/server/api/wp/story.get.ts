@@ -53,6 +53,11 @@ export default defineEventHandler(async (event) => {
 
     if (!image.src) continue
 
+    // WP returns absolute URLs pointing to its own domain (madsnorgaard.net).
+    // That domain serves Nuxt (not WP), so strip the origin — the browser
+    // hits the Nuxt proxy at /wp-content/uploads/… instead.
+    image.src = image.src.replace(/^https?:\/\/[^/]+(?=\/wp-content\/)/, '')
+
     return {
       id: post.id,
       title: decodeEntities(post.title?.rendered ?? ''),
