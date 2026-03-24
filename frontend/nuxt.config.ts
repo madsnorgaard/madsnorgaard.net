@@ -6,7 +6,15 @@ export default defineNuxtConfig({
   modules: [
     '@nuxt/image',
     '@vueuse/nuxt',
+    'nuxt-og-image',
   ],
+
+  ogImage: {
+    fonts: [
+      'IBM+Plex+Mono:400',
+      'IBM+Plex+Mono:700',
+    ],
+  },
 
   runtimeConfig: {
     // Private: server only

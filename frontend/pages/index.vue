@@ -109,4 +109,12 @@ function formatDate(dateString: string) {
 useHead({
   title: 'Mads Nørgaard: Developer + DevOps',
 })
+
+defineOgImage({
+  component: 'Terminal',
+  props: {
+    availability: status.value?.availability ?? 'available',
+    availabilityNote: status.value?.availabilityNote,
+  },
+})
 </script>
