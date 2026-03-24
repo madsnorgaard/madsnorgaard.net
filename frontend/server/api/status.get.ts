@@ -3,6 +3,30 @@
 
 import type { StatusBlock } from '~/types/status'
 
+async function fetchLatestPhoto(photoBase: string): Promise<any> {
+  for (const cpt of ['photos', 'posts']) {
+    const data = await $fetch<any[]>(
+      `${photoBase}/wp-json/wp/v2/${cpt}?per_page=1&orderby=date&order=desc&_fields=id,title,slug,link,meta`,
+      { headers: { Accept: 'application/json' } }
+    ).catch(() => null)
+    if (Array.isArray(data) && data.length) return data[0]
+  }
+  return null
+}
+
+function timeAgo(date: Date): string {
+  const seconds = Math.floor((Date.now() - date.getTime()) / 1000)
+  if (seconds < 60) return 'just now'
+  const minutes = Math.floor(seconds / 60)
+  if (minutes < 60) return `${minutes} minute${minutes > 1 ? 's' : ''} ago`
+  const hours = Math.floor(minutes / 60)
+  if (hours < 24) return `${hours} hour${hours > 1 ? 's' : ''} ago`
+  const days = Math.floor(hours / 24)
+  if (days < 30) return `${days} day${days > 1 ? 's' : ''} ago`
+  const months = Math.floor(days / 30)
+  return `${months} month${months > 1 ? 's' : ''} ago`
+}
+
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig(event)
 
@@ -15,7 +39,7 @@ export default defineEventHandler(async (event) => {
   }
 
   // Run all fetches in parallel
-  const [eventsRaw, reposRaw, aboutRaw, photoRaw] = await Promise.allSettled([
+  const [eventsRaw, reposRaw, aboutRaw, photoRaw, ghStatusRaw] = await Promise.allSettled([
     $fetch<any[]>('https://api.github.com/users/madsnorgaard/events/public?per_page=30', {
       headers: githubHeaders,
     }),
@@ -25,9 +49,14 @@ export default defineEventHandler(async (event) => {
     $fetch<any>(`${config.drupalBaseUrl}/jsonapi/node/about?filter[status]=1&page[limit]=1`, {
       headers: { Accept: 'application/vnd.api+json' },
     }),
-    $fetch<any>(`${config.photoSiteUrl}/wp-json/wp/v2/photos?per_page=1&orderby=date&order=desc&_fields=id,title,slug,link,meta`, {
-      headers: { Accept: 'application/json' },
-    }).catch(() => null),
+    fetchLatestPhoto(config.photoSiteUrl),
+    $fetch<any>('https://api.github.com/graphql', {
+      method: 'POST',
+      headers: githubHeaders,
+      body: JSON.stringify({
+        query: `{ user(login:"madsnorgaard") { isHireable status { message indicatesLimitedAvailability } } }`,
+      }),
+    }),
   ])
 
   // Last commit
@@ -55,18 +84,39 @@ export default defineEventHandler(async (event) => {
     activeLanguages = [...new Set(langs)].slice(0, 3)
   }
 
-  // Availability from Drupal about node
+  // Availability — GitHub profile status is source of truth; Drupal is fallback
   let availability: StatusBlock['availability'] = 'available'
   let availabilityNote: string | undefined
   let location = 'Skanderborg, Denmark'
   let employer = 'Eksponent'
+
+  // Drupal provides location + employer (availability overridden below)
   if (aboutRaw.status === 'fulfilled') {
     const node = aboutRaw.value?.data?.[0]
     if (node) {
-      availability = node.attributes?.field_availability ?? 'available'
-      availabilityNote = node.attributes?.field_availability_note ?? undefined
       location = node.attributes?.field_location ?? location
       employer = node.attributes?.field_employer ?? employer
+      // Use Drupal availability only as last resort
+      availability = node.attributes?.field_availability ?? availability
+      availabilityNote = node.attributes?.field_availability_note ?? undefined
+    }
+  }
+
+  // GitHub status overrides: set your profile status to mark busy/holiday/unavailable
+  if (ghStatusRaw.status === 'fulfilled') {
+    const ghUser = ghStatusRaw.value?.data?.user
+    if (ghUser) {
+      const status = ghUser.status
+      if (status?.indicatesLimitedAvailability) {
+        availability = 'busy'
+        availabilityNote = status.message ?? undefined
+      } else if (ghUser.isHireable === true) {
+        availability = 'available'
+        availabilityNote = undefined
+      } else if (ghUser.isHireable === false) {
+        availability = 'not-available'
+        availabilityNote = undefined
+      }
     }
   }
 
@@ -95,16 +145,3 @@ export default defineEventHandler(async (event) => {
     employer,
   } satisfies StatusBlock
 })
-
-function timeAgo(date: Date): string {
-  const seconds = Math.floor((Date.now() - date.getTime()) / 1000)
-  if (seconds < 60) return 'just now'
-  const minutes = Math.floor(seconds / 60)
-  if (minutes < 60) return `${minutes} minute${minutes > 1 ? 's' : ''} ago`
-  const hours = Math.floor(minutes / 60)
-  if (hours < 24) return `${hours} hour${hours > 1 ? 's' : ''} ago`
-  const days = Math.floor(hours / 24)
-  if (days < 30) return `${days} day${days > 1 ? 's' : ''} ago`
-  const months = Math.floor(days / 30)
-  return `${months} month${months > 1 ? 's' : ''} ago`
-}
