@@ -47,8 +47,8 @@ services:
        - madsnorgaard_db
 
    # WordPress stays running but no longer handles traffic for madsnorgaard.net
-   # Traefik labels removed — Nuxt takes over the domain
-   # WP is accessible internally for data migration / reference
+   # Only /wp-content/uploads/* is routed to WP via Traefik (for media serving)
+   # All other traffic goes to Nuxt
    madsnorgaard_wordpress:
      depends_on:
        - madsnorgaard_db
@@ -65,9 +65,14 @@ services:
        - ./wp-content:/var/www/html/wp-content
      container_name: ${WORDPRESS_DOMAIN}_wordpress
      labels:
-       - traefik.enable=false
+       - traefik.enable=true
+       - traefik.http.routers.madsnorgaard_wp_uploads.rule=Host(`${WORDPRESS_DOMAIN}`) && PathPrefix(`/wp-content/uploads/`)
+       - traefik.http.routers.madsnorgaard_wp_uploads.tls=true
+       - traefik.http.routers.madsnorgaard_wp_uploads.tls.certresolver=lets-encrypt
+       - traefik.http.services.madsnorgaard_wp_uploads.loadbalancer.server.port=80
      networks:
        - internal
+       - web
 
    cli:
      image: wordpress:cli-php8.4
