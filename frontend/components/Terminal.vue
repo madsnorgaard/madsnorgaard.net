@@ -508,10 +508,10 @@ Retired
 
 Technical Lead
   South African History Online, 2010-present (volunteer)
-  15-year archival commitment. One of South Africa's most significant
-  documentary photography archives.
+  25-year archival commitment. One of South Africa's most significant
+  documentary history archives.
   Solr infrastructure on AlmaLinux.
-  AI-assisted metadata system for 14,000+ history entries.</pre>`
+  AI-assisted metadata system for 45,000+ history entries.</pre>`
 
     case 'contact':
       return `<pre>Email   mads@madsnorgaard.net
@@ -868,8 +868,9 @@ Monitoring: Grafana · Prometheus · Loki · cAdvisor</pre>`
   documentary history archives.
   Free. Open. Permanent.
 
-  14,000+ entries.
+  45,000+ articles.
   Millions of monthly readers.
+  25 years of history online.
 
   I have been technical lead since 2010.
   Volunteer. No salary.
