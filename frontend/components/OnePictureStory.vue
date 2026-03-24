@@ -75,7 +75,9 @@ function formatDate(dateString: string) {
 .ops__frame {
   position: relative;
   display: block;
-  width: 100%;
+  /* fit-content so caption overlay matches the actual image bounds, not full container */
+  width: fit-content;
+  max-width: 100%;
   padding: 0;
   border: none;
   background: none;
@@ -85,8 +87,14 @@ function formatDate(dateString: string) {
 
 .ops__image {
   display: block;
-  /* Full frame — no cropping, no height cap. Width-constrained by container. */
-  width: 100%;
+  /*
+   * Full frame, no cropping. CSS picks the binding constraint:
+   *   landscape → max-width hits first  → fills container width
+   *   portrait  → max-height hits first → scales down, stays centered
+   */
+  max-width: 100%;
+  max-height: 75vh;
+  width: auto;
   height: auto;
   transition: filter 400ms ease;
 }
