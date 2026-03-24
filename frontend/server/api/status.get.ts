@@ -54,7 +54,7 @@ export default defineEventHandler(async (event) => {
       method: 'POST',
       headers: githubHeaders,
       body: JSON.stringify({
-        query: `{ user(login:"madsnorgaard") { isHireable status { message indicatesLimitedAvailability } } }`,
+        query: `{ user(login:"madsnorgaard") { status { message indicatesLimitedAvailability } } }`,
       }),
     }),
   ])
@@ -102,21 +102,17 @@ export default defineEventHandler(async (event) => {
     }
   }
 
-  // GitHub status overrides: set your profile status to mark busy/holiday/unavailable
+  // GitHub status is source of truth for availability.
+  // isHireable is ignored — it means "job hunting" which is unrelated.
+  // Only the busy/limited-availability flag matters; otherwise always available.
   if (ghStatusRaw.status === 'fulfilled') {
-    const ghUser = ghStatusRaw.value?.data?.user
-    if (ghUser) {
-      const status = ghUser.status
-      if (status?.indicatesLimitedAvailability) {
-        availability = 'busy'
-        availabilityNote = status.message ?? undefined
-      } else if (ghUser.isHireable === true) {
-        availability = 'available'
-        availabilityNote = undefined
-      } else if (ghUser.isHireable === false) {
-        availability = 'not-available'
-        availabilityNote = undefined
-      }
+    const status = ghStatusRaw.value?.data?.user?.status
+    if (status?.indicatesLimitedAvailability) {
+      availability = 'busy'
+      availabilityNote = status.message ?? undefined
+    } else {
+      availability = 'available'
+      availabilityNote = undefined
     }
   }
 
