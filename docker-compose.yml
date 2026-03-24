@@ -63,6 +63,7 @@ services:
      volumes:
        - wp_html:/var/www/html
        - ./wp-content:/var/www/html/wp-content
+       - ./apache-uploads.conf:/etc/apache2/conf-enabled/uploads.conf:ro
      container_name: ${WORDPRESS_DOMAIN}_wordpress
      labels:
        - traefik.enable=true
