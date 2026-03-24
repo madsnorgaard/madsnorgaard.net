@@ -10,10 +10,15 @@ export default defineNuxtConfig({
   ],
 
   ogImage: {
+    siteUrl: 'https://madsnorgaard.net',
     fonts: [
       'IBM+Plex+Mono:400',
       'IBM+Plex+Mono:700',
     ],
+  },
+
+  site: {
+    url: 'https://madsnorgaard.net',
   },
 
   runtimeConfig: {
