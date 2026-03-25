@@ -46,9 +46,9 @@
       <p v-else class="text-mono" style="color: var(--color-muted)">No posts yet.</p>
     </section>
 
-    <!-- ─── Photo gallery ───────────────────────────────────────────── -->
-    <div v-if="photos?.length" class="container" style="margin: 3rem auto;">
-      <PhotoGallery :photos="photos" />
+    <!-- ─── One picture story ────────────────────────────────────────── -->
+    <div v-if="story" class="container" style="margin: 3rem auto;">
+      <OnePictureStory :story="story" />
     </div>
 
     <!-- ─── 02 Selected work ─────────────────────────────────────────── -->
@@ -89,12 +89,12 @@ import type { DrupalAbout } from '~/types/drupal'
 import type { StatusBlock as StatusBlockType } from '~/types/status'
 
 // Parallel data fetching
-const [{ data: about }, { data: posts }, { data: projects }, { data: status }, { data: photos }] = await Promise.all([
+const [{ data: about }, { data: posts }, { data: projects }, { data: status }, { data: story }] = await Promise.all([
   useFetch<DrupalAbout>('/api/drupal/about').catch(() => ({ data: ref(null) })),
   useFetch<any>('/api/drupal/blog', { query: { page: 1, limit: 3 } }).catch(() => ({ data: ref(null) })),
   useFetch<any[]>('/api/drupal/projects', { query: { featured: 'true' } }).catch(() => ({ data: ref([]) })),
   useFetch<StatusBlockType>('/api/status').catch(() => ({ data: ref(null) })),
-  useFetch<any[]>('/api/wp/photos', { query: { per_page: 30 } }).catch(() => ({ data: ref([]) })),
+  useFetch<any>('/api/wp/story').catch(() => ({ data: ref(null) })),
 ])
 
 function formatDate(dateString: string) {
