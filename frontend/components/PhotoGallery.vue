@@ -86,7 +86,7 @@
 </template>
 
 <script setup lang="ts">
-import { useSwipe, SwipeDirection } from '@vueuse/core'
+import { useSwipe } from '@vueuse/core'
 
 interface Photo {
   id: number
@@ -135,8 +135,8 @@ const { isSwiping, direction, lengthX } = useSwipe(containerRef, {
   },
   onSwipeEnd(_, dir) {
     dragOffset.value = 0
-    if (dir === SwipeDirection.Left  && currentIndex.value < props.photos.length - 1) advance()
-    if (dir === SwipeDirection.Right && currentIndex.value > 0)                        goBack()
+    if (dir === 'left'  && currentIndex.value < props.photos.length - 1) advance()
+    if (dir === 'right' && currentIndex.value > 0)                        goBack()
   },
 })
 
