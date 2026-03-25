@@ -15,9 +15,9 @@ export default defineEventHandler(async (event) => {
   // Fetch sticky (spotlight) and regular posts in parallel
   const [sticky, regular] = await Promise.all([
     // Spotlight: sticky posts (max 5 — shouldn't need more)
-    wpFetch<any[]>(`${base}/wp-json/wp/v2/posts?sticky=true&status=publish&per_page=5&_embed=wp:featuredmedia`),
+    wpFetch<any[]>(`${base}/wp-json/wp/v2/posts?sticky=true&status=publish&per_page=5&_embed=wp:featuredmedia&_fields=id,title,slug,date,link,sticky,content,_links,_embedded`),
     // Regular posts (non-sticky, newest first)
-    wpFetch<any[]>(`${base}/wp-json/wp/v2/posts?sticky=false&status=publish&per_page=${perPage}&page=${page}&orderby=date&order=desc&_embed=wp:featuredmedia`),
+    wpFetch<any[]>(`${base}/wp-json/wp/v2/posts?sticky=false&status=publish&per_page=${perPage}&page=${page}&orderby=date&order=desc&_embed=wp:featuredmedia&_fields=id,title,slug,date,link,sticky,content,_links,_embedded`),
   ])
 
   return [...(sticky ?? []), ...(regular ?? [])]
@@ -36,11 +36,13 @@ function toPhoto(post: any) {
   if (!src) return null
 
   return {
-    id:       post.id,
-    title:    decodeEntities(post.title?.rendered ?? ''),
-    date:     post.date ?? '',
-    slug:     post.slug ?? '',
-    sticky:   post.sticky ?? false,
+    id:      post.id,
+    title:   decodeEntities(post.title?.rendered ?? ''),
+    caption: stripTags(post.content?.rendered ?? ''),
+    date:    post.date ?? '',
+    slug:    post.slug ?? '',
+    url:     post.link ?? `${post.slug}`,
+    sticky:  post.sticky ?? false,
     image: {
       src,
       alt:    media?.alt_text || post.title?.rendered || '',
@@ -74,4 +76,13 @@ function decodeEntities(str: string) {
     .replace(/&#8211;/g, '–')
     .replace(/&#8212;/g, '—')
     .replace(/&#(\d+);/g, (_, c) => String.fromCharCode(Number(c)))
+}
+
+function stripTags(html: string): string {
+  return decodeEntities(
+    html
+      .replace(/<[^>]+>/g, ' ')
+      .replace(/\s+/g, ' ')
+      .replace(/\s*read more\s*$/i, '')
+  ).trim()
 }
