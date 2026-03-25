@@ -10,7 +10,7 @@
 
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig(event)
-  const base   = config.wordpressBaseUrl
+  const base   = config.photoSiteUrl
   const query  = getQuery(event)
 
   const EMBED  = '_embed=wp:featuredmedia&_fields=id,title,slug,date,content,link,sticky,_links,_embedded'
