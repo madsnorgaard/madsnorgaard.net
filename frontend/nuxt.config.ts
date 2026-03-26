@@ -99,5 +99,9 @@ export default defineNuxtConfig({
     routeRules: {
       '/api/**': { cors: false },
     },
+    // @resvg/resvg-js uses native Node bindings — must not be bundled
+    externals: {
+      external: ['@resvg/resvg-js'],
+    },
   },
 })
