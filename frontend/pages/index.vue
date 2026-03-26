@@ -113,6 +113,8 @@ const ogImageUrl = `https://madsnorgaard.net/og-image.png?availability=${ogAvail
 useHead({
   title: 'Mads Nørgaard: Developer + DevOps',
   meta: [
+    { property: 'og:url',          content: 'https://madsnorgaard.net' },
+    { property: 'og:type',         content: 'website' },
     { property: 'og:image',        content: ogImageUrl },
     { property: 'og:image:type',   content: 'image/png' },
     { property: 'og:image:width',  content: '1200' },

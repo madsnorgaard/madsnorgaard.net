@@ -68,9 +68,10 @@ useHead(() => ({
   title: `${post.value!.title} | Mads Nørgaard`,
   meta: [
     { name: 'description', content: post.value!.teaser },
-    { property: 'og:title', content: post.value!.title },
-    { property: 'og:description', content: post.value!.teaser },
-    { property: 'og:type', content: 'article' },
+    { property: 'og:url',              content: `https://madsnorgaard.net/writing/${route.params.slug}` },
+    { property: 'og:title',            content: post.value!.title },
+    { property: 'og:description',      content: post.value!.teaser },
+    { property: 'og:type',             content: 'article' },
     { property: 'article:published_time', content: post.value!.date },
   ],
 }))
