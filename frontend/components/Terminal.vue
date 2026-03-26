@@ -474,7 +474,7 @@ Try: cat about.txt  ·  ls writing/  ·  ls -la
 Senior developer and DevOps engineer based in Skanderborg, Denmark.
 Self-taught. 15 years building on Drupal, PHP, Docker, Linux.
 Currently at Eksponent, Danish development agency.
-Technical lead for South African History Online since 2010.
+Volunteering for South African History Online since 2010.
 Documentary photographer.</pre>`
 
     case 'skills':
@@ -506,8 +506,8 @@ Retired
   AI crawler mitigation (Rudersdal Kommune, Skoletjenesten).
   ÅbenForms: headless Drupal 11 + Nuxt 3 for Danish municipalities.
 
-Technical Lead
-  South African History Online, 2010-present (volunteer)
+Volunteer
+  South African History Online, 2010-present
   25-year archival commitment. One of South Africa's most significant
   documentary history archives.
   Solr infrastructure on AlmaLinux.
@@ -872,7 +872,7 @@ Monitoring: Grafana · Prometheus · Loki · cAdvisor</pre>`
   Millions of monthly readers.
   25 years of history online.
 
-  I have been technical lead since 2010.
+  Volunteer since 2010.
   Volunteer. No salary.
 
   Started because someone asked.

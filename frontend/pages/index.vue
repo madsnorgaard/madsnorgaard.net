@@ -8,7 +8,7 @@
       <p class="hero__role">
         <RoleRotation />
       </p>
-      <p class="hero__intro">{{ about?.intro ?? 'Self-taught senior developer and DevOps engineer. 15 years building on Drupal, PHP, Docker, and Linux. Currently at Eksponent as senior developer and DevOps engineer. Also technical lead for South African History Online since 2010. Documentary photographer.' }}</p>
+      <p class="hero__intro">{{ about?.intro ?? 'Self-taught senior developer and DevOps engineer. 15 years building on Drupal, PHP, Docker, and Linux. Currently at Eksponent. Also volunteering for South African History Online since 2010. Documentary photographer.' }}</p>
     </section>
 
     <!-- ─── Status block ─────────────────────────────────────────────── -->
