@@ -509,7 +509,7 @@ Try: cat about.txt  ·  ls writing/  ·  ls -la
 Senior developer and DevOps engineer based in Skanderborg, Denmark.
 Self-taught. 15 years building on Drupal, PHP, Docker, Linux.
 Currently at Eksponent, Danish development agency.
-Volunteering for South African History Online since 2010.
+Volunteering for South African History Online since 2018.
 Documentary photographer.</pre>`
 
     case 'skills':
@@ -542,7 +542,7 @@ Retired
   ÅbenForms: headless Drupal 11 + Nuxt 3 for Danish municipalities.
 
 Volunteer
-  South African History Online, 2010-present
+  South African History Online, 2018-present
   25-year archival commitment. One of South Africa's most significant
   documentary history archives.
   Solr infrastructure on AlmaLinux.
@@ -763,7 +763,7 @@ Senior Developer + DevOps
   Eksponent · 2024–present · employed
 
 Technical Lead (volunteer)
-  South African History Online · 2010–present
+  South African History Online · 2018–present
 
 Freelance / independent
   2009–2024 · Drupal, WordPress, PHP, infrastructure
@@ -907,7 +907,7 @@ Monitoring: Grafana · Prometheus · Loki · cAdvisor</pre>`
   Millions of monthly readers.
   25 years of history online.
 
-  Volunteer since 2010.
+  Volunteer since 2018.
   Volunteer. No salary.
 
   Started because someone asked.
