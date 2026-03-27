@@ -176,22 +176,57 @@ async function runBootSequence() {
   await delay(520)
   booted.value = true
   await nextTick()
-  inputEl.value?.focus()
-  termEl.value?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+  // Touch devices: skip auto-focus — opening the soft keyboard unprompted is jarring,
+  // and scrollIntoView targets the layout viewport which doesn't account for the overlay keyboard.
+  // Let the user tap first; focusInput() handles keyboard-aware scrolling.
+  const isTouchDevice = window.matchMedia('(hover: none) and (pointer: coarse)').matches
+  if (!isTouchDevice) {
+    inputEl.value?.focus()
+    termEl.value?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+  }
 }
 
 // ── Scroll helpers ─────────────────────────────────────────────────────────────
 
+// Returns the visible viewport height, accounting for the overlay soft keyboard on mobile.
+// window.innerHeight stays at layout height on iOS even when keyboard is open;
+// visualViewport.height shrinks to the actual visible area.
+function visibleHeight(): number {
+  return window.visualViewport?.height ?? window.innerHeight
+}
+
+function scrollPromptIntoView() {
+  if (!termEl.value) return
+  const rect = termEl.value.getBoundingClientRect()
+  const vh = visibleHeight()
+  if (rect.bottom > vh) {
+    window.scrollBy({ top: rect.bottom - vh + 16, behavior: 'smooth' })
+  }
+}
+
 function focusInput() {
   if (!booted.value) return
   inputEl.value?.focus()
-  nextTick(() => {
-    if (!termEl.value) return
-    const rect = termEl.value.getBoundingClientRect()
-    if (rect.bottom > window.innerHeight || rect.top < 56) {
-      termEl.value.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+
+  if (window.visualViewport) {
+    // Wait for the keyboard overlay to finish opening (fires a visualViewport resize),
+    // then scroll so the prompt is above the keyboard — not behind it.
+    const onVVResize = () => {
+      scrollPromptIntoView()
+      window.visualViewport!.removeEventListener('resize', onVVResize)
     }
-  })
+    window.visualViewport.addEventListener('resize', onVVResize)
+    // Fallback: if keyboard was already open no resize fires
+    setTimeout(scrollPromptIntoView, 350)
+  } else {
+    nextTick(() => {
+      if (!termEl.value) return
+      const rect = termEl.value.getBoundingClientRect()
+      if (rect.bottom > window.innerHeight || rect.top < 56) {
+        termEl.value.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+      }
+    })
+  }
 }
 
 function scrollToBottom() {
@@ -199,8 +234,8 @@ function scrollToBottom() {
     if (outputEl.value) outputEl.value.scrollTop = outputEl.value.scrollHeight
     if (termEl.value) {
       const rect = termEl.value.getBoundingClientRect()
-      if (rect.bottom > window.innerHeight)
-        termEl.value.scrollIntoView({ behavior: 'smooth', block: 'end' })
+      if (rect.bottom > visibleHeight())
+        window.scrollBy({ top: rect.bottom - visibleHeight() + 16, behavior: 'smooth' })
     }
   })
 }
