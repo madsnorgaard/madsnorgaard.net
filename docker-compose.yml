@@ -24,27 +24,6 @@ services:
      labels:
       - traefik.enable=false
 
-   madsnorgaard_phpmyadmin:
-     image: phpmyadmin/phpmyadmin:5.2
-     restart: always
-     env_file:
-      - .env
-     environment:
-       PMA_HOST: madsnorgaard_db
-       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-       DOCKER_COMPOSE_YML_LOCATION: ${PWD}
-       UPLOAD_LIMIT: 300M
-     container_name: ${WORDPRESS_DOMAIN}_phpmyadmin
-     labels:
-       - traefik.http.routers.madsnorgaard_phpmyadmin.rule=Host(`phpmyadmin.${WORDPRESS_DOMAIN}`)
-       - traefik.http.routers.madsnorgaard_phpmyadmin.tls=true
-       - traefik.http.routers.madsnorgaard_phpmyadmin.tls.certresolver=lets-encrypt
-       - traefik.port=8080
-     networks:
-       - internal
-       - web
-     depends_on:
-       - madsnorgaard_db
 
    # WordPress stays running but no longer handles traffic for madsnorgaard.net
    # Only /wp-content/uploads/* is routed to WP via Traefik (for media serving)
