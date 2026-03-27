@@ -1,37 +1,36 @@
 // GET /api/wp/story
 // Returns a single WordPress post with a featured image from madsnorgaard.net WP.
 //
+// Only posts in the "feature" category are eligible.
+//
 // Priority:
-//   1. If any post is marked "Sticky" in WP admin → always return that one.
+//   1. If any eligible post is marked "Sticky" in WP admin → always return that one.
 //      (Toggle sticky off to return to random rotation.)
 //   2. Otherwise → a random published post with a featured image.
-//
-// Optional query: ?category=<slug>  — filter by category slug (random mode only)
 
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig(event)
   const base   = config.photoSiteUrl
-  const query  = getQuery(event)
 
   const EMBED  = '_embed=wp:featuredmedia&_fields=id,title,slug,date,content,link,sticky,_links,_embedded'
 
+  // ── Resolve "feature" category ID ───────────────────────────────────
+  const cats = await wpFetch<any[]>(
+    `${base}/wp-json/wp/v2/categories?slug=feature&_fields=id`
+  )
+  const featureCatId = cats?.[0]?.id
+  if (!featureCatId) return null
+
+  const categoryParam = `&categories=${featureCatId}`
+
   // ── 1. Sticky (spotlight) ───────────────────────────────────────────
   const sticky = await wpFetch<any[]>(
-    `${base}/wp-json/wp/v2/posts?sticky=true&status=publish&per_page=1&${EMBED}`
+    `${base}/wp-json/wp/v2/posts?sticky=true&status=publish&per_page=100${categoryParam}&${EMBED}`
   )
   const spotlightPost = sticky?.find(p => hasImage(p))
   if (spotlightPost) return toStory(spotlightPost)
 
   // ── 2. Random published post ────────────────────────────────────────
-  let categoryParam = ''
-  if (query.category && typeof query.category === 'string') {
-    const cats = await wpFetch<any[]>(
-      `${base}/wp-json/wp/v2/categories?slug=${encodeURIComponent(query.category)}&_fields=id`
-    )
-    const catId = cats?.[0]?.id
-    if (catId) categoryParam = `&categories=${catId}`
-  }
-
   const countResp = await fetch(
     `${base}/wp-json/wp/v2/posts?per_page=1&status=publish&_fields=id${categoryParam}`,
     { headers: { Accept: 'application/json' } }
