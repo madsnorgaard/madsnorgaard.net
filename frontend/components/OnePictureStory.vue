@@ -1,5 +1,5 @@
 <template>
-  <div v-if="story" class="ops">
+  <div v-if="current" class="ops" @mouseenter="onMouseEnter" @mouseleave="onMouseLeave">
     <!-- Image — click to toggle caption -->
     <button
       class="ops__frame"
@@ -8,23 +8,24 @@
       @click="captionOpen = !captionOpen"
     >
       <img
-        v-if="story.image"
-        :src="story.image.src"
-        :alt="story.image.alt"
-        :width="story.image.width ?? undefined"
-        :height="story.image.height ?? undefined"
+        v-if="current.image"
+        :src="current.image.src"
+        :alt="current.image.alt"
+        :width="current.image.width ?? undefined"
+        :height="current.image.height ?? undefined"
         class="ops__image"
+        :class="{ 'ops__image--fading': fading }"
         loading="lazy"
       />
 
       <!-- Caption overlay -->
       <Transition name="caption">
         <div v-if="captionOpen" class="ops__caption">
-          <time class="ops__date" :datetime="story.date">{{ formatDate(story.date) }}</time>
-          <p class="ops__title">{{ story.title }}</p>
-          <p v-if="story.caption" class="ops__excerpt">{{ story.caption }}</p>
+          <time class="ops__date" :datetime="current.date">{{ formatDate(current.date) }}</time>
+          <p class="ops__title">{{ current.title }}</p>
+          <p v-if="current.caption" class="ops__excerpt">{{ current.caption }}</p>
           <a
-            :href="story.url"
+            :href="current.url"
             class="ops__link"
             target="_blank"
             rel="noopener"
@@ -40,19 +41,68 @@
 </template>
 
 <script setup lang="ts">
-const captionOpen = ref(false)
+type Story = {
+  id: number
+  title: string
+  caption: string
+  date: string
+  slug: string
+  url: string
+  image: { src: string; alt: string; width: number | null; height: number | null } | null
+}
 
-defineProps<{
-  story: {
-    id: number
-    title: string
-    caption: string
-    date: string
-    slug: string
-    url: string
-    image: { src: string; alt: string; width: number | null; height: number | null } | null
-  } | null
+const props = defineProps<{
+  stories: Story[] | null
 }>()
+
+const captionOpen = ref(false)
+const currentIndex = ref(0)
+const fading = ref(false)
+const shuffled = ref<Story[]>([])
+
+let timer: ReturnType<typeof setInterval> | null = null
+let fadeTimer: ReturnType<typeof setTimeout> | null = null
+
+const current = computed(() => shuffled.value[currentIndex.value] ?? null)
+
+function shuffle(arr: Story[]): Story[] {
+  const a = [...arr]
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[a[i], a[j]] = [a[j], a[i]]
+  }
+  return a
+}
+
+function advance() {
+  fading.value = true
+  fadeTimer = setTimeout(() => {
+    currentIndex.value = (currentIndex.value + 1) % shuffled.value.length
+    captionOpen.value = false
+    fading.value = false
+  }, 500)
+}
+
+function startRotation() {
+  if (shuffled.value.length <= 1) return
+  timer = setInterval(advance, 5500)
+}
+
+function stopRotation() {
+  if (timer)     { clearInterval(timer);  timer = null }
+  if (fadeTimer) { clearTimeout(fadeTimer); fadeTimer = null }
+  fading.value = false
+}
+
+function onMouseEnter() { stopRotation() }
+function onMouseLeave() { startRotation() }
+
+onMounted(() => {
+  shuffled.value = shuffle(props.stories ?? [])
+  startRotation()
+})
+
+onUnmounted(() => stopRotation())
 
 function formatDate(dateString: string) {
   if (!dateString) return ''
@@ -96,7 +146,11 @@ function formatDate(dateString: string) {
   max-height: 75vh;
   width: auto;
   height: auto;
-  transition: filter 400ms ease;
+  transition: opacity 500ms ease, filter 400ms ease;
+}
+
+.ops__image--fading {
+  opacity: 0;
 }
 
 .ops__frame[aria-expanded="true"] .ops__image {
@@ -169,7 +223,7 @@ function formatDate(dateString: string) {
   50%       { opacity: 0.2; }
 }
 
-/* Transition */
+/* Caption transition */
 .caption-enter-active,
 .caption-leave-active {
   transition: opacity 300ms ease, transform 300ms ease;
