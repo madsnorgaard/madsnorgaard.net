@@ -18,9 +18,9 @@ services:
       NODE_ENV: production
       DRUPAL_BASE_URL: http://madsnorgaard_drupal:80
       PHOTO_SITE_URL: https://photo.madsnorgaard.net
-    container_name: ${WORDPRESS_DOMAIN}_nuxt
+    container_name: madsnorgaard_nuxt
     labels:
-      - traefik.http.routers.madsnorgaard_nuxt.rule=Host(`${WORDPRESS_DOMAIN}`) || Host(`www.${WORDPRESS_DOMAIN}`)
+      - traefik.http.routers.madsnorgaard_nuxt.rule=Host(`madsnorgaard.net`) || Host(`www.madsnorgaard.net`)
       - traefik.http.routers.madsnorgaard_nuxt.tls=true
       - traefik.http.routers.madsnorgaard_nuxt.tls.certresolver=lets-encrypt
       - traefik.http.services.madsnorgaard_nuxt.loadbalancer.server.port=3000
