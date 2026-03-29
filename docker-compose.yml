@@ -1,104 +1,29 @@
 networks:
   web:
     external: true
-  internal:
-    external: false
   # Drupal internal network — lets Nuxt reach madsnorgaard_drupal without going via public internet
   drupalmadsnorgaardnet_internal:
     external: true
 
 services:
-   madsnorgaard_db:
-     image: mysql:8.4
-     volumes:
-       - ./wordpress.sql:/docker-entrypoint-initdb.d/init.sql # prepopulate database
-       - db_data:/var/lib/mysql # persist database data inside docker storage
-     restart: always
-     env_file:
+  madsnorgaard_nuxt:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    image: madsnorgaard-nuxt:latest
+    restart: always
+    env_file:
       - .env
-     environment:
-      DOCKER_COMPOSE_YML_LOCATION: ${PWD}
-     container_name: ${WORDPRESS_DOMAIN}_db
-     networks:
-      - internal
-     labels:
-      - traefik.enable=false
-
-
-   # WordPress stays running but no longer handles traffic for madsnorgaard.net
-   # Only /wp-content/uploads/* is routed to WP via Traefik (for media serving)
-   # All other traffic goes to Nuxt
-   madsnorgaard_wordpress:
-     depends_on:
-       - madsnorgaard_db
-     image: wordpress:php8.4-apache
-     restart: always
-     environment:
-       WORDPRESS_DB_HOST: madsnorgaard_db:3306
-       WORDPRESS_DB_USER: ${MYSQL_USER}
-       WORDPRESS_DB_PASSWORD: ${MYSQL_PASSWORD}
-       WORDPRESS_DB_NAME: ${MYSQL_DATABASE}
-       DOCKER_COMPOSE_YML_LOCATION: ${PWD}
-     volumes:
-       - wp_html:/var/www/html
-       - ./wp-content:/var/www/html/wp-content
-       - ./apache-uploads.conf:/etc/apache2/conf-enabled/uploads.conf:ro
-       - ./php-uploads.ini:/usr/local/etc/php/conf.d/uploads.ini:ro
-     container_name: ${WORDPRESS_DOMAIN}_wordpress
-     labels:
-       - traefik.enable=true
-       - traefik.http.routers.madsnorgaard_wp_uploads.rule=Host(`${WORDPRESS_DOMAIN}`) && PathPrefix(`/wp-content/uploads/`)
-       - traefik.http.routers.madsnorgaard_wp_uploads.tls=true
-       - traefik.http.routers.madsnorgaard_wp_uploads.tls.certresolver=lets-encrypt
-       - traefik.http.services.madsnorgaard_wp_uploads.loadbalancer.server.port=80
-     networks:
-       - internal
-       - web
-
-   cli:
-     image: wordpress:cli-php8.4
-     container_name: ${WORDPRESS_DOMAIN}_cli
-     env_file: .env
-     environment:
-       WORDPRESS_DB_HOST: madsnorgaard_db:3306
-       WORDPRESS_DB_USER: "${MYSQL_USER}"
-       WORDPRESS_DB_PASSWORD: "${MYSQL_PASSWORD}"
-       WORDPRESS_DB_NAME: "${MYSQL_DATABASE}"
-     volumes:
-       - wp_html:/var/www/html
-       - ./wp-content:/var/www/html/wp-content
-     networks:
-       - internal
-     depends_on:
-       - madsnorgaard_db
-     profiles:
-       - cli
-
-   # Nuxt 3 frontend — serves madsnorgaard.net
-   madsnorgaard_nuxt:
-     build:
-       context: ./frontend
-       dockerfile: Dockerfile
-     image: madsnorgaard-nuxt:latest
-     restart: always
-     env_file:
-       - .env
-     environment:
-       NODE_ENV: production
-       DRUPAL_BASE_URL: http://madsnorgaard_drupal:80
-       PHOTO_SITE_URL: https://photo.madsnorgaard.net
-       WP_BASE_URL: http://madsnorgaard_wordpress
-     container_name: ${WORDPRESS_DOMAIN}_nuxt
-     labels:
-       - traefik.http.routers.madsnorgaard_nuxt.rule=Host(`${WORDPRESS_DOMAIN}`) || Host(`www.${WORDPRESS_DOMAIN}`)
-       - traefik.http.routers.madsnorgaard_nuxt.tls=true
-       - traefik.http.routers.madsnorgaard_nuxt.tls.certresolver=lets-encrypt
-       - traefik.http.services.madsnorgaard_nuxt.loadbalancer.server.port=3000
-     networks:
-       - web
-       - internal
-       - drupalmadsnorgaardnet_internal
-
-volumes:
-    db_data: {}
-    wp_html: {}
+    environment:
+      NODE_ENV: production
+      DRUPAL_BASE_URL: http://madsnorgaard_drupal:80
+      PHOTO_SITE_URL: https://photo.madsnorgaard.net
+    container_name: ${WORDPRESS_DOMAIN}_nuxt
+    labels:
+      - traefik.http.routers.madsnorgaard_nuxt.rule=Host(`${WORDPRESS_DOMAIN}`) || Host(`www.${WORDPRESS_DOMAIN}`)
+      - traefik.http.routers.madsnorgaard_nuxt.tls=true
+      - traefik.http.routers.madsnorgaard_nuxt.tls.certresolver=lets-encrypt
+      - traefik.http.services.madsnorgaard_nuxt.loadbalancer.server.port=3000
+    networks:
+      - web
+      - drupalmadsnorgaardnet_internal

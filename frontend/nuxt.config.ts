@@ -13,7 +13,6 @@ export default defineNuxtConfig({
     drupalBaseUrl: process.env.DRUPAL_BASE_URL || 'http://drupal:80',
     githubToken: process.env.GITHUB_TOKEN || '',
     photoSiteUrl: process.env.PHOTO_SITE_URL || 'https://photo.madsnorgaard.net',
-    wordpressBaseUrl: process.env.WP_BASE_URL || 'http://madsnorgaard_wordpress',
     public: {
       siteUrl: 'https://madsnorgaard.net',
     },

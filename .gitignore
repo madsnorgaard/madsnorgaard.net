@@ -1,40 +1,30 @@
 .env
 *.env
 !.env.example
-wp-content/uploads/
-wp-content/upgrade/
-wp-content/backup-db/
-wordpress.sql
-*.sql
-madsnorgaard_wp.sql
-*.sql.gz
-db-backups/
-docker-compose.yml.save
-# DDEV local overrides (never commit)
-.ddev/.gitignore
-.ddev/config.*.yaml
-.ddev/.homeadditions
 
-# WordPress core (managed by ddev/wp-cli, not tracked)
+# Node / Nuxt
+node_modules/
+.nuxt/
+.output/
+dist/
+frontend/.nuxt/
+frontend/.output/
+frontend/node_modules/
+
+# WordPress legacy files (no longer used — kept on disk for reference, not tracked)
 wp-admin/
 wp-includes/
+wp-content/
 wp-*.php
 index.php
 xmlrpc.php
 license.txt
 readme.html
-
-# wp-content: track themes and plugins, not generated content
-wp-content/cache/
-wp-content/backup*/
-wp-content/wflogs/
-wp-content/updraft/
-wp-content/oci/
-wp-content/disabled_plugins/
-wp-content/upgrade-temp-backup/
-wp-content/advanced-cache.php
-wp-content/autoptimize_404_handler.php
-wp-content/changelog.txt
-wp-content/debug.log
-wp-content/languages/
-wp-content/**/.DS_Store
+*.sql
+*.sql.gz
+apache-uploads.conf
+php-uploads.ini
+wp-config.php
+wp-config-ddev.php
+wp-config-sample.php
+.ddev/
