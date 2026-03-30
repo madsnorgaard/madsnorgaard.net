@@ -71,9 +71,10 @@ export default defineNuxtConfig({
 
   css: ['~/assets/css/main.css'],
 
-  // HTTP security headers for all pages
+  // HTTP security headers + page caching
   routeRules: {
     '/**': {
+      swr: 300, // cache rendered pages for 5 minutes, revalidate in background
       headers: {
         'X-Frame-Options': 'SAMEORIGIN',
         'X-Content-Type-Options': 'nosniff',
