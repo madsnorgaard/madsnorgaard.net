@@ -46,8 +46,16 @@ export default defineNuxtConfig({
           href: 'https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,700&family=IBM+Plex+Mono:wght@400;500&display=swap',
         },
       ],
-      // HTML easter egg, visible in View Source
       script: [
+        {
+          defer: true,
+          'data-domain': 'madsnorgaard.net',
+          src: 'https://analytics.theazanianprepper.online/js/script.file-downloads.hash.outbound-links.js',
+        },
+        {
+          innerHTML: "window.plausible = window.plausible || function() { (window.plausible.q = window.plausible.q || []).push(arguments) }",
+        },
+        // HTML easter egg, visible in View Source
         {
           type: 'text/plain',
           innerHTML: `
@@ -83,11 +91,11 @@ export default defineNuxtConfig({
         // CSP: allow Nuxt SSR inline scripts, Google Fonts, self for everything else
         'Content-Security-Policy': [
           "default-src 'self'",
-          "script-src 'self' 'unsafe-inline'",
+          "script-src 'self' 'unsafe-inline' https://analytics.theazanianprepper.online",
           "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
           "font-src 'self' https://fonts.gstatic.com",
           "img-src 'self' data: https:",
-          "connect-src 'self'",
+          "connect-src 'self' https://analytics.theazanianprepper.online",
           "frame-ancestors 'none'",
         ].join('; '),
       },
