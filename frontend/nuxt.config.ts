@@ -81,6 +81,10 @@ export default defineNuxtConfig({
 
   // HTTP security headers + page caching
   routeRules: {
+    // Redirects for old WordPress paths — indexed traffic belongs on photo.madsnorgaard.net
+    '/one-picture-stories/**': { redirect: { to: 'https://photo.madsnorgaard.net/one-picture-stories/**', statusCode: 301 } },
+    '/tag/**':                  { redirect: { to: 'https://photo.madsnorgaard.net/tag/**', statusCode: 301 } },
+
     '/**': {
       swr: 300, // cache rendered pages for 5 minutes, revalidate in background
       headers: {
