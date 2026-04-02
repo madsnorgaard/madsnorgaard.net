@@ -3,6 +3,8 @@
 
 import type { DrupalProject } from '~/types/drupal'
 
+const DRUPAL_PUBLIC_URL = process.env.DRUPAL_PUBLIC_URL || 'https://drupal.madsnorgaard.net'
+
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig(event)
   const base = config.drupalBaseUrl
@@ -57,9 +59,11 @@ function resolveImage(ref: any, included: any[]) {
   if (!fileRef) return undefined
   const file = included.find((i: any) => i.type === fileRef.type && i.id === fileRef.id)
   if (!file) return undefined
+  const rawUrl: string = file.attributes?.uri?.url ?? ''
+  const url = rawUrl.startsWith('/') ? `${DRUPAL_PUBLIC_URL}${rawUrl}` : rawUrl
   return {
     id: file.id,
-    url: file.attributes?.uri?.url ?? '',
+    url,
     alt: media.attributes?.field_media_image?.meta?.alt ?? '',
     width: file.attributes?.width,
     height: file.attributes?.height,
