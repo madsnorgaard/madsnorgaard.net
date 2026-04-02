@@ -35,6 +35,7 @@ export default defineEventHandler(async (event) => {
   return (data?.data ?? []).map((node: any): DrupalProject => ({
     id: node.id,
     title: node.attributes?.title ?? '',
+    shortCode: node.attributes?.field_short_code || undefined,
     tagline: node.attributes?.field_tagline ?? '',
     description: node.attributes?.field_description?.value ?? '',
     coverImage: resolveImage(node.relationships?.field_cover_image?.data, included),

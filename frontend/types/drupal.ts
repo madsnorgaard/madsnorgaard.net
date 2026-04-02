@@ -37,6 +37,7 @@ export interface DrupalBlogPost {
 export interface DrupalProject {
   id: string
   title: string
+  shortCode?: string
   tagline: string
   description: string
   coverImage?: DrupalImage

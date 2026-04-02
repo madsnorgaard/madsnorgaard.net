@@ -100,6 +100,7 @@ const props = defineProps<{
 const flipped = ref(false)
 
 const initials = computed(() =>
+  props.project.shortCode ||
   props.project.title
     .split(/[\s\-_\.]+/)
     .filter(Boolean)
