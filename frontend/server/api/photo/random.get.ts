@@ -17,10 +17,9 @@ export default defineEventHandler(async (event) => {
   let thumbnail: string | null = null
   for (let attempt = 0; attempt < 5; attempt++) {
     const offset = Math.floor(Math.random() * total)
-    const photos = await $fetch<any[]>(
-      `${photoBase}/wp-json/wp/v2/${base}?per_page=1&offset=${offset}&_embed=wp:featuredmedia`,
-      { headers: { Accept: 'application/json' } }
-    ).catch(() => null)
+    const photos = await wpFetch<any[]>(
+      `${photoBase}/wp-json/wp/v2/${base}?per_page=1&offset=${offset}&_embed=wp:featuredmedia`
+    )
 
     photo = photos?.[0]
     if (!photo) continue
@@ -55,13 +54,9 @@ async function resolveEndpoint(
   photoBase: string
 ): Promise<{ base: string; total: number } | null> {
   for (const base of ['photos', 'project']) {
-    const resp = await fetch(
-      `${photoBase}/wp-json/wp/v2/${base}?per_page=1&_fields=id`,
-      { headers: { Accept: 'application/json' } }
-    ).catch(() => null)
-
-    if (!resp?.ok) continue
-    const total = Number(resp.headers.get('X-WP-Total') ?? 0)
+    const { total } = await wpFetchWithHeaders<any[]>(
+      `${photoBase}/wp-json/wp/v2/${base}?per_page=1&_fields=id`
+    )
     if (total > 0) return { base, total }
   }
   return null

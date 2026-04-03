@@ -4,9 +4,9 @@
 // Only posts in the "feature" category are eligible.
 //
 // Priority:
-//   1. If any eligible post is marked "Sticky" in WP admin → always return that one.
+//   1. If any eligible post is marked "Sticky" in WP admin -> always return that one.
 //      (Toggle sticky off to return to random rotation.)
-//   2. Otherwise → a random published post with a featured image.
+//   2. Otherwise -> a random published post with a featured image.
 
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig(event)
@@ -31,9 +31,15 @@ export default defineEventHandler(async (event) => {
   if (spotlightPost) return toStory(spotlightPost)
 
   // ── 2. Random published post ────────────────────────────────────────
+  const headers: Record<string, string> = { Accept: 'application/json' }
+  const token = process.env.PHOTO_API_INTERNAL_TOKEN || ''
+  if (token) {
+    headers['X-Internal-Token'] = token
+  }
+
   const countResp = await fetch(
     `${base}/wp-json/wp/v2/posts?per_page=1&status=publish&_fields=id${categoryParam}`,
-    { headers: { Accept: 'application/json' } }
+    { headers }
   ).catch(() => null)
 
   const total = Number(countResp?.headers.get('X-WP-Total') ?? 0)
@@ -72,7 +78,7 @@ function toStory(post: any) {
     slug:    post.slug ?? '',
     url:     post.link ?? '',
     image: {
-      // Full original — documentary photography must not be cropped by WP thumbnails
+      // Full original - documentary photography must not be cropped by WP thumbnails
       src:    media?.source_url
            ?? media?.media_details?.sizes?.large?.source_url
            ?? media?.media_details?.sizes?.medium_large?.source_url
@@ -82,40 +88,4 @@ function toStory(post: any) {
       height: media?.media_details?.height ?? null,
     },
   }
-}
-
-// WP REST API sometimes prepends PHP warnings (e.g. DDEV + ACF).
-// Extract the first JSON array/object from the raw response body.
-async function wpFetch<T>(url: string): Promise<T | null> {
-  try {
-    const resp  = await fetch(url, { headers: { Accept: 'application/json' } })
-    const text  = await resp.text()
-    const start = text.search(/[\[{]/)
-    if (start === -1) return null
-    return JSON.parse(text.slice(start)) as T
-  } catch {
-    return null
-  }
-}
-
-function decodeEntities(str: string): string {
-  return str
-    .replace(/&nbsp;/g,            ' ')
-    .replace(/&amp;/g,             '&')
-    .replace(/&lt;/g,              '<')
-    .replace(/&gt;/g,              '>')
-    .replace(/&quot;/g,            '"')
-    .replace(/&#8216;|&#8217;/g,   "'")
-    .replace(/&#8220;|&#8221;/g,   '"')
-    .replace(/&#8211;/g,           '–')
-    .replace(/&#8212;/g,           '—')
-    .replace(/&#(\d+);/g, (_, c) => String.fromCharCode(Number(c)))
-}
-
-function stripTags(html: string): string {
-  return decodeEntities(
-    html
-      .replace(/<[^>]+>/g, '')
-      .replace(/\s*read more\s*$/i, '')
-  ).trim()
 }

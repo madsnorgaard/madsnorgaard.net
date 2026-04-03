@@ -52,37 +52,3 @@ function toStory(post: any) {
     },
   }
 }
-
-async function wpFetch<T>(url: string): Promise<T | null> {
-  try {
-    const resp  = await fetch(url, { headers: { Accept: 'application/json' } })
-    const text  = await resp.text()
-    const start = text.search(/[\[{]/)
-    if (start === -1) return null
-    return JSON.parse(text.slice(start)) as T
-  } catch {
-    return null
-  }
-}
-
-function decodeEntities(str: string): string {
-  return str
-    .replace(/&nbsp;/g,           ' ')
-    .replace(/&amp;/g,            '&')
-    .replace(/&lt;/g,             '<')
-    .replace(/&gt;/g,             '>')
-    .replace(/&quot;/g,           '"')
-    .replace(/&#8216;|&#8217;/g,  "'")
-    .replace(/&#8220;|&#8221;/g,  '"')
-    .replace(/&#8211;/g,          '–')
-    .replace(/&#8212;/g,          '—')
-    .replace(/&#(\d+);/g, (_, c) => String.fromCharCode(Number(c)))
-}
-
-function stripTags(html: string): string {
-  return decodeEntities(
-    html
-      .replace(/<[^>]+>/g, '')
-      .replace(/\s*read more\s*$/i, '')
-  ).trim()
-}

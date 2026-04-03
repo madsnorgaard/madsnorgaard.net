@@ -11,6 +11,7 @@
           <li><NuxtLink to="/cv">CV</NuxtLink></li>
           <li><NuxtLink to="/writing">Writing</NuxtLink></li>
           <li><NuxtLink to="/projects">Projects</NuxtLink></li>
+          <li><NuxtLink to="/archive">Archive</NuxtLink></li>
           <li><NuxtLink to="/with">Stack</NuxtLink></li>
         </ul>
       </nav>
