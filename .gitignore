@@ -28,3 +28,4 @@ wp-config.php
 wp-config-ddev.php
 wp-config-sample.php
 .ddev/
+.mcp.json
