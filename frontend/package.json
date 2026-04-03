@@ -14,7 +14,7 @@
     "test:report": "playwright show-report"
   },
   "dependencies": {
-    "@nuxt/image": "^1.8.0",
+    "@nuxt/image": "^2.0.0",
     "@resvg/resvg-js": "^2.6.2",
     "@vueuse/nuxt": "^11.0.0",
     "ipx": "^3.1.1",
