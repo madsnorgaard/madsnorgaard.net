@@ -1,6 +1,6 @@
 # Multi-stage Nuxt 3 build
 # Stage 1: build
-FROM node:22-alpine AS builder
+FROM node:25-alpine AS builder
 
 WORKDIR /app
 
@@ -15,7 +15,7 @@ RUN npm run build
 # ─────────────────────────────────────────────────────────────────────
 
 # Stage 2: production runner
-FROM node:22-alpine AS runner
+FROM node:25-alpine AS runner
 
 WORKDIR /app
 
