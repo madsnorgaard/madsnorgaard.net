@@ -126,17 +126,17 @@ interface GalleryImage {
   height: string
 }
 
-// Extract prose text (paragraphs only, no gallery markup)
+// Extract prose text (paragraphs + headings, no gallery markup)
 const proseContent = computed(() => {
   if (!project.value?.content || !import.meta.client) return ''
   const parser = new DOMParser()
   const doc = parser.parseFromString(project.value.content, 'text/html')
-  const paragraphs: string[] = []
-  doc.querySelectorAll('p').forEach(p => {
-    const text = p.textContent?.trim()
-    if (text) paragraphs.push(p.outerHTML)
+  const elements: string[] = []
+  doc.querySelectorAll('p, h1, h2, h3, h4').forEach(el => {
+    const text = el.textContent?.trim()
+    if (text) elements.push(el.outerHTML)
   })
-  return paragraphs.join('')
+  return elements.join('')
 })
 
 // Extract all gallery images from every source
@@ -185,13 +185,25 @@ function handleGalleryClick(e: MouseEvent) {
 function openLightbox(index: number) {
   lightbox.index = index
   lightbox.active = true
+  // Lock scroll on both html and body (iOS needs both)
+  document.documentElement.style.overflow = 'hidden'
   document.body.style.overflow = 'hidden'
+  document.body.style.position = 'fixed'
+  document.body.style.width = '100%'
+  document.body.style.top = `-${window.scrollY}px`
   nextTick(() => lightboxEl.value?.focus())
 }
 
 function closeLightbox() {
-  lightbox.active = false
+  // Restore scroll position
+  const scrollY = document.body.style.top
+  document.documentElement.style.overflow = ''
   document.body.style.overflow = ''
+  document.body.style.position = ''
+  document.body.style.width = ''
+  document.body.style.top = ''
+  window.scrollTo(0, parseInt(scrollY || '0') * -1)
+  lightbox.active = false
 }
 
 function nextImage() {
@@ -337,11 +349,15 @@ useHead({
   position: fixed;
   inset: 0;
   z-index: 9000;
-  background: rgba(8, 8, 8, 0.96);
+  background: rgba(8, 8, 8, 0.98);
   display: flex;
   align-items: center;
   justify-content: center;
   outline: none;
+  /* Prevent iOS rubber-band scroll on the overlay */
+  overscroll-behavior: contain;
+  overflow: hidden;
+  touch-action: none;
 }
 
 /* CRT scanline texture */
@@ -521,24 +537,47 @@ useHead({
   opacity: 0;
 }
 
-/* Mobile */
+/* Mobile lightbox */
 @media (max-width: 640px) {
-  .lightbox__nav {
-    width: 2rem;
-    height: 2rem;
-    font-size: 1rem;
+  .lightbox {
+    background: rgb(8, 8, 8);
   }
 
-  .lightbox__nav--prev { left: 0.5rem; }
-  .lightbox__nav--next { right: 0.5rem; }
+  .lightbox__frame {
+    max-width: 100vw;
+    max-height: 100vh;
+    padding: 0 0.5rem;
+  }
+
+  .lightbox__image {
+    max-width: 100vw;
+    max-height: 75vh;
+  }
+
+  .lightbox__nav {
+    width: 2.25rem;
+    height: 2.25rem;
+    font-size: 1rem;
+    background: rgba(8, 8, 8, 0.6);
+  }
+
+  .lightbox__nav--prev { left: 0.25rem; }
+  .lightbox__nav--next { right: 0.25rem; }
 
   .lightbox__hud {
     flex-wrap: wrap;
-    gap: 0.75rem;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    font-size: 0.6rem;
   }
 
   .lightbox__filename {
-    max-width: 20ch;
+    max-width: 16ch;
+  }
+
+  .lightbox__close {
+    top: 0.5rem;
+    right: 0.5rem;
   }
 }
 </style>
