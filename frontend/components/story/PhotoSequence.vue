@@ -7,14 +7,12 @@
         class="photo-sequence__item"
       >
         <NuxtLink :to="`/archive/${photo.slug}`" class="photo-sequence__link">
-          <NuxtImg
+          <img
             v-if="getImageUrl(photo)"
             :src="getImageUrl(photo)!"
             :alt="photo.title"
             loading="lazy"
             class="photo-sequence__image"
-            sizes="(max-width: 640px) 80vw, 400px"
-            format="webp"
           />
         </NuxtLink>
         <figcaption class="photo-sequence__title">

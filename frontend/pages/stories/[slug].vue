@@ -19,14 +19,12 @@
 
     <!-- Featured image (full-bleed) -->
     <div v-if="story.featuredImage?.src" class="story-page__featured">
-      <NuxtImg
+      <img
         :src="story.featuredImage.src"
         :alt="story.featuredImage.alt"
         :width="story.featuredImage.width ?? undefined"
         :height="story.featuredImage.height ?? undefined"
         class="story-page__featured-image"
-        sizes="100vw"
-        format="webp"
         loading="eager"
       />
     </div>

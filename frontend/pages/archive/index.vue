@@ -30,14 +30,12 @@
         class="collection-grid__item"
       >
         <div class="collection-grid__image-wrap">
-          <NuxtImg
+          <img
             v-if="project.featuredImage?.src"
             :src="project.featuredImage.src"
             :alt="project.featuredImage.alt"
             loading="lazy"
             class="collection-grid__image"
-            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-            format="webp"
           />
         </div>
         <div class="collection-grid__overlay">

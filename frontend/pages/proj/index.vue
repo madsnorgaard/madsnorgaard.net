@@ -30,13 +30,11 @@
         class="project-grid__item"
       >
         <div v-if="project.featuredImage?.src" class="project-grid__image-wrap">
-          <NuxtImg
+          <img
             :src="project.featuredImage.src"
             :alt="project.featuredImage.alt"
             loading="lazy"
             class="project-grid__image"
-            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-            format="webp"
           />
         </div>
         <div class="project-grid__info">

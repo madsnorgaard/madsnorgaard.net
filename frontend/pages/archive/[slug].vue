@@ -2,15 +2,13 @@
   <div v-if="photo" class="container" style="padding-top: 4rem;">
     <!-- Hero image -->
     <div class="photo-detail__hero">
-      <NuxtImg
+      <img
         v-if="photo.images?.full || photo.images?.large"
         :src="(photo.images.full || photo.images.large)!"
         :alt="photo.title"
         :width="photo.images?.width ?? undefined"
         :height="photo.images?.height ?? undefined"
         class="photo-detail__image"
-        sizes="(max-width: 1024px) 100vw, 80vw"
-        format="webp"
         loading="eager"
       />
     </div>

@@ -13,13 +13,11 @@
       >
         <NuxtLink :to="`/stories/${story.slug}`" class="story-card__link">
           <div v-if="story.featuredImage?.src" class="story-card__image-wrap">
-            <NuxtImg
+            <img
               :src="story.featuredImage.src"
               :alt="story.featuredImage.alt"
               loading="lazy"
               class="story-card__image"
-              sizes="(max-width: 640px) 100vw, 400px"
-              format="webp"
             />
           </div>
           <div class="story-card__content">

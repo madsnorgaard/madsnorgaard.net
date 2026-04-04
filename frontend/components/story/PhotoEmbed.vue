@@ -1,7 +1,7 @@
 <template>
   <figure v-if="photo" :class="['photo-embed', alignClass]">
     <NuxtLink :to="`/archive/${photo.slug}`" class="photo-embed__link">
-      <NuxtImg
+      <img
         v-if="imageSrc"
         :src="imageSrc"
         :alt="photo.title"
@@ -9,8 +9,6 @@
         :height="imageHeight"
         loading="lazy"
         class="photo-embed__image"
-        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 80vw, 800px"
-        format="webp"
       />
     </NuxtLink>
     <figcaption v-if="showCaption" class="photo-embed__caption">
