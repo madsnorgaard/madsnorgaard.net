@@ -148,10 +148,16 @@ const galleryImages = computed<GalleryImage[]>(() => {
 
   // Collect from all image sources
   doc.querySelectorAll('img').forEach(img => {
-    // Walk up to find a wrapping <a> with full-res href
+    const imgSrc = img.getAttribute('src') || ''
+    if (!imgSrc) return
+
+    // Check if parent <a> has a direct image URL (mauer-stills pattern)
+    // vs an attachment page permalink (WP block gallery pattern)
     const link = img.closest('a')
-    const src = link?.getAttribute('href') || img.getAttribute('data-full-url') || img.getAttribute('src') || ''
-    if (!src) return
+    const linkHref = link?.getAttribute('href') || ''
+    const isImageUrl = /\.(jpe?g|png|gif|webp)(\?.*)?$/i.test(linkHref)
+    const src = isImageUrl ? linkHref : imgSrc
+
     // Get dimensions from data-size on the link (mauer-stills pattern)
     const size = link?.getAttribute('data-size') || ''
     const [w, h] = size ? size.split('x') : ['', '']
