@@ -97,18 +97,20 @@ function pageLink(page: number) {
 
 const firstImage = computed(() => data.value?.projects?.[0]?.featuredImage?.src || '')
 
-useHead({ title: 'Portfolio | Mads Nørgaard' })
-useSeoMeta({
-  description: 'Documentary photography portfolio by Mads Nørgaard',
-  ogTitle: 'Portfolio | Mads Nørgaard',
-  ogDescription: 'Documentary photography portfolio - assignments, editorial and personal work',
-  ogImage: firstImage,
-  ogUrl: 'https://madsnorgaard.net/proj',
-  ogType: 'website',
-  twitterCard: 'summary_large_image',
-  twitterTitle: 'Portfolio | Mads Nørgaard',
-  twitterDescription: 'Documentary photography portfolio',
-  twitterImage: firstImage,
+useHead({
+  title: 'Portfolio | Mads Nørgaard',
+  meta: [
+    { name: 'description',         content: 'Documentary photography portfolio by Mads Nørgaard' },
+    { property: 'og:title',        content: 'Portfolio | Mads Nørgaard' },
+    { property: 'og:description',  content: 'Documentary photography portfolio - assignments, editorial and personal work' },
+    { property: 'og:image',        content: firstImage },
+    { property: 'og:url',          content: 'https://madsnorgaard.net/proj' },
+    { property: 'og:type',         content: 'website' },
+    { name: 'twitter:card',        content: 'summary_large_image' },
+    { name: 'twitter:title',       content: 'Portfolio | Mads Nørgaard' },
+    { name: 'twitter:description', content: 'Documentary photography portfolio' },
+    { name: 'twitter:image',       content: firstImage },
+  ],
 })
 </script>
 

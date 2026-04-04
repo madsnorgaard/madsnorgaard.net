@@ -83,18 +83,20 @@ const pageDesc = photo.value?.excerpt || `${photo.value?.title} - ${photo.value?
 const pageImage = photo.value?.images?.full || photo.value?.images?.large || ''
 const pageUrl = `https://madsnorgaard.net/archive/${route.params.slug}`
 
-useHead({ title: `${pageTitle} | Archive` })
-useSeoMeta({
-  description: pageDesc,
-  ogTitle: pageTitle,
-  ogDescription: pageDesc,
-  ogImage: pageImage,
-  ogUrl: pageUrl,
-  ogType: 'article',
-  twitterCard: 'summary_large_image',
-  twitterTitle: pageTitle,
-  twitterDescription: pageDesc,
-  twitterImage: pageImage,
+useHead({
+  title: `${pageTitle} | Archive`,
+  meta: [
+    { name: 'description',         content: pageDesc },
+    { property: 'og:title',        content: pageTitle },
+    { property: 'og:description',  content: pageDesc },
+    { property: 'og:image',        content: pageImage },
+    { property: 'og:url',          content: pageUrl },
+    { property: 'og:type',         content: 'article' },
+    { name: 'twitter:card',        content: 'summary_large_image' },
+    { name: 'twitter:title',       content: pageTitle },
+    { name: 'twitter:description', content: pageDesc },
+    { name: 'twitter:image',       content: pageImage },
+  ],
 })
 </script>
 

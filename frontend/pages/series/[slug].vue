@@ -73,18 +73,20 @@ if (!data.value) {
 const termName = data.value?.term?.name || 'Series'
 const firstImage = computed(() => data.value?.photos?.[0]?.images?.large || data.value?.photos?.[0]?.images?.medium || '')
 
-useHead({ title: `${termName} | Series` })
-useSeoMeta({
-  description: data.value?.term?.description || `${termName} - documentary photography series`,
-  ogTitle: `${termName} | Series`,
-  ogDescription: data.value?.term?.description || `Photos and stories from the ${termName} series`,
-  ogImage: firstImage,
-  ogUrl: `https://madsnorgaard.net/series/${data.value?.term?.slug}`,
-  ogType: 'website',
-  twitterCard: 'summary_large_image',
-  twitterTitle: `${termName} | Mads Nørgaard`,
-  twitterDescription: data.value?.term?.description || `${termName} series`,
-  twitterImage: firstImage,
+useHead({
+  title: `${termName} | Series`,
+  meta: [
+    { name: 'description',         content: data.value?.term?.description || `${termName} - documentary photography series` },
+    { property: 'og:title',        content: `${termName} | Series` },
+    { property: 'og:description',  content: data.value?.term?.description || `Photos and stories from the ${termName} series` },
+    { property: 'og:image',        content: firstImage },
+    { property: 'og:url',          content: `https://madsnorgaard.net/series/${data.value?.term?.slug}` },
+    { property: 'og:type',         content: 'website' },
+    { name: 'twitter:card',        content: 'summary_large_image' },
+    { name: 'twitter:title',       content: `${termName} | Mads Nørgaard` },
+    { name: 'twitter:description', content: data.value?.term?.description || `${termName} series` },
+    { name: 'twitter:image',       content: firstImage },
+  ],
 })
 </script>
 

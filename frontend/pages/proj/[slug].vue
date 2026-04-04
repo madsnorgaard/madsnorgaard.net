@@ -128,7 +128,7 @@ interface GalleryImage {
 
 // Extract prose text (paragraphs only, no gallery markup)
 const proseContent = computed(() => {
-  if (!project.value?.content) return ''
+  if (!project.value?.content || !import.meta.client) return ''
   const parser = new DOMParser()
   const doc = parser.parseFromString(project.value.content, 'text/html')
   const paragraphs: string[] = []
@@ -141,7 +141,7 @@ const proseContent = computed(() => {
 
 // Extract all gallery images from every source
 const galleryImages = computed<GalleryImage[]>(() => {
-  if (!project.value?.content) return []
+  if (!project.value?.content || !import.meta.client) return []
   const parser = new DOMParser()
   const doc = parser.parseFromString(project.value.content, 'text/html')
   const images: GalleryImage[] = []
@@ -215,25 +215,24 @@ function onKeydown(e: KeyboardEvent) {
 onMounted(() => window.addEventListener('keydown', onKeydown))
 onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 
-const pageTitle = project.value ? `${project.value.title} | Archive` : 'Archive'
-const pageDesc = project.value?.excerpt || `${project.value?.title} - documentary photography collection`
-const pageImage = project.value?.featuredImage?.src || ''
-const pageUrl = `https://madsnorgaard.net/proj/${route.params.slug}`
+const _title = project.value?.title || 'Archive'
+const _desc = project.value?.excerpt || `${_title} - documentary photography collection`
+const _img = project.value?.featuredImage?.src || ''
 
-useHead({ title: pageTitle })
-useSeoMeta({
-  description: pageDesc,
-  ogTitle: project.value?.title,
-  ogDescription: pageDesc,
-  ogImage: pageImage,
-  ogImageWidth: project.value?.featuredImage?.width ?? undefined,
-  ogImageHeight: project.value?.featuredImage?.height ?? undefined,
-  ogUrl: pageUrl,
-  ogType: 'article',
-  twitterCard: 'summary_large_image',
-  twitterTitle: project.value?.title,
-  twitterDescription: pageDesc,
-  twitterImage: pageImage,
+useHead({
+  title: `${_title} | Archive`,
+  meta: [
+    { name: 'description',         content: _desc },
+    { property: 'og:title',        content: _title },
+    { property: 'og:description',  content: _desc },
+    { property: 'og:image',        content: _img },
+    { property: 'og:url',          content: `https://madsnorgaard.net/proj/${route.params.slug}` },
+    { property: 'og:type',         content: 'article' },
+    { name: 'twitter:card',        content: 'summary_large_image' },
+    { name: 'twitter:title',       content: _title },
+    { name: 'twitter:description', content: _desc },
+    { name: 'twitter:image',       content: _img },
+  ],
 })
 </script>
 
