@@ -78,11 +78,23 @@ function formatDate(dateString: string) {
   return d.toLocaleDateString('en-GB', { year: 'numeric', month: 'long', day: 'numeric' })
 }
 
-useHead({
-  title: photo.value ? `${photo.value.archiveNumber ?? ''} ${photo.value.title} | Archive` : 'Archive',
-  meta: [
-    { name: 'description', content: photo.value?.excerpt || `Photo ${photo.value?.archiveNumber} from the documentary archive` },
-  ],
+const pageTitle = photo.value ? `${photo.value.archiveNumber ?? ''} ${photo.value.title}`.trim() : 'Archive'
+const pageDesc = photo.value?.excerpt || `${photo.value?.title} - ${photo.value?.location || 'documentary photography'}`
+const pageImage = photo.value?.images?.full || photo.value?.images?.large || ''
+const pageUrl = `https://madsnorgaard.net/archive/${route.params.slug}`
+
+useHead({ title: `${pageTitle} | Archive` })
+useSeoMeta({
+  description: pageDesc,
+  ogTitle: pageTitle,
+  ogDescription: pageDesc,
+  ogImage: pageImage,
+  ogUrl: pageUrl,
+  ogType: 'article',
+  twitterCard: 'summary_large_image',
+  twitterTitle: pageTitle,
+  twitterDescription: pageDesc,
+  twitterImage: pageImage,
 })
 </script>
 

@@ -95,11 +95,20 @@ function pageLink(page: number) {
   return { path: '/proj', query: q }
 }
 
-useHead({
-  title: 'Portfolio | Mads Nørgaard',
-  meta: [
-    { name: 'description', content: 'Photography portfolio projects' },
-  ],
+const firstImage = computed(() => data.value?.projects?.[0]?.featuredImage?.src || '')
+
+useHead({ title: 'Portfolio | Mads Nørgaard' })
+useSeoMeta({
+  description: 'Documentary photography portfolio by Mads Nørgaard',
+  ogTitle: 'Portfolio | Mads Nørgaard',
+  ogDescription: 'Documentary photography portfolio - assignments, editorial and personal work',
+  ogImage: firstImage,
+  ogUrl: 'https://madsnorgaard.net/proj',
+  ogType: 'website',
+  twitterCard: 'summary_large_image',
+  twitterTitle: 'Portfolio | Mads Nørgaard',
+  twitterDescription: 'Documentary photography portfolio',
+  twitterImage: firstImage,
 })
 </script>
 

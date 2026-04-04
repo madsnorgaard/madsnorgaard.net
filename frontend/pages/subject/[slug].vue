@@ -70,8 +70,21 @@ if (!data.value) {
   throw createError({ statusCode: 404, statusMessage: 'Subject not found' })
 }
 
-useHead({
-  title: data.value ? `${data.value.term.name} | Subjects` : 'Subject',
+const termName = data.value?.term?.name || 'Subject'
+const firstImage = computed(() => data.value?.photos?.[0]?.images?.large || data.value?.photos?.[0]?.images?.medium || '')
+
+useHead({ title: `${termName} | Subjects` })
+useSeoMeta({
+  description: data.value?.term?.description || `${termName} - documentary photography`,
+  ogTitle: `${termName} | Subjects`,
+  ogDescription: data.value?.term?.description || `Photos and stories about ${termName}`,
+  ogImage: firstImage,
+  ogUrl: `https://madsnorgaard.net/subject/${data.value?.term?.slug}`,
+  ogType: 'website',
+  twitterCard: 'summary_large_image',
+  twitterTitle: `${termName} | Mads Nørgaard`,
+  twitterDescription: data.value?.term?.description || `${termName}`,
+  twitterImage: firstImage,
 })
 </script>
 

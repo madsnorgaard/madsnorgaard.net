@@ -80,11 +80,23 @@ function formatDate(dateString: string) {
   })
 }
 
-useHead({
-  title: story.value ? `${story.value.title} | Stories` : 'Stories',
-  meta: [
-    { name: 'description', content: story.value?.excerpt || '' },
-  ],
+const pageTitle = story.value?.title || 'Stories'
+const pageDesc = story.value?.excerpt || `${pageTitle} - a documentary photo essay`
+const pageImage = story.value?.featuredImage?.src || ''
+const pageUrl = `https://madsnorgaard.net/stories/${route.params.slug}`
+
+useHead({ title: `${pageTitle} | Stories` })
+useSeoMeta({
+  description: pageDesc,
+  ogTitle: pageTitle,
+  ogDescription: pageDesc,
+  ogImage: pageImage,
+  ogUrl: pageUrl,
+  ogType: 'article',
+  twitterCard: 'summary_large_image',
+  twitterTitle: pageTitle,
+  twitterDescription: pageDesc,
+  twitterImage: pageImage,
 })
 </script>
 

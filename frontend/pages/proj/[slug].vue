@@ -215,11 +215,25 @@ function onKeydown(e: KeyboardEvent) {
 onMounted(() => window.addEventListener('keydown', onKeydown))
 onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 
-useHead({
-  title: project.value ? `${project.value.title} | Archive` : 'Archive',
-  meta: [
-    { name: 'description', content: project.value?.excerpt || '' },
-  ],
+const pageTitle = project.value ? `${project.value.title} | Archive` : 'Archive'
+const pageDesc = project.value?.excerpt || `${project.value?.title} - documentary photography collection`
+const pageImage = project.value?.featuredImage?.src || ''
+const pageUrl = `https://madsnorgaard.net/proj/${route.params.slug}`
+
+useHead({ title: pageTitle })
+useSeoMeta({
+  description: pageDesc,
+  ogTitle: project.value?.title,
+  ogDescription: pageDesc,
+  ogImage: pageImage,
+  ogImageWidth: project.value?.featuredImage?.width ?? undefined,
+  ogImageHeight: project.value?.featuredImage?.height ?? undefined,
+  ogUrl: pageUrl,
+  ogType: 'article',
+  twitterCard: 'summary_large_image',
+  twitterTitle: project.value?.title,
+  twitterDescription: pageDesc,
+  twitterImage: pageImage,
 })
 </script>
 

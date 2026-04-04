@@ -96,11 +96,20 @@ function pageLink(page: number) {
   return { path: '/archive', query: q }
 }
 
-useHead({
-  title: 'Archive | Mads Nørgaard',
-  meta: [
-    { name: 'description', content: 'Documentary photography archive by Mads Nørgaard' },
-  ],
+const firstImage = computed(() => data.value?.projects?.[0]?.featuredImage?.src || '')
+
+useHead({ title: 'Archive | Mads Nørgaard' })
+useSeoMeta({
+  description: 'Documentary photography archive by Mads Nørgaard. Cape Town, Johannesburg, Denmark and beyond.',
+  ogTitle: 'Archive | Mads Nørgaard',
+  ogDescription: 'Documentary photography collections from South Africa, Denmark and beyond',
+  ogImage: firstImage,
+  ogUrl: 'https://madsnorgaard.net/archive',
+  ogType: 'website',
+  twitterCard: 'summary_large_image',
+  twitterTitle: 'Archive | Mads Nørgaard',
+  twitterDescription: 'Documentary photography collections',
+  twitterImage: firstImage,
 })
 </script>
 

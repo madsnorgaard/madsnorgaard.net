@@ -83,11 +83,20 @@ function formatDate(dateString: string) {
   })
 }
 
-useHead({
-  title: 'Stories | Mads Nørgaard',
-  meta: [
-    { name: 'description', content: 'Documentary photo essays by Mads Nørgaard' },
-  ],
+const firstImage = computed(() => data.value?.stories?.[0]?.featuredImage?.src || '')
+
+useHead({ title: 'Stories | Mads Nørgaard' })
+useSeoMeta({
+  description: 'Documentary photo essays by Mads Nørgaard',
+  ogTitle: 'Stories | Mads Nørgaard',
+  ogDescription: 'Documentary photo essays - long-form visual storytelling',
+  ogImage: firstImage,
+  ogUrl: 'https://madsnorgaard.net/stories',
+  ogType: 'website',
+  twitterCard: 'summary_large_image',
+  twitterTitle: 'Stories | Mads Nørgaard',
+  twitterDescription: 'Documentary photo essays',
+  twitterImage: firstImage,
 })
 </script>
 
