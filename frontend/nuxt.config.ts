@@ -6,7 +6,44 @@ export default defineNuxtConfig({
   modules: [
     '@nuxt/image',
     '@vueuse/nuxt',
+    '@nuxtjs/seo',
   ],
+
+  site: {
+    url: 'https://madsnorgaard.net',
+    name: 'Mads Norgaard',
+    description: 'Self-taught senior developer and DevOps engineer. 15 years building on Drupal, PHP, Docker, Linux. Documentary photographer.',
+    defaultLocale: 'en',
+  },
+
+  sitemap: {
+    sources: ['/api/__sitemap__/urls'],
+    exclude: ['/api/**'],
+  },
+
+  robots: {
+    groups: [
+      {
+        userAgent: '*',
+        allow: '/',
+        disallow: ['/api/'],
+      },
+    ],
+  },
+
+  schemaOrg: {
+    identity: {
+      type: 'Person',
+      name: 'Mads Norgaard',
+      url: 'https://madsnorgaard.net',
+      image: 'https://madsnorgaard.net/og-image.png',
+      jobTitle: 'Senior Developer & DevOps Engineer',
+      sameAs: [
+        'https://github.com/madsnorgaard',
+        'https://photo.madsnorgaard.net',
+      ],
+    },
+  },
 
   image: {
     domains: ['photo.madsnorgaard.net'],

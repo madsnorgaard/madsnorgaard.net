@@ -1,0 +1,32 @@
+# Mads Norgaard
+
+> Self-taught senior developer and DevOps engineer based in Denmark. 15 years building on Drupal, PHP, Docker, and Linux. Documentary photographer.
+
+## About
+
+Mads Norgaard is a senior developer and DevOps engineer specializing in open-source web technologies. He builds and maintains production infrastructure using Docker, Linux, and CI/CD pipelines. He has deep expertise in Drupal (7-11), PHP, Node.js, Nuxt/Vue, and self-hosted server management. He is also a documentary photographer focused on social documentary work in Southern Africa.
+
+## Sections
+
+- [Writing](/writing): Technical blog posts on development, DevOps, and infrastructure
+- [Projects](/projects): Open-source and professional development projects
+- [Photography Projects](/proj): Documentary photography projects
+- [Photo Stories](/stories): Visual essays and photo stories
+- [Photo Archive](/archive): Curated photographic archive
+- [CV](/cv): Professional experience and skills
+- [Work With Me](/with): Availability and collaboration
+
+## Technical Stack
+
+- Frontend: Nuxt 3, Vue 3, TypeScript
+- CMS: Drupal 11 (headless, JSON:API)
+- Photography: WordPress (headless, REST API)
+- Infrastructure: Docker, Traefik, GitHub Actions CI/CD
+- Hosting: Self-hosted on Contabo VPS (Ubuntu)
+- Monitoring: Grafana, Prometheus, Loki
+
+## Contact
+
+- Email: mads@madsnorgaard.net
+- GitHub: https://github.com/madsnorgaard
+- Photography: https://photo.madsnorgaard.net
