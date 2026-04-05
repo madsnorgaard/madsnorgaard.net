@@ -48,11 +48,20 @@
       </div>
     </div>
 
-    <div class="container" style="padding: 0 1.5rem 3rem;">
-      <NuxtLink to="/archive" class="text-mono" style="color: var(--color-accent); font-size: 0.85rem;">
-        &lt;- back to archive
-      </NuxtLink>
-    </div>
+    <!-- Related one-picture stories -->
+    <section v-if="relatedPosts.length" class="post-page__related container">
+      <h2 class="post-page__related-heading">
+        <span class="post-page__related-number">&#9632;</span>
+        One picture stories
+      </h2>
+      <div class="projects-grid">
+        <PostCard
+          v-for="rp in relatedPosts"
+          :key="rp.id"
+          :post="rp"
+        />
+      </div>
+    </section>
   </article>
 </template>
 
@@ -63,6 +72,18 @@ const { data: post } = await useFetch<any>(`/api/wp/posts/${route.params.slug}`)
 if (!post.value) {
   throw createError({ statusCode: 404, statusMessage: 'Post not found' })
 }
+
+// Fetch related posts from the first category (exclude current post)
+const firstCatSlug = post.value?.categories?.[0]?.slug || 'feature'
+const { data: catData } = await useFetch<any>(`/api/wp/categories/${firstCatSlug}`, {
+  query: { per_page: 4 },
+})
+
+const relatedPosts = computed(() =>
+  (catData.value?.posts ?? [])
+    .filter((p: any) => p.id !== post.value?.id && p.featuredImage?.src)
+    .slice(0, 3)
+)
 
 function formatDate(dateString: string) {
   if (!dateString) return ''
@@ -209,5 +230,28 @@ useHead({
   text-overflow: ellipsis;
   white-space: nowrap;
   max-width: 30ch;
+}
+
+/* Related stories section */
+.post-page__related {
+  padding-top: 2rem;
+  padding-bottom: 3rem;
+  border-top: 1px solid var(--color-border);
+}
+
+.post-page__related-heading {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 0 0 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.post-page__related-number {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  color: var(--color-accent);
 }
 </style>
