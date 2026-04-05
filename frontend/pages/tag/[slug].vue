@@ -11,11 +11,13 @@
     <!-- Posts -->
     <section v-if="data.posts?.length" class="posts-list">
       <article v-for="post in data.posts" :key="post.id" class="post-card">
-        <div v-if="post.featuredImage?.src" class="post-card__thumb">
+        <NuxtLink v-if="post.featuredImage?.src" :to="`/post/${post.slug}`" class="post-card__thumb">
           <img :src="post.featuredImage.src" :alt="post.featuredImage.alt" loading="lazy" class="post-card__image" />
-        </div>
+        </NuxtLink>
         <div class="post-card__body">
-          <h2 class="post-card__title">{{ post.title }}</h2>
+          <h2 class="post-card__title">
+            <NuxtLink :to="`/post/${post.slug}`" class="post-card__title-link">{{ post.title }}</NuxtLink>
+          </h2>
           <time v-if="post.date" class="post-card__date text-mono">{{ formatDate(post.date) }}</time>
           <p v-if="post.excerpt" class="post-card__excerpt">{{ post.excerpt }}</p>
           <div v-if="post.categories?.length || post.tags?.length" class="post-card__terms">
@@ -127,6 +129,16 @@ useHead({
   font-weight: 600;
   margin: 0 0 0.25rem;
   line-height: 1.3;
+}
+
+.post-card__title-link {
+  color: inherit;
+  text-decoration: none;
+  transition: color 150ms;
+}
+
+.post-card__title-link:hover {
+  color: var(--color-accent);
 }
 
 .post-card__date {

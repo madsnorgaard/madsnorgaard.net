@@ -24,13 +24,11 @@
           <time class="ops__date" :datetime="current.date">{{ formatDate(current.date) }}</time>
           <p class="ops__title">{{ current.title }}</p>
           <p v-if="current.caption" class="ops__excerpt">{{ current.caption }}</p>
-          <a
-            :href="current.url"
+          <NuxtLink
+            :to="`/post/${current.slug}`"
             class="ops__link"
-            target="_blank"
-            rel="noopener"
             @click.stop
-          >Read →</a>
+          >Read →</NuxtLink>
         </div>
       </Transition>
 

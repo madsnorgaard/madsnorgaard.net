@@ -134,6 +134,7 @@ export default defineNuxtConfig({
     '/api/wp/subjects/**': { swr: 600 },
     '/api/wp/categories/**': { swr: 600 },
     '/api/wp/tags/**': { swr: 600 },
+    '/api/wp/posts/**': { swr: 300 },
 
     '/**': {
       swr: 300, // cache rendered pages for 5 minutes, revalidate in background
