@@ -12,36 +12,61 @@
       <h1 class="project-detail__title">{{ project.title }}</h1>
     </header>
 
-    <!-- Prose text (contained width) -->
+    <!-- Content blocks: prose, images, and galleries in document order -->
     <ClientOnly>
-      <div
-        v-if="proseContent"
-        class="project-detail__prose container--narrow"
-        v-html="proseContent"
-      />
-    </ClientOnly>
-
-    <!-- Gallery (full-bleed) -->
-    <div
-      v-if="galleryImages.length"
-      ref="contentEl"
-      class="project-detail__gallery"
-      @click="handleGalleryClick"
-    >
-      <div
-        v-for="(img, i) in galleryImages"
-        :key="i"
-        class="gallery__item"
-        @click="openLightbox(i)"
-      >
-        <img
-          :src="img.src"
-          :alt="img.alt"
-          loading="lazy"
-          class="gallery__image"
+      <template v-for="(block, i) in parsed.blocks" :key="i">
+        <!-- Prose text -->
+        <div
+          v-if="block.type === 'prose'"
+          class="project-detail__prose"
+          v-html="block.html"
         />
-      </div>
-    </div>
+
+        <!-- Single inline image (full text-column width) -->
+        <figure
+          v-else-if="block.type === 'single-image'"
+          class="project-detail__single"
+          @click="openLightbox(block.imageIndex)"
+        >
+          <img
+            :src="block.image.src"
+            :alt="block.image.alt"
+            loading="lazy"
+            class="project-detail__single-img"
+          />
+        </figure>
+
+        <!-- Composite (2-3 images in flex row) -->
+        <div
+          v-else-if="block.type === 'composite'"
+          class="project-detail__composite"
+        >
+          <div
+            v-for="(img, j) in block.images"
+            :key="j"
+            class="composite__item"
+            @click="openLightbox(block.startIndex + j)"
+          >
+            <img :src="img.src" :alt="img.alt" loading="lazy" class="composite__image" />
+          </div>
+        </div>
+
+        <!-- Gallery grid (4+ images, full-bleed) -->
+        <div
+          v-else-if="block.type === 'gallery'"
+          class="project-detail__gallery"
+        >
+          <div
+            v-for="(img, j) in block.images"
+            :key="j"
+            class="gallery__item"
+            @click="openLightbox(block.startIndex + j)"
+          >
+            <img :src="img.src" :alt="img.alt" loading="lazy" class="gallery__image" />
+          </div>
+        </div>
+      </template>
+    </ClientOnly>
 
     <div class="container" style="padding: 2rem 1.5rem;">
       <NuxtLink to="/archive" class="text-mono" style="color: var(--color-accent); font-size: 0.85rem;">
@@ -49,7 +74,7 @@
       </NuxtLink>
     </div>
 
-    <!-- Lightbox overlay -->
+    <!-- Lightbox overlay (navigates ALL images) -->
     <Teleport to="body">
       <Transition name="lightbox">
         <div
@@ -65,13 +90,13 @@
 
           <!-- Navigation -->
           <button
-            v-if="galleryImages.length > 1"
+            v-if="parsed.allImages.length > 1"
             class="lightbox__nav lightbox__nav--prev"
             @click.stop="prevImage"
             aria-label="Previous image"
           >&lt;</button>
           <button
-            v-if="galleryImages.length > 1"
+            v-if="parsed.allImages.length > 1"
             class="lightbox__nav lightbox__nav--next"
             @click.stop="nextImage"
             aria-label="Next image"
@@ -80,8 +105,8 @@
           <!-- Image -->
           <div class="lightbox__frame" @click.stop>
             <img
-              :src="galleryImages[lightbox.index]?.src ?? ''"
-              :alt="galleryImages[lightbox.index]?.alt ?? ''"
+              :src="parsed.allImages[lightbox.index]?.src ?? ''"
+              :alt="parsed.allImages[lightbox.index]?.alt ?? ''"
               class="lightbox__image"
               @click.stop="nextImage"
             />
@@ -90,7 +115,7 @@
               <span class="lightbox__counter">
                 <span class="lightbox__counter-current">{{ String(lightbox.index + 1).padStart(2, '0') }}</span>
                 <span class="lightbox__counter-sep">/</span>
-                <span class="lightbox__counter-total">{{ String(galleryImages.length).padStart(2, '0') }}</span>
+                <span class="lightbox__counter-total">{{ String(parsed.allImages.length).padStart(2, '0') }}</span>
               </span>
               <span v-if="currentDimensions" class="lightbox__dimensions">{{ currentDimensions }}</span>
               <span class="lightbox__filename">{{ currentFilename }}</span>
@@ -115,10 +140,10 @@ if (!project.value) {
   throw createError({ statusCode: 404, statusMessage: 'Project not found' })
 }
 
-const contentEl = ref<HTMLElement | null>(null)
 const lightboxEl = ref<HTMLElement | null>(null)
 
-// Split content: prose paragraphs vs gallery images
+// ─── Content types ──────────────────────────────────────────────
+
 interface GalleryImage {
   src: string
   alt: string
@@ -126,46 +151,100 @@ interface GalleryImage {
   height: string
 }
 
-// Extract prose text (paragraphs + headings, no gallery markup)
-const proseContent = computed(() => {
-  if (!project.value?.content || !import.meta.client) return ''
+type ContentBlock =
+  | { type: 'prose'; html: string }
+  | { type: 'single-image'; image: GalleryImage; imageIndex: number }
+  | { type: 'composite'; images: GalleryImage[]; startIndex: number }
+  | { type: 'gallery'; images: GalleryImage[]; startIndex: number }
+
+// ─── Parse content into ordered blocks ──────────────────────────
+
+const parsed = computed<{ blocks: ContentBlock[]; allImages: GalleryImage[] }>(() => {
+  if (!project.value?.content || !import.meta.client) {
+    return { blocks: [], allImages: [] }
+  }
+
   const parser = new DOMParser()
   const doc = parser.parseFromString(project.value.content, 'text/html')
-  const elements: string[] = []
-  doc.querySelectorAll('p, h1, h2, h3, h4').forEach(el => {
-    const text = el.textContent?.trim()
-    if (text) elements.push(el.outerHTML)
-  })
-  return elements.join('')
+  const blocks: ContentBlock[] = []
+  const allImages: GalleryImage[] = []
+  let proseBuffer = ''
+
+  function flushProse() {
+    if (proseBuffer.trim()) {
+      blocks.push({ type: 'prose', html: proseBuffer })
+      proseBuffer = ''
+    }
+  }
+
+  function extractImages(container: Element): GalleryImage[] {
+    const imgs: GalleryImage[] = []
+    container.querySelectorAll('img').forEach(img => {
+      const imgSrc = img.getAttribute('src') || ''
+      if (!imgSrc) return
+      const link = img.closest('a')
+      const linkHref = link?.getAttribute('href') || ''
+      const isImageUrl = /\.(jpe?g|png|gif|webp)(\?.*)?$/i.test(linkHref)
+      const src = isImageUrl ? linkHref : imgSrc
+      const size = link?.getAttribute('data-size') || ''
+      const [w, h] = size ? size.split('x') : ['', '']
+      imgs.push({ src, alt: img.getAttribute('alt') || '', width: w || '', height: h || '' })
+    })
+    return imgs
+  }
+
+  const proseTags = new Set(['P', 'H1', 'H2', 'H3', 'H4', 'UL', 'OL', 'BLOCKQUOTE'])
+
+  for (const node of Array.from(doc.body.children)) {
+    const el = node as Element
+    const isFigure = el.tagName === 'FIGURE'
+    const isWpImage = isFigure && el.classList.contains('wp-block-image')
+    const isWpGallery = isFigure && el.classList.contains('wp-block-gallery')
+
+    if (isWpImage || isWpGallery) {
+      flushProse()
+      const images = extractImages(el)
+      if (images.length === 0) continue
+      const startIndex = allImages.length
+      allImages.push(...images)
+
+      if (images.length === 1) {
+        blocks.push({ type: 'single-image', image: images[0], imageIndex: startIndex })
+      } else if (images.length <= 3) {
+        blocks.push({ type: 'composite', images, startIndex })
+      } else {
+        blocks.push({ type: 'gallery', images, startIndex })
+      }
+    } else if (proseTags.has(el.tagName)) {
+      const text = el.textContent?.trim()
+      if (text) proseBuffer += el.outerHTML
+    } else {
+      // Other elements (divs, sections, etc.) - check for images
+      const innerImages = extractImages(el)
+      if (innerImages.length > 0) {
+        flushProse()
+        const startIndex = allImages.length
+        allImages.push(...innerImages)
+        if (innerImages.length === 1) {
+          blocks.push({ type: 'single-image', image: innerImages[0], imageIndex: startIndex })
+        } else if (innerImages.length <= 3) {
+          blocks.push({ type: 'composite', images: innerImages, startIndex })
+        } else {
+          blocks.push({ type: 'gallery', images: innerImages, startIndex })
+        }
+      } else {
+        // Treat as prose
+        const text = el.textContent?.trim()
+        if (text) proseBuffer += el.outerHTML
+      }
+    }
+  }
+
+  flushProse()
+  return { blocks, allImages }
 })
 
-// Extract all gallery images from every source
-const galleryImages = computed<GalleryImage[]>(() => {
-  if (!project.value?.content || !import.meta.client) return []
-  const parser = new DOMParser()
-  const doc = parser.parseFromString(project.value.content, 'text/html')
-  const images: GalleryImage[] = []
-
-  // Collect from all image sources
-  doc.querySelectorAll('img').forEach(img => {
-    const imgSrc = img.getAttribute('src') || ''
-    if (!imgSrc) return
-
-    // Check if parent <a> has a direct image URL (mauer-stills pattern)
-    // vs an attachment page permalink (WP block gallery pattern)
-    const link = img.closest('a')
-    const linkHref = link?.getAttribute('href') || ''
-    const isImageUrl = /\.(jpe?g|png|gif|webp)(\?.*)?$/i.test(linkHref)
-    const src = isImageUrl ? linkHref : imgSrc
-
-    // Get dimensions from data-size on the link (mauer-stills pattern)
-    const size = link?.getAttribute('data-size') || ''
-    const [w, h] = size ? size.split('x') : ['', '']
-    images.push({ src, alt: img.getAttribute('alt') || '', width: w || '', height: h || '' })
-  })
-
-  return images
-})
+// ─── Lightbox ───────────────────────────────────────────────────
 
 const lightbox = reactive({
   active: false,
@@ -173,25 +252,20 @@ const lightbox = reactive({
 })
 
 const currentFilename = computed(() => {
-  const src = galleryImages.value[lightbox.index]?.src ?? ''
+  const src = parsed.value.allImages[lightbox.index]?.src ?? ''
   const parts = src.split('/')
   return parts[parts.length - 1]?.replace(/\.[^.]+$/, '') ?? ''
 })
 
 const currentDimensions = computed(() => {
-  const img = galleryImages.value[lightbox.index]
+  const img = parsed.value.allImages[lightbox.index]
   if (!img?.width || !img?.height) return ''
   return `${img.width}x${img.height}`
 })
 
-function handleGalleryClick(e: MouseEvent) {
-  e.preventDefault()
-}
-
 function openLightbox(index: number) {
   lightbox.index = index
   lightbox.active = true
-  // Lock scroll on both html and body (iOS needs both)
   document.documentElement.style.overflow = 'hidden'
   document.body.style.overflow = 'hidden'
   document.body.style.position = 'fixed'
@@ -201,7 +275,6 @@ function openLightbox(index: number) {
 }
 
 function closeLightbox() {
-  // Restore scroll position
   const scrollY = document.body.style.top
   document.documentElement.style.overflow = ''
   document.body.style.overflow = ''
@@ -213,16 +286,15 @@ function closeLightbox() {
 }
 
 function nextImage() {
-  if (galleryImages.value.length <= 1) return
-  lightbox.index = (lightbox.index + 1) % galleryImages.value.length
+  if (parsed.value.allImages.length <= 1) return
+  lightbox.index = (lightbox.index + 1) % parsed.value.allImages.length
 }
 
 function prevImage() {
-  if (galleryImages.value.length <= 1) return
-  lightbox.index = (lightbox.index - 1 + galleryImages.value.length) % galleryImages.value.length
+  if (parsed.value.allImages.length <= 1) return
+  lightbox.index = (lightbox.index - 1 + parsed.value.allImages.length) % parsed.value.allImages.length
 }
 
-// Keyboard navigation
 function onKeydown(e: KeyboardEvent) {
   if (!lightbox.active) return
   if (e.key === 'Escape') closeLightbox()
@@ -232,6 +304,8 @@ function onKeydown(e: KeyboardEvent) {
 
 onMounted(() => window.addEventListener('keydown', onKeydown))
 onUnmounted(() => window.removeEventListener('keydown', onKeydown))
+
+// ─── SEO ────────────────────────────────────────────────────────
 
 const _title = project.value?.title || 'Archive'
 const _desc = project.value?.excerpt || `${_title} - documentary photography collection`
@@ -292,7 +366,7 @@ useHead({
 .project-detail__prose {
   max-width: 640px;
   margin: 0 auto;
-  padding: 0 1.5rem 2rem;
+  padding: 0 1.5rem 1.5rem;
   line-height: 1.75;
   color: var(--color-muted);
   font-size: 0.95rem;
@@ -306,7 +380,81 @@ useHead({
   margin-bottom: 0;
 }
 
-/* ─── Gallery (full-bleed, images are the hero) ──────────────── */
+.project-detail__prose :deep(h2),
+.project-detail__prose :deep(h3),
+.project-detail__prose :deep(h4) {
+  font-family: var(--font-display);
+  color: var(--color-text);
+  margin-top: 1.5em;
+  margin-bottom: 0.5em;
+}
+
+.project-detail__prose :deep(a) {
+  color: var(--color-accent);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.project-detail__prose :deep(ul),
+.project-detail__prose :deep(ol) {
+  padding-left: 1.5em;
+  margin: 0 0 1em;
+}
+
+/* ─── Single inline image (text-column width) ────────────────── */
+
+.project-detail__single {
+  max-width: 640px;
+  margin: 1rem auto 2rem;
+  padding: 0 1.5rem;
+  cursor: pointer;
+}
+
+.project-detail__single-img {
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+  display: block;
+  transition: filter 250ms ease;
+}
+
+.project-detail__single:hover .project-detail__single-img {
+  filter: brightness(1.08);
+}
+
+/* ─── Composite (2-3 images, flex row at text width) ─────────── */
+
+.project-detail__composite {
+  max-width: 640px;
+  margin: 1rem auto 2rem;
+  padding: 0 1.5rem;
+  display: flex;
+  gap: 3px;
+}
+
+.composite__item {
+  flex: 1 1 0;
+  min-width: 0;
+  overflow: hidden;
+  cursor: pointer;
+  aspect-ratio: 3 / 2;
+  background: var(--color-surface);
+}
+
+.composite__image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 400ms ease, filter 250ms ease;
+}
+
+.composite__item:hover .composite__image {
+  transform: scale(1.04);
+  filter: brightness(1.12);
+}
+
+/* ─── Gallery (full-bleed grid, 4+ images) ───────────────────── */
 
 .project-detail__gallery {
   display: grid;
@@ -314,6 +462,7 @@ useHead({
   gap: 3px;
   padding: 0;
   width: 100%;
+  margin-top: 2rem;
 }
 
 @media (max-width: 768px) {
@@ -349,7 +498,7 @@ useHead({
   filter: brightness(1.12);
 }
 
-/* ─── Lightbox ───────────────────────────────────────────────────── */
+/* ─── Lightbox ───────────────────────────────────────────────── */
 
 .lightbox {
   position: fixed;
@@ -360,7 +509,6 @@ useHead({
   align-items: center;
   justify-content: center;
   outline: none;
-  /* Prevent iOS rubber-band scroll on the overlay */
   overscroll-behavior: contain;
   overflow: hidden;
   touch-action: none;
@@ -584,6 +732,12 @@ useHead({
   .lightbox__close {
     top: 0.5rem;
     right: 0.5rem;
+  }
+
+  /* Single + composite: reduce side padding on mobile */
+  .project-detail__single,
+  .project-detail__composite {
+    padding: 0 0.75rem;
   }
 }
 </style>
