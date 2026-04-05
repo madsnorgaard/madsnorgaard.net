@@ -50,10 +50,7 @@
 
     <!-- Related one-picture stories -->
     <section v-if="relatedPosts.length" class="post-page__related container">
-      <h2 class="post-page__related-heading">
-        <span class="post-page__related-number">&#9632;</span>
-        One picture stories
-      </h2>
+      <h2 class="post-page__related-heading">One picture stories</h2>
       <div class="projects-grid">
         <PostCard
           v-for="rp in relatedPosts"
@@ -244,14 +241,5 @@ useHead({
   font-size: 1.25rem;
   font-weight: 700;
   margin: 0 0 1.5rem;
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-.post-page__related-number {
-  font-family: var(--font-mono);
-  font-size: 0.6rem;
-  color: var(--color-accent);
 }
 </style>
