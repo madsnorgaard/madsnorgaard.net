@@ -126,13 +126,14 @@ export default defineNuxtConfig({
   routeRules: {
     // Redirects for old WordPress paths — indexed traffic belongs on photo.madsnorgaard.net
     '/one-picture-stories/**': { redirect: { to: 'https://photo.madsnorgaard.net/one-picture-stories/**', statusCode: 301 } },
-    '/tag/**':                  { redirect: { to: 'https://photo.madsnorgaard.net/tag/**', statusCode: 301 } },
 
     // Photo API route caching
     '/api/photo/**': { swr: 300 },
     '/api/wp/stories/**': { swr: 300 },
     '/api/wp/series/**': { swr: 600 },
     '/api/wp/subjects/**': { swr: 600 },
+    '/api/wp/categories/**': { swr: 600 },
+    '/api/wp/tags/**': { swr: 600 },
 
     '/**': {
       swr: 300, // cache rendered pages for 5 minutes, revalidate in background
