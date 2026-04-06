@@ -63,21 +63,13 @@
 
 <script setup lang="ts">
 import type { Story } from '~/types/photo'
+import { formatDate } from '~/composables/useContentMeta'
 
 const route = useRoute()
 const { data: story } = await useFetch<Story>(`/api/wp/stories/${route.params.slug}`)
 
 if (!story.value) {
   throw createError({ statusCode: 404, statusMessage: 'Story not found' })
-}
-
-function formatDate(dateString: string) {
-  if (!dateString) return ''
-  return new Date(dateString).toLocaleDateString('en-GB', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  })
 }
 
 const pageTitle = story.value?.title || 'Stories'

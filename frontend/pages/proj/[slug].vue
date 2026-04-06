@@ -1,16 +1,34 @@
 <template>
   <article v-if="project">
-    <!-- Header -->
-    <header class="project-detail__header container">
-      <div v-if="project.categories?.length" class="project-detail__cats">
-        <span
-          v-for="cat in project.categories"
-          :key="cat.slug"
-          class="filter-pill"
-        >{{ cat.name }}</span>
-      </div>
-      <h1 class="project-detail__title">{{ project.title }}</h1>
-    </header>
+    <div class="container container--reading" style="padding-top: 4rem;">
+      <!-- Back link -->
+      <NuxtLink to="/archive" class="text-mono text-mono--sm" style="color: var(--color-muted); display: block; margin-bottom: 2rem;">
+        ← All archive
+      </NuxtLink>
+
+      <!-- Header (matches writing page style) -->
+      <header style="margin-bottom: 3rem; border-bottom: 1px solid var(--color-border); padding-bottom: 2rem;">
+        <h1
+          class="text-display"
+          style="font-size: clamp(2rem, 5vw, 3rem); margin-bottom: 1rem;"
+        >{{ project.title }}</h1>
+
+        <div class="post-header__meta">
+          <time v-if="project.date" class="text-mono text-mono--sm" style="color: var(--color-muted);" :datetime="project.date">
+            {{ formatDate(project.date) }}
+          </time>
+          <span v-if="project.content" class="post-header__reading-time">· {{ readingTime(project.content) }} min read</span>
+          <div v-if="project.categories?.length" style="display: flex; gap: 0.4rem; flex-wrap: wrap;">
+            <NuxtLink
+              v-for="cat in project.categories"
+              :key="cat.slug"
+              :to="`/archive?cat=${cat.slug}`"
+              class="post-tag-link"
+            >#{{ cat.name }}</NuxtLink>
+          </div>
+        </div>
+      </header>
+    </div>
 
     <!-- Content blocks: prose, images, and galleries in document order -->
     <ClientOnly>
@@ -18,7 +36,7 @@
         <!-- Prose text -->
         <div
           v-if="block.type === 'prose'"
-          class="project-detail__prose"
+          class="project-detail__prose post-body"
           v-html="block.html"
         />
 
@@ -68,13 +86,13 @@
       </template>
     </ClientOnly>
 
-    <div class="container" style="padding: 2rem 1.5rem;">
-      <NuxtLink to="/archive" class="text-mono" style="color: var(--color-accent); font-size: 0.85rem;">
-        &lt;- back to archive
+    <div class="container container--reading" style="padding: 3rem 1rem 4rem;">
+      <NuxtLink to="/archive" class="text-mono text-mono--sm" style="color: var(--color-muted);">
+        ← All archive
       </NuxtLink>
     </div>
 
-    <!-- Lightbox overlay (navigates ALL images) -->
+    <!-- Lightbox overlay -->
     <Teleport to="body">
       <Transition name="lightbox">
         <div
@@ -85,10 +103,8 @@
           tabindex="0"
           ref="lightboxEl"
         >
-          <!-- Scanline noise -->
           <div class="lightbox__noise" />
 
-          <!-- Navigation -->
           <button
             v-if="parsed.allImages.length > 1"
             class="lightbox__nav lightbox__nav--prev"
@@ -102,7 +118,6 @@
             aria-label="Next image"
           >&gt;</button>
 
-          <!-- Image -->
           <div class="lightbox__frame" @click.stop>
             <img
               :src="parsed.allImages[lightbox.index]?.src ?? ''"
@@ -110,7 +125,6 @@
               class="lightbox__image"
               @click.stop="nextImage"
             />
-            <!-- HUD bar -->
             <div class="lightbox__hud">
               <span class="lightbox__counter">
                 <span class="lightbox__counter-current">{{ String(lightbox.index + 1).padStart(2, '0') }}</span>
@@ -122,7 +136,6 @@
             </div>
           </div>
 
-          <!-- Close -->
           <button class="lightbox__close" @click.stop="closeLightbox" aria-label="Close">
             <span class="lightbox__close-key">esc</span>
           </button>
@@ -133,6 +146,8 @@
 </template>
 
 <script setup lang="ts">
+import { formatDate, readingTime } from '~/composables/useContentMeta'
+
 const route = useRoute()
 const { data: project } = await useFetch<any>(`/api/wp/projects/${route.params.slug}`)
 
@@ -219,7 +234,6 @@ const parsed = computed<{ blocks: ContentBlock[]; allImages: GalleryImage[] }>((
       const text = el.textContent?.trim()
       if (text) proseBuffer += el.outerHTML
     } else {
-      // Other elements (divs, sections, etc.) - check for images
       const innerImages = extractImages(el)
       if (innerImages.length > 0) {
         flushProse()
@@ -233,7 +247,6 @@ const parsed = computed<{ blocks: ContentBlock[]; allImages: GalleryImage[] }>((
           blocks.push({ type: 'gallery', images: innerImages, startIndex })
         }
       } else {
-        // Treat as prose
         const text = el.textContent?.trim()
         if (text) proseBuffer += el.outerHTML
       }
@@ -329,64 +342,43 @@ useHead({
 </script>
 
 <style scoped>
-/* ─── Header ─────────────────────────────────────────────────── */
+/* ─── Prose (reading width, matches writing page) ───────────── */
 
-.project-detail__header {
-  padding-top: 3rem;
-  padding-bottom: 1.5rem;
+.project-detail__prose {
+  max-width: 42rem;
+  margin: 0 auto;
+  padding: 0 1rem 1.5rem;
+  font-size: 1.0625rem;
+  line-height: 1.75;
+  color: var(--color-muted);
 }
 
-.project-detail__title {
+.project-detail__prose :deep(h2) {
   font-family: var(--font-display);
-  font-size: clamp(2rem, 5vw, 3rem);
+  font-size: 1.5rem;
   font-weight: 700;
-  margin: 0;
-  line-height: 1.15;
-}
-
-.project-detail__cats {
-  display: flex;
-  gap: 0.5rem;
-  flex-wrap: wrap;
+  color: var(--color-text);
+  margin-top: 2.5rem;
   margin-bottom: 0.75rem;
 }
 
-.filter-pill {
+.project-detail__prose :deep(h3) {
   font-family: var(--font-mono);
-  font-size: 0.65rem;
-  padding: 0.2em 0.6em;
-  border: 1px solid var(--color-border);
-  color: var(--color-muted);
+  font-size: 0.875rem;
+  font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-}
-
-/* ─── Prose ──────────────────────────────────────────────────── */
-
-.project-detail__prose {
-  max-width: 640px;
-  margin: 0 auto;
-  padding: 0 1.5rem 1.5rem;
-  line-height: 1.75;
-  color: var(--color-muted);
-  font-size: 0.95rem;
+  color: var(--color-text);
+  margin-top: 2rem;
+  margin-bottom: 0.5rem;
 }
 
 .project-detail__prose :deep(p) {
-  margin: 0 0 1em;
+  margin-bottom: 1.5rem;
 }
 
 .project-detail__prose :deep(p:last-child) {
   margin-bottom: 0;
-}
-
-.project-detail__prose :deep(h2),
-.project-detail__prose :deep(h3),
-.project-detail__prose :deep(h4) {
-  font-family: var(--font-display);
-  color: var(--color-text);
-  margin-top: 1.5em;
-  margin-bottom: 0.5em;
 }
 
 .project-detail__prose :deep(a) {
@@ -401,12 +393,20 @@ useHead({
   margin: 0 0 1em;
 }
 
+.project-detail__prose :deep(blockquote) {
+  border-left: 3px solid var(--color-accent);
+  padding-left: 1.5rem;
+  margin-left: 0;
+  color: var(--color-muted);
+  font-style: italic;
+}
+
 /* ─── Single inline image (text-column width) ────────────────── */
 
 .project-detail__single {
-  max-width: 640px;
+  max-width: 42rem;
   margin: 1rem auto 2rem;
-  padding: 0 1.5rem;
+  padding: 0 1rem;
   cursor: pointer;
 }
 
@@ -425,9 +425,9 @@ useHead({
 /* ─── Composite (2-3 images, flex row at text width) ─────────── */
 
 .project-detail__composite {
-  max-width: 640px;
+  max-width: 42rem;
   margin: 1rem auto 2rem;
-  padding: 0 1.5rem;
+  padding: 0 1rem;
   display: flex;
   gap: 3px;
 }
@@ -514,7 +514,6 @@ useHead({
   touch-action: none;
 }
 
-/* CRT scanline texture */
 .lightbox__noise {
   position: absolute;
   inset: 0;
@@ -555,7 +554,6 @@ useHead({
   }
 }
 
-/* Terminal-style HUD bar */
 .lightbox__hud {
   display: flex;
   align-items: center;
@@ -610,7 +608,6 @@ useHead({
   opacity: 0.5;
 }
 
-/* Navigation arrows */
 .lightbox__nav {
   position: absolute;
   top: 50%;
@@ -644,7 +641,6 @@ useHead({
   right: 1rem;
 }
 
-/* Close button */
 .lightbox__close {
   position: absolute;
   top: 1rem;
@@ -673,7 +669,6 @@ useHead({
   color: var(--color-accent);
 }
 
-/* Transition */
 .lightbox-enter-active {
   transition: opacity 200ms ease;
 }
@@ -691,7 +686,6 @@ useHead({
   opacity: 0;
 }
 
-/* Mobile lightbox */
 @media (max-width: 640px) {
   .lightbox {
     background: rgb(8, 8, 8);
@@ -734,7 +728,6 @@ useHead({
     right: 0.5rem;
   }
 
-  /* Single + composite: reduce side padding on mobile */
   .project-detail__single,
   .project-detail__composite {
     padding: 0 0.75rem;
