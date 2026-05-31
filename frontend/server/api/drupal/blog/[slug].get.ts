@@ -3,6 +3,10 @@
 
 import type { DrupalBlogPost } from '~/types/drupal'
 
+// Internal SSR host (config.drupalBaseUrl, e.g. http://drupal:80) is used to fetch
+// JSON:API. Asset URLs returned to the browser must use the PUBLIC host instead.
+const DRUPAL_PUBLIC_URL = process.env.DRUPAL_PUBLIC_URL || 'https://drupal.madsnorgaard.net'
+
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig(event)
   const base = config.drupalBaseUrl
@@ -49,13 +53,13 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 404, statusMessage: 'Post not found' })
   }
 
-  return transformNode(data.data, data.included ?? [], base)
+  return transformNode(data.data, data.included ?? [])
 })
 
-function transformNode(node: any, included: any[], base: string): DrupalBlogPost {
+function transformNode(node: any, included: any[]): DrupalBlogPost {
   const rawImg = resolveImage(node.relationships?.field_image, included)
   const coverImage = rawImg
-    ? { ...rawImg, url: rawImg.url.startsWith('http') ? rawImg.url : `${base}${rawImg.url}` }
+    ? { ...rawImg, url: rawImg.url.startsWith('http') ? rawImg.url : `${DRUPAL_PUBLIC_URL}${rawImg.url}` }
     : undefined
   return {
     id: node.id,
