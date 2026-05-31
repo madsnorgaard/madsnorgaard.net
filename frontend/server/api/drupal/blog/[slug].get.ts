@@ -49,10 +49,14 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 404, statusMessage: 'Post not found' })
   }
 
-  return transformNode(data.data, data.included ?? [])
+  return transformNode(data.data, data.included ?? [], base)
 })
 
-function transformNode(node: any, included: any[]): DrupalBlogPost {
+function transformNode(node: any, included: any[], base: string): DrupalBlogPost {
+  const rawImg = resolveImage(node.relationships?.field_image, included)
+  const coverImage = rawImg
+    ? { ...rawImg, url: rawImg.url.startsWith('http') ? rawImg.url : `${base}${rawImg.url}` }
+    : undefined
   return {
     id: node.id,
     title: node.attributes?.title ?? '',
@@ -60,7 +64,7 @@ function transformNode(node: any, included: any[]): DrupalBlogPost {
     body: node.attributes?.body?.processed ?? '',
     slug: node.attributes?.path?.alias?.replace(/^\/(blog|article)\//, '') ?? node.id,
     date: node.attributes?.created ?? '',
-    coverImage: resolveImage(node.relationships?.field_image, included),
+    coverImage,
     tags: resolveTags(node.relationships?.field_tags?.data ?? [], included),
     series: resolveSingleTerm(node.relationships?.field_series?.data, included),
   }
