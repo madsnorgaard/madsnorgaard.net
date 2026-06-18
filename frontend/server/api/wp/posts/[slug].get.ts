@@ -27,7 +27,7 @@ export default defineEventHandler(async (event) => {
     title: decodeEntities(post.title?.rendered ?? ''),
     slug: post.slug ?? '',
     date: post.date ?? '',
-    content: post.content?.rendered ?? '',
+    content: await hydrateGalleryImages(post.content?.rendered ?? '', base),
     excerpt: stripTags(post.excerpt?.rendered ?? ''),
     featuredImage: media ? {
       src: media.source_url ?? null,
