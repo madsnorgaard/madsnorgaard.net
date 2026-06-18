@@ -178,6 +178,50 @@ useHead({
   text-underline-offset: 0.2em;
 }
 
+/* Body images - full-width within the column, consistent with other post types. */
+.post-page__content :deep(img) {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 2rem auto;
+  border-radius: 6px;
+}
+
+.post-page__content :deep(figure) {
+  margin: 0;
+}
+
+.post-page__content :deep(figcaption) {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--color-muted);
+  margin-top: 0.6rem;
+  text-align: center;
+}
+
+/* Legacy WordPress gallery blocks (Gutenberg + Mauer Stills plugin):
+   stack items in a single column. The plugin's flex-grid and absolute-
+   positioned-image CSS is absent in the headless frontend, so its
+   aspect-ratio padding box would otherwise leave empty gaps. */
+.post-page__content :deep(.wp-block-gallery),
+.post-page__content :deep(.blocks-gallery-grid) {
+  display: block;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.post-page__content :deep(.blocks-gallery-item) {
+  margin: 0;
+}
+
+.post-page__content :deep(.mauer-stills-img-box-wrapper),
+.post-page__content :deep(.mauer-stills-img-box) {
+  padding: 0 !important;
+  width: auto !important;
+  height: auto !important;
+}
+
 .post-page__terms {
   display: flex;
   flex-wrap: wrap;
