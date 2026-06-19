@@ -32,9 +32,11 @@
             :src="current?.src ?? ''"
             :alt="current?.alt ?? ''"
             class="lightbox__image"
-            :class="{ 'lightbox__image--kenburns': reel }"
+            :class="{ 'lightbox__image--kenburns': reel, 'lightbox__image--nav': images.length > 1 }"
             :style="morphName ? { viewTransitionName: morphName } : undefined"
-            @click.stop="next"
+            @click.stop="onImageClick"
+            @touchstart.passive="onTouchStart"
+            @touchend.passive="onTouchEnd"
           />
           <div class="lightbox__hud">
             <button
@@ -127,6 +129,25 @@ function next() {
 function prev() {
   if (props.images.length <= 1) return
   emit('update:index', (props.index - 1 + props.images.length) % props.images.length)
+}
+
+// Click the left half of the photo to go back, the right half to go forward.
+function onImageClick(e: MouseEvent) {
+  if (props.images.length <= 1) return
+  const el = e.currentTarget as HTMLElement
+  const rect = el.getBoundingClientRect()
+  if (e.clientX - rect.left < rect.width / 2) prev()
+  else next()
+}
+
+// Swipe left/right on touch devices.
+let touchStartX = 0
+function onTouchStart(e: TouchEvent) {
+  touchStartX = e.changedTouches[0]?.clientX ?? 0
+}
+function onTouchEnd(e: TouchEvent) {
+  const dx = (e.changedTouches[0]?.clientX ?? 0) - touchStartX
+  if (Math.abs(dx) > 40) (dx < 0 ? next() : prev())
 }
 
 function close() {
@@ -357,13 +378,13 @@ onUnmounted(() => {
   top: 50%;
   transform: translateY(-50%);
   z-index: 3;
-  background: none;
-  border: 1px solid var(--color-border);
-  color: var(--color-muted);
+  background: rgba(8, 8, 8, 0.55);
+  border: 1px solid var(--color-muted);
+  color: var(--color-text);
   font-family: var(--font-mono);
-  font-size: 1.25rem;
-  width: 2.5rem;
-  height: 2.5rem;
+  font-size: 1.4rem;
+  width: 2.75rem;
+  height: 2.75rem;
   display: flex;
   align-items: center;
   justify-content: center;
