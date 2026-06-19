@@ -48,7 +48,7 @@ export default defineNuxtConfig({
   image: {
     domains: ['photo.madsnorgaard.net'],
     quality: 80,
-    format: ['webp', 'jpg'],
+    format: ['avif', 'webp', 'jpg'],
   },
 
   runtimeConfig: {
@@ -127,6 +127,17 @@ export default defineNuxtConfig({
     // Redirects for old WordPress paths — indexed traffic belongs on photo.madsnorgaard.net
     '/one-picture-stories/**': { redirect: { to: 'https://photo.madsnorgaard.net/one-picture-stories/**', statusCode: 301 } },
 
+    // Event wall (Cold Turkey): short SWR on reads, NEVER cache the writes.
+    '/api/event/photos/**': { swr: 120 },
+    '/api/event/sets': { swr: 600 },
+    '/api/event/photo/**': { swr: 60 },
+    '/api/event/like': { swr: false, cache: false },
+    '/api/event/there': { swr: false, cache: false },
+    // No caching: the same path serves GET (notes list) and POST (submit);
+    // caching the path wraps the POST and eats its body before readBody runs.
+    '/api/event/notes': { swr: false, cache: false },
+    '/api/event/favourites-zip': { swr: false, cache: false },
+
     // Photo API route caching
     '/api/photo/**': { swr: 300 },
     '/api/wp/stories/**': { swr: 300 },
@@ -151,6 +162,8 @@ export default defineNuxtConfig({
           "font-src 'self' https://fonts.gstatic.com",
           "img-src 'self' data: https:",
           "connect-src 'self' https://analytics.theazanianprepper.online",
+          // SoundCloud widget (Cold Turkey mix player on the photo wall)
+          "frame-src https://w.soundcloud.com",
           "frame-ancestors 'none'",
           "base-uri 'self'",
           "form-action 'self'",
