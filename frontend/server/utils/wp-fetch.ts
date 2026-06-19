@@ -66,6 +66,40 @@ export async function wpFetchWithHeaders<T>(
 }
 
 /**
+ * POST JSON to the WordPress REST API (server-to-server only).
+ *
+ * Used for the event-archive reaction write routes. Always sends the
+ * X-Internal-Token header: those routes' permission_callback requires it,
+ * and browsers can never reach them directly (CORS is GET/OPTIONS only).
+ * Returns null on any error so callers degrade gracefully.
+ */
+export async function wpPost<T>(url: string, body: unknown): Promise<T | null> {
+  try {
+    const headers: Record<string, string> = {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+    }
+
+    const token = process.env.PHOTO_API_INTERNAL_TOKEN || ''
+    if (token) {
+      headers['X-Internal-Token'] = token
+    }
+
+    const resp = await fetch(url, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(body ?? {}),
+    })
+    const text = await resp.text()
+    const start = text.search(/[\[{]/)
+    if (start === -1) return null
+    return JSON.parse(text.slice(start)) as T
+  } catch {
+    return null
+  }
+}
+
+/**
  * Decode common HTML entities found in WP REST API responses.
  */
 export function decodeEntities(str: string): string {

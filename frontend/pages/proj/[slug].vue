@@ -28,6 +28,17 @@
           </div>
         </div>
       </header>
+
+      <!-- Funnel into the interactive photo wall -->
+      <NuxtLink
+        v-if="route.params.slug === 'cold-turkey-cape-town'"
+        to="/photographs/cold-turkey-cape-town"
+        class="ctct-cta"
+      >
+        <span class="ctct-cta__label">Enter the photo wall</span>
+        <span class="ctct-cta__sub">Thousands of photographs. Find the night you were there.</span>
+        <span class="ctct-cta__arrow" aria-hidden="true">→</span>
+      </NuxtLink>
     </div>
 
     <!-- Content blocks: prose, images, and galleries in document order -->
@@ -92,56 +103,12 @@
       </NuxtLink>
     </div>
 
-    <!-- Lightbox overlay -->
-    <Teleport to="body">
-      <Transition name="lightbox">
-        <div
-          v-if="lightbox.active"
-          class="lightbox"
-          @click="closeLightbox"
-          @keydown.escape="closeLightbox"
-          tabindex="0"
-          ref="lightboxEl"
-        >
-          <div class="lightbox__noise" />
-
-          <button
-            v-if="parsed.allImages.length > 1"
-            class="lightbox__nav lightbox__nav--prev"
-            @click.stop="prevImage"
-            aria-label="Previous image"
-          >&lt;</button>
-          <button
-            v-if="parsed.allImages.length > 1"
-            class="lightbox__nav lightbox__nav--next"
-            @click.stop="nextImage"
-            aria-label="Next image"
-          >&gt;</button>
-
-          <div class="lightbox__frame" @click.stop>
-            <img
-              :src="parsed.allImages[lightbox.index]?.src ?? ''"
-              :alt="parsed.allImages[lightbox.index]?.alt ?? ''"
-              class="lightbox__image"
-              @click.stop="nextImage"
-            />
-            <div class="lightbox__hud">
-              <span class="lightbox__counter">
-                <span class="lightbox__counter-current">{{ String(lightbox.index + 1).padStart(2, '0') }}</span>
-                <span class="lightbox__counter-sep">/</span>
-                <span class="lightbox__counter-total">{{ String(parsed.allImages.length).padStart(2, '0') }}</span>
-              </span>
-              <span v-if="currentDimensions" class="lightbox__dimensions">{{ currentDimensions }}</span>
-              <span class="lightbox__filename">{{ currentFilename }}</span>
-            </div>
-          </div>
-
-          <button class="lightbox__close" @click.stop="closeLightbox" aria-label="Close">
-            <span class="lightbox__close-key">esc</span>
-          </button>
-        </div>
-      </Transition>
-    </Teleport>
+    <!-- Lightbox overlay (shared component) -->
+    <PhotoLightbox
+      :images="parsed.allImages"
+      v-model:index="lightbox.index"
+      v-model:active="lightbox.active"
+    />
   </article>
 </template>
 
@@ -154,8 +121,6 @@ const { data: project } = await useFetch<any>(`/api/wp/projects/${route.params.s
 if (!project.value) {
   throw createError({ statusCode: 404, statusMessage: 'Project not found' })
 }
-
-const lightboxEl = ref<HTMLElement | null>(null)
 
 // ─── Content types ──────────────────────────────────────────────
 
@@ -258,65 +223,17 @@ const parsed = computed<{ blocks: ContentBlock[]; allImages: GalleryImage[] }>((
 })
 
 // ─── Lightbox ───────────────────────────────────────────────────
+// Nav, keyboard handling and scroll-lock live in <PhotoLightbox>.
 
 const lightbox = reactive({
   active: false,
   index: 0,
 })
 
-const currentFilename = computed(() => {
-  const src = parsed.value.allImages[lightbox.index]?.src ?? ''
-  const parts = src.split('/')
-  return parts[parts.length - 1]?.replace(/\.[^.]+$/, '') ?? ''
-})
-
-const currentDimensions = computed(() => {
-  const img = parsed.value.allImages[lightbox.index]
-  if (!img?.width || !img?.height) return ''
-  return `${img.width}x${img.height}`
-})
-
 function openLightbox(index: number) {
   lightbox.index = index
   lightbox.active = true
-  document.documentElement.style.overflow = 'hidden'
-  document.body.style.overflow = 'hidden'
-  document.body.style.position = 'fixed'
-  document.body.style.width = '100%'
-  document.body.style.top = `-${window.scrollY}px`
-  nextTick(() => lightboxEl.value?.focus())
 }
-
-function closeLightbox() {
-  const scrollY = document.body.style.top
-  document.documentElement.style.overflow = ''
-  document.body.style.overflow = ''
-  document.body.style.position = ''
-  document.body.style.width = ''
-  document.body.style.top = ''
-  window.scrollTo(0, parseInt(scrollY || '0') * -1)
-  lightbox.active = false
-}
-
-function nextImage() {
-  if (parsed.value.allImages.length <= 1) return
-  lightbox.index = (lightbox.index + 1) % parsed.value.allImages.length
-}
-
-function prevImage() {
-  if (parsed.value.allImages.length <= 1) return
-  lightbox.index = (lightbox.index - 1 + parsed.value.allImages.length) % parsed.value.allImages.length
-}
-
-function onKeydown(e: KeyboardEvent) {
-  if (!lightbox.active) return
-  if (e.key === 'Escape') closeLightbox()
-  if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); nextImage() }
-  if (e.key === 'ArrowLeft') { e.preventDefault(); prevImage() }
-}
-
-onMounted(() => window.addEventListener('keydown', onKeydown))
-onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 
 // ─── SEO ────────────────────────────────────────────────────────
 
@@ -342,6 +259,44 @@ useHead({
 </script>
 
 <style scoped>
+/* ─── Cold Turkey: funnel CTA into the photo wall ───────────── */
+
+.ctct-cta {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 2rem;
+  padding: 1.25rem 1.5rem;
+  border: 1px solid var(--color-accent);
+  background: var(--color-accent-dim);
+  text-decoration: none;
+  transition: background 160ms ease;
+}
+.ctct-cta:hover { background: rgba(208, 36, 62, 0.22); }
+
+.ctct-cta__label {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-accent);
+}
+.ctct-cta__sub {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--color-muted);
+}
+.ctct-cta__arrow {
+  margin-left: auto;
+  color: var(--color-accent);
+  font-size: 1.2rem;
+}
+
+@media (max-width: 560px) {
+  .ctct-cta { flex-wrap: wrap; gap: 0.35rem; }
+  .ctct-cta__arrow { margin-left: 0; }
+}
+
 /* ─── Prose (reading width, matches writing page) ───────────── */
 
 .project-detail__prose {
@@ -498,236 +453,7 @@ useHead({
   filter: brightness(1.12);
 }
 
-/* ─── Lightbox ───────────────────────────────────────────────── */
-
-.lightbox {
-  position: fixed;
-  inset: 0;
-  z-index: 9000;
-  background: rgba(8, 8, 8, 0.98);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  outline: none;
-  overscroll-behavior: contain;
-  overflow: hidden;
-  touch-action: none;
-}
-
-.lightbox__noise {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background: repeating-linear-gradient(
-    0deg,
-    transparent,
-    transparent 2px,
-    rgba(255, 255, 255, 0.008) 2px,
-    rgba(255, 255, 255, 0.008) 4px
-  );
-  z-index: 1;
-}
-
-.lightbox__frame {
-  position: relative;
-  max-width: 92vw;
-  max-height: 88vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  z-index: 2;
-}
-
-.lightbox__image {
-  max-width: 92vw;
-  max-height: 82vh;
-  object-fit: contain;
-  cursor: pointer;
-  user-select: none;
-  animation: lightbox-in 250ms ease-out;
-}
-
-@keyframes lightbox-in {
-  from {
-    opacity: 0;
-    transform: scale(0.95);
-  }
-}
-
-.lightbox__hud {
-  display: flex;
-  align-items: center;
-  gap: 1.5rem;
-  padding: 0.625rem 0;
-  margin-top: 0.75rem;
-  font-family: var(--font-mono);
-  font-size: 0.7rem;
-  color: var(--color-muted);
-  letter-spacing: 0.04em;
-  width: 100%;
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
-}
-
-.lightbox__counter {
-  color: var(--color-text);
-}
-
-.lightbox__counter-current {
-  color: var(--color-accent);
-}
-
-.lightbox__counter-sep {
-  color: var(--color-border);
-  margin: 0 0.15em;
-}
-
-.lightbox__counter-total {
-  color: var(--color-muted);
-}
-
-.lightbox__dimensions {
-  color: var(--color-muted);
-}
-
-.lightbox__dimensions::before {
-  content: '[';
-  color: var(--color-border);
-}
-
-.lightbox__dimensions::after {
-  content: ']';
-  color: var(--color-border);
-}
-
-.lightbox__filename {
-  color: var(--color-muted);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  max-width: 30ch;
-  opacity: 0.5;
-}
-
-.lightbox__nav {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  z-index: 3;
-  background: none;
-  border: 1px solid var(--color-border);
-  color: var(--color-muted);
-  font-family: var(--font-mono);
-  font-size: 1.25rem;
-  width: 2.5rem;
-  height: 2.5rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 150ms;
-}
-
-.lightbox__nav:hover {
-  border-color: var(--color-accent);
-  color: var(--color-accent);
-  background: var(--color-accent-dim);
-}
-
-.lightbox__nav--prev {
-  left: 1rem;
-}
-
-.lightbox__nav--next {
-  right: 1rem;
-}
-
-.lightbox__close {
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
-  z-index: 3;
-  background: none;
-  border: 1px solid var(--color-border);
-  padding: 0.3rem 0.6rem;
-  cursor: pointer;
-  transition: all 150ms;
-}
-
-.lightbox__close:hover {
-  border-color: var(--color-accent);
-}
-
-.lightbox__close-key {
-  font-family: var(--font-mono);
-  font-size: 0.65rem;
-  color: var(--color-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-}
-
-.lightbox__close:hover .lightbox__close-key {
-  color: var(--color-accent);
-}
-
-.lightbox-enter-active {
-  transition: opacity 200ms ease;
-}
-
-.lightbox-enter-active .lightbox__image {
-  animation: lightbox-in 250ms ease-out;
-}
-
-.lightbox-leave-active {
-  transition: opacity 150ms ease;
-}
-
-.lightbox-enter-from,
-.lightbox-leave-to {
-  opacity: 0;
-}
-
 @media (max-width: 640px) {
-  .lightbox {
-    background: rgb(8, 8, 8);
-  }
-
-  .lightbox__frame {
-    max-width: 100vw;
-    max-height: 100vh;
-    padding: 0 0.5rem;
-  }
-
-  .lightbox__image {
-    max-width: 100vw;
-    max-height: 75vh;
-  }
-
-  .lightbox__nav {
-    width: 2.25rem;
-    height: 2.25rem;
-    font-size: 1rem;
-    background: rgba(8, 8, 8, 0.6);
-  }
-
-  .lightbox__nav--prev { left: 0.25rem; }
-  .lightbox__nav--next { right: 0.25rem; }
-
-  .lightbox__hud {
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    padding: 0.5rem;
-    font-size: 0.6rem;
-  }
-
-  .lightbox__filename {
-    max-width: 16ch;
-  }
-
-  .lightbox__close {
-    top: 0.5rem;
-    right: 0.5rem;
-  }
-
   .project-detail__single,
   .project-detail__composite {
     padding: 0 0.75rem;
