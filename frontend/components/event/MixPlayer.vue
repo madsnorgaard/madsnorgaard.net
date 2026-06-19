@@ -29,14 +29,20 @@
 <script setup lang="ts">
 // A nostalgia button: streams the Cold Turkey SoundCloud while you wander the
 // wall. Uses the public SoundCloud widget iframe (no account, no API key).
-const profileUrl = 'https://soundcloud.com/coldturkeysa'
+const profileUrl = 'https://soundcloud.com/coldturkeysa' // friendly link shown to humans
+
+// The widget resolves the canonical (pre-resolved) user URL rather than the
+// vanity slug - the slug occasionally fails with "we couldn't find that
+// profile" because the widget's vanity lookup flakes. This numeric form is the
+// exact one SoundCloud's own oEmbed/Share-embed uses, so it never mis-resolves.
+const widgetUrl = 'https://api.soundcloud.com/users/12417503'
 
 // Two-way so the page can start the mix (e.g. when the memory reel begins).
 const open = defineModel<boolean>('open', { default: false })
 
 const embedSrc = computed(() => {
   const params = new URLSearchParams({
-    url: profileUrl,
+    url: widgetUrl,
     color: '#d0243e',
     auto_play: 'true',
     hide_related: 'true',
