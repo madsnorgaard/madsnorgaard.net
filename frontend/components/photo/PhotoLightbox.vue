@@ -27,17 +27,19 @@
         >&gt;</button>
 
         <div class="lightbox__frame" @click.stop>
-          <img
-            :key="reel ? index : undefined"
-            :src="current?.src ?? ''"
-            :alt="current?.alt ?? ''"
-            class="lightbox__image"
-            :class="{ 'lightbox__image--kenburns': reel, 'lightbox__image--nav': images.length > 1 }"
-            :style="morphName ? { viewTransitionName: morphName } : undefined"
-            @click.stop="onImageClick"
-            @touchstart.passive="onTouchStart"
-            @touchend.passive="onTouchEnd"
-          />
+          <div class="lightbox__stage">
+            <img
+              :key="reel ? index : undefined"
+              :src="current?.src ?? ''"
+              :alt="current?.alt ?? ''"
+              class="lightbox__image"
+              :class="{ 'lightbox__image--kenburns': reel, 'lightbox__image--nav': images.length > 1 }"
+              :style="morphName ? { viewTransitionName: morphName } : undefined"
+              @click.stop="onImageClick"
+              @touchstart.passive="onTouchStart"
+              @touchend.passive="onTouchEnd"
+            />
+          </div>
           <div class="lightbox__hud">
             <button
               v-if="reel"
@@ -260,17 +262,27 @@ onUnmounted(() => {
 
 .lightbox__frame {
   position: relative;
-  max-width: 92vw;
-  max-height: 88vh;
+  width: 92vw;
+  height: 90dvh;
   display: flex;
   flex-direction: column;
-  align-items: center;
   z-index: 2;
 }
 
+/* The image lives in a flex stage that fills the space ABOVE the HUD, so the
+   image can never grow over the controls no matter its aspect ratio. */
+.lightbox__stage {
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .lightbox__image {
-  max-width: 92vw;
-  max-height: 82vh;
+  max-width: 100%;
+  max-height: 100%;
   object-fit: contain;
   cursor: pointer;
   user-select: none;
@@ -312,17 +324,18 @@ onUnmounted(() => {
 }
 
 .lightbox__hud {
+  flex: 0 0 auto;
   display: flex;
   align-items: center;
   gap: 1.5rem;
-  padding: 0.625rem 0;
-  margin-top: 0.75rem;
+  padding: 0.75rem 0.25rem;
+  margin-top: 0.5rem;
   font-family: var(--font-mono);
   font-size: 0.7rem;
   color: var(--color-muted);
   letter-spacing: 0.04em;
   width: 100%;
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .lightbox__counter {
@@ -457,14 +470,9 @@ onUnmounted(() => {
   }
 
   .lightbox__frame {
-    max-width: 100vw;
-    max-height: 100vh;
+    width: 100vw;
+    height: 100dvh;
     padding: 0 0.5rem;
-  }
-
-  .lightbox__image {
-    max-width: 100vw;
-    max-height: 75vh;
   }
 
   .lightbox__nav {
