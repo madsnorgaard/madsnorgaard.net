@@ -10,6 +10,7 @@
       <a class="share__link" :href="waUrl" target="_blank" rel="noopener noreferrer">WhatsApp</a>
       <a class="share__link" :href="fbUrl" target="_blank" rel="noopener noreferrer">Facebook</a>
       <a class="share__link" :href="xUrl" target="_blank" rel="noopener noreferrer">X</a>
+      <a class="share__link" :href="liUrl" target="_blank" rel="noopener noreferrer">LinkedIn</a>
       <button class="share__link" type="button" @click="copy">Copy link</button>
     </span>
   </span>
@@ -37,18 +38,45 @@ const shareUrl = computed(() => {
 
 const shareText = 'Cold Turkey Cape Town: were you there?'
 
+// The branded 1200x630 card for this photo. Same-origin, so the browser can
+// fetch it as a Blob for an image-file share (no CORS, unlike the WP photo).
+const cardUrl = computed(() => {
+  const origin = (config.public?.siteUrl as string) || 'https://madsnorgaard.net'
+  return `${origin}/og/ct/${props.photoId}.png`
+})
+
 const waUrl = computed(() => `https://wa.me/?text=${encodeURIComponent(shareText + ' ' + shareUrl.value)}`)
 const fbUrl = computed(() => `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl.value)}`)
 const xUrl = computed(() => `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl.value)}`)
+const liUrl = computed(() => `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl.value)}`)
+
+// Try to attach the actual card image so image-first apps (Instagram, TikTok,
+// WhatsApp, Stories) receive the picture, not just a link.
+async function tryShareImage(): Promise<boolean> {
+  if (!navigator.canShare) return false
+  try {
+    const resp = await fetch(cardUrl.value)
+    if (!resp.ok) return false
+    const blob = await resp.blob()
+    const file = new File([blob], `cold-turkey-${props.photoId}.png`, { type: blob.type || 'image/png' })
+    if (!navigator.canShare({ files: [file] })) return false
+    await navigator.share({ files: [file], title: 'Cold Turkey Cape Town', text: shareText, url: shareUrl.value })
+    return true
+  } catch {
+    return false
+  }
+}
 
 async function onShare() {
-  // Native share sheet (mobile + some desktops).
   if (import.meta.client && navigator.share) {
+    // 1) share the image itself where supported (TikTok/IG/WhatsApp/Stories)
+    if (await tryShareImage()) return
+    // 2) otherwise the link (rich card preview on FB/X/LinkedIn/WhatsApp)
     try {
       await navigator.share({ title: 'Cold Turkey Cape Town', text: shareText, url: shareUrl.value })
       return
     } catch {
-      // user cancelled or share failed - fall through to menu
+      // user cancelled or share failed - fall through to the menu
     }
   }
   menuOpen.value = !menuOpen.value
