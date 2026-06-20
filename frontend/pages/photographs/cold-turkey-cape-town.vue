@@ -65,6 +65,7 @@
         :photos="activeList"
         :has-more="showFavourites ? false : hasMore"
         :loading="loading"
+        :busy="switching && !showFavourites"
         :morph-id="morphId"
         @open="openIndex"
         @load-more="loadMore"
@@ -144,13 +145,17 @@ const activeSet = computed(() =>
 
 // ─── Data: first page (SSR) + the night chips ───────────────────
 
-const { data: initial } = await useAsyncData(
+const { data: initial, status: setStatus } = await useAsyncData(
   () => `ctct-photos-${activeSet.value ?? 'all'}`,
   () => $fetch('/api/event/photos', {
     query: { ...(activeSet.value ? { set: activeSet.value } : {}), page: 1 },
   }),
   { watch: [activeSet] }
 )
+
+// True while a different night's first page is being fetched (chip switch), so
+// the wall can show a spinner instead of silently holding the old set.
+const switching = computed(() => setStatus.value === 'pending')
 
 const { data: setsData } = await useAsyncData('ctct-sets', () => $fetch('/api/event/sets'))
 const sets = computed<EventSet[]>(() => (setsData.value as any)?.sets ?? [])
