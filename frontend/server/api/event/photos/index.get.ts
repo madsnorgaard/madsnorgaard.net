@@ -49,8 +49,10 @@ export default defineEventHandler(async (event) => {
     const termId = await resolveTermId(base, wantSlug)
     params.set('per_page', String(PER_PAGE))
     params.set('page', String(page))
+    // Ascending so each night plays forward as it happened (the importer
+    // inserts posts in filename order = Lightroom's capture sequence).
     params.set('orderby', 'date')
-    params.set('order', 'desc')
+    params.set('order', 'asc')
     if (termId) params.set('event_set', String(termId))
   }
 
