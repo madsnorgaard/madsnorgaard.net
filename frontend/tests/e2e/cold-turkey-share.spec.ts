@@ -62,4 +62,17 @@ test.describe('Cold Turkey per-photo sharing', () => {
       await expect(rail.locator('.toppicks__item').first()).toBeVisible()
     }
   })
+
+  // Regression: ?set must actually narrow the wall. The WP REST tax filter param
+  // is the rest_base ('event-sets'), not the taxonomy name ('event_set') — using
+  // the wrong one silently returned every night.
+  test('selecting a set filters the wall to that night', async ({ request }) => {
+    const all = await (await request.get('/api/event/photos?page=1')).json()
+    const sets = (await (await request.get('/api/event/sets')).json())?.sets ?? []
+    test.skip(sets.length < 2, 'need >=2 sets to prove filtering')
+    const slug = sets[0].slug
+    const filtered = await (await request.get(`/api/event/photos?page=1&set=${slug}`)).json()
+    expect(filtered.total).toBeGreaterThan(0)
+    expect(filtered.total).toBeLessThan(all.total)
+  })
 })

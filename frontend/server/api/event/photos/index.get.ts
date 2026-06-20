@@ -5,11 +5,10 @@
 //   page  - Page number (default 1)
 //   set   - event_set child-term slug (a "night"). Omit for all nights blended.
 //
-// With no `set`, photos are queried under the event's PARENT term, which (for a
-// hierarchical taxonomy) WP includes all descendant nights for - i.e. the whole
-// event. With a `set`, only that night's photos are returned.
+// With no `set`, no taxonomy filter is applied, so every event_photo (all
+// nights) is returned. With a `set`, only that night's photos are returned,
+// filtered via the taxonomy REST base `event-sets` (not the taxonomy name).
 
-const EVENT_SLUG = 'cold-turkey-cape-town'
 const PER_PAGE = 50
 
 export default defineEventHandler(async (event) => {
@@ -40,20 +39,22 @@ export default defineEventHandler(async (event) => {
     params.set('per_page', String(ids.length))
     params.set('orderby', 'include')
   } else {
-    // Resolve which event_set term to filter by, then map to its term ID.
-    // WP REST taxonomy filters expect term IDs, not slugs.
-    const wantSlug =
-      query.set && typeof query.set === 'string' && isValidSlug(query.set)
-        ? query.set
-        : EVENT_SLUG
-    const termId = await resolveTermId(base, wantSlug)
     params.set('per_page', String(PER_PAGE))
     params.set('page', String(page))
     // Ascending so each night plays forward as it happened (the importer
     // inserts posts in filename order = Lightroom's capture sequence).
     params.set('orderby', 'date')
     params.set('order', 'asc')
-    if (termId) params.set('event_set', String(termId))
+    // Filter to a single night when a valid set slug is given. The WP REST
+    // taxonomy filter param is the taxonomy's REST BASE ('event-sets'), NOT the
+    // taxonomy name ('event_set') — the latter is silently ignored, which is why
+    // picking a set used to still show every night. No set => no taxonomy filter
+    // => all nights (every event_photo). (Single-event site; if more events are
+    // added, filter the no-set case by the parent term's child IDs.)
+    if (query.set && typeof query.set === 'string' && isValidSlug(query.set)) {
+      const termId = await resolveTermId(base, query.set)
+      if (termId) params.set('event-sets', String(termId))
+    }
   }
 
   const url = `${base}/wp-json/wp/v2/event-photos?${params.toString()}`
