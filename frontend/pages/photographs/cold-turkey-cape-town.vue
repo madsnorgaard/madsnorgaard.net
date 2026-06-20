@@ -66,6 +66,7 @@
         :has-more="showFavourites ? false : hasMore"
         :loading="loading"
         :busy="switching && !showFavourites"
+        :darkroom="darkroom"
         :morph-id="morphId"
         @open="openIndex"
         @load-more="loadMore"

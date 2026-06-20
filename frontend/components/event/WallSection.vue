@@ -2,6 +2,7 @@
   <section
     ref="el"
     class="wall-section"
+    :class="{ 'wall-section--dark': darkroom }"
     :style="!visible && collapsedHeight ? { height: collapsedHeight + 'px' } : null"
   >
     <template v-if="visible">
@@ -44,6 +45,7 @@ const props = defineProps<{
   photos: EventPhoto[]
   startIndex: number
   morphId?: number | null
+  darkroom?: boolean
 }>()
 
 defineEmits<{ (e: 'open', index: number): void }>()
@@ -103,18 +105,54 @@ useIntersectionObserver(
   position: relative;
   break-inside: avoid;
   overflow: hidden;
+  /* Lift toward the viewer on hover: the tile itself scales up and rises above
+     its neighbours (z-index), so the photo reads as coming forward rather than
+     just cropping in. */
+  transition: transform 360ms cubic-bezier(0.2, 0, 0, 1), box-shadow 360ms ease;
+  transform-origin: center;
+}
+
+.tile:hover,
+.tile:focus-visible {
+  transform: scale(1.09) translateY(-4px);
+  z-index: 3;
+  box-shadow:
+    0 22px 48px -14px rgba(0, 0, 0, 0.75),
+    0 0 0 1px rgba(255, 255, 255, 0.05);
+  overflow: visible;
 }
 
 .tile__img {
   display: block;
   width: 100%;
   height: auto;
+  border-radius: inherit;
   transition: transform 500ms ease, filter 300ms ease;
 }
 
-.tile:hover .tile__img {
-  transform: scale(1.04);
+/* A touch of extra inner zoom on top of the tile lift, for depth. */
+.tile:hover .tile__img,
+.tile:focus-visible .tile__img {
+  transform: scale(1.05);
   filter: brightness(1.12);
+}
+
+/* Darkroom: every photo sinks to a low ember; the moving spotlight overlay
+   reveals what it passes over, and the hovered tile blooms back to full life. */
+.wall-section--dark .tile__img {
+  filter: brightness(0.55) saturate(0.82) contrast(1.02);
+}
+.wall-section--dark .tile:hover .tile__img,
+.wall-section--dark .tile:focus-visible .tile__img {
+  filter: brightness(1.2) saturate(1.08) contrast(1.02);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tile { transition: box-shadow 360ms ease; }
+  .tile:hover,
+  .tile:focus-visible { transform: none; }
+  .tile:hover .tile__img,
+  .tile:focus-visible .tile__img { transform: none; }
 }
 
 .tile__overlay {
