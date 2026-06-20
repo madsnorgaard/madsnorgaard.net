@@ -93,6 +93,13 @@ useHead({ title: 'Projects | Mads Nørgaard' })
   color: var(--color-accent);
 }
 
+/* The name+description column must be allowed to shrink (min-width:0) so a long
+   description wraps instead of forcing the flex row past the viewport on narrow
+   phones. */
+.repo-row > div:first-child {
+  min-width: 0;
+}
+
 .repo-row__name {
   font-family: var(--font-mono);
   font-weight: 500;
