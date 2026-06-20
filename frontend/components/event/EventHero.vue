@@ -63,7 +63,7 @@ const doubled = computed(() => {
   z-index: 0;
   display: flex;
   align-items: center;
-  opacity: 0.32;
+  opacity: 0.48;
 }
 
 .hero__track {
@@ -92,8 +92,8 @@ const doubled = computed(() => {
   inset: 0;
   z-index: 1;
   background:
-    radial-gradient(ellipse at center, rgba(14, 14, 14, 0.55) 0%, rgba(14, 14, 14, 0.9) 75%),
-    linear-gradient(180deg, rgba(14, 14, 14, 0.7) 0%, rgba(14, 14, 14, 0.4) 40%, var(--color-bg) 100%);
+    radial-gradient(ellipse at center, rgba(14, 14, 14, 0.4) 0%, rgba(14, 14, 14, 0.82) 75%),
+    linear-gradient(180deg, rgba(14, 14, 14, 0.55) 0%, rgba(14, 14, 14, 0.3) 40%, var(--color-bg) 100%);
 }
 
 .hero__inner {
