@@ -274,7 +274,9 @@ a {
 
 .projects-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  /* min(300px, 100%) lets a column shrink below 300px on very narrow phones
+     (<=320px) instead of forcing a fixed 300px track that overflows. */
+  grid-template-columns: repeat(auto-fill, minmax(min(300px, 100%), 1fr));
   gap: 1.5rem;
 }
 
@@ -425,7 +427,11 @@ a {
   }
 
   .site-nav {
-    gap: 1rem;
+    /* Wrap + tighter column gap so the 5 links never force a horizontal
+       scroll on small phones (was overflowing ~3px at 375px and clipping
+       the last link). Wrapping keeps it safe down to 320px too. */
+    flex-wrap: wrap;
+    gap: 0.5rem 0.85rem;
   }
 
   /* ── Post list card ── */
