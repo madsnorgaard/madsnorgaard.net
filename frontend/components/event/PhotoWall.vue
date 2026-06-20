@@ -15,6 +15,7 @@
         :photos="chunk.items"
         :start-index="chunk.start"
         :morph-id="morphId"
+        :darkroom="darkroom"
         @open="$emit('open', $event)"
       />
     </div>
@@ -42,6 +43,7 @@ const props = defineProps<{
   hasMore: boolean
   loading: boolean
   busy?: boolean
+  darkroom?: boolean
   morphId?: number | null
 }>()
 
