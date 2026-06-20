@@ -4,24 +4,7 @@
 
 import satori from 'satori'
 import { Resvg } from '@resvg/resvg-js'
-
-// Fetch IBM Plex Mono from Google Fonts as ArrayBuffer (cached in closure)
-let fontRegular: ArrayBuffer | null = null
-let fontBold: ArrayBuffer | null = null
-
-async function loadFonts() {
-  if (fontRegular && fontBold) return
-
-  const [r, b] = await Promise.all([
-    fetch('https://fonts.gstatic.com/s/ibmplexmono/v19/-F6qfjptAgt5VM-kVkqdyU8n3pQP.woff')
-      .then(r => r.arrayBuffer()),
-    fetch('https://fonts.gstatic.com/s/ibmplexmono/v19/-F6pfjptAgt5VM-kVkqdyU8n3uQ69lls.woff')
-      .then(r => r.arrayBuffer()),
-  ])
-
-  fontRegular = r
-  fontBold = b
-}
+import { loadOgFonts } from '../utils/og-fonts'
 
 const C = {
   bg:     '#0A0908',
@@ -49,7 +32,7 @@ export default defineEventHandler(async (event) => {
     : availability === 'not-available' ? C.red
     : C.green
 
-  await loadFonts()
+  const { regular: fontRegular, bold: fontBold } = await loadOgFonts()
 
   const divider = '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
 
@@ -140,8 +123,8 @@ export default defineEventHandler(async (event) => {
       width: 1200,
       height: 630,
       fonts: [
-        { name: 'IBM Plex Mono', data: fontRegular!, weight: 400, style: 'normal' },
-        { name: 'IBM Plex Mono', data: fontBold!,    weight: 700, style: 'normal' },
+        { name: 'IBM Plex Mono', data: fontRegular, weight: 400, style: 'normal' },
+        { name: 'IBM Plex Mono', data: fontBold,    weight: 700, style: 'normal' },
       ],
     },
   )

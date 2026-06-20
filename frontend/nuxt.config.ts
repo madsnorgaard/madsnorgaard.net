@@ -16,6 +16,15 @@ export default defineNuxtConfig({
     defaultLocale: 'en',
   },
 
+  // nuxt-seo-utils: keep share-relevant query params in the canonical / og:url
+  // (default whitelist drops them), so each ?photo=<id> share caches separately.
+  seo: {
+    canonicalQueryWhitelist: [
+      'page', 'sort', 'filter', 'search', 'q', 'category', 'tag',
+      'photo', 'set', 'favs',
+    ],
+  },
+
   sitemap: {
     sources: ['/api/__sitemap__/urls'],
     exclude: ['/api/**'],
@@ -131,6 +140,7 @@ export default defineNuxtConfig({
     '/api/event/photos/**': { swr: 120 },
     '/api/event/sets': { swr: 600 },
     '/api/event/photo/**': { swr: 60 },
+    '/api/event/top': { swr: 300 },
     '/api/event/like': { swr: false, cache: false },
     '/api/event/there': { swr: false, cache: false },
     // No caching: the same path serves GET (notes list) and POST (submit);

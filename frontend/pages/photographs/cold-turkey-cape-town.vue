@@ -52,6 +52,8 @@
         </div>
       </div>
 
+      <EventTopPicks v-if="!showFavourites" @open="openPick" />
+
       <EventEraScrubber
         v-if="!showFavourites && sets.length"
         :sets="sets"
@@ -358,6 +360,12 @@ function startReel() {
   syncPhotoUrl(activeList.value[0].id, true)
 }
 
+// A Top-picks tap deep-links to the photo; the route.query.photo watcher opens
+// the lightbox (fetching the photo if it isn't in the loaded wall yet).
+function openPick(id: number) {
+  router.push({ query: { ...route.query, photo: String(id) } })
+}
+
 function updateCount(photo: EventPhoto | null, field: 'likeCount' | 'thereCount', n: number) {
   if (!photo) return
   photo[field] = n
@@ -435,10 +443,25 @@ watch(urlFavs, (ids) => {
 
 const siteUrl = (config.public?.siteUrl as string) || 'https://madsnorgaard.net'
 
-const ogImage = computed(() => {
+// The photo whose branded card becomes the share preview: the deep-linked
+// photo when ?photo=<id> is set, otherwise the article's lead photo.
+const ogPhotoId = computed<number | null>(() => {
   const og: any = ogPhoto.value
-  if (og?.images) return og.images.large || og.images.full || og.images.medium
-  return photos.value[0]?.images?.large || photos.value[0]?.images?.full || `${siteUrl}/og-image.png`
+  return og?.id ?? photos.value[0]?.id ?? null
+})
+
+// A per-photo 1200x630 branded card (server route), so every shared photo gets
+// its own correctly-sized social image. Falls back to the site default card.
+const ogImage = computed(() =>
+  ogPhotoId.value ? `${siteUrl}/og/ct/${ogPhotoId.value}.png` : `${siteUrl}/og-image.png`
+)
+
+// og:url MUST carry the ?photo deep-link so Facebook/LinkedIn cache each photo
+// share separately (they key their cache by og:url) instead of collapsing every
+// share onto the base page.
+const ogUrl = computed(() => {
+  const base = `${siteUrl}${route.path}`
+  return route.query.photo ? `${base}?photo=${route.query.photo}` : base
 })
 
 const ogTitle = computed(() => {
@@ -447,13 +470,19 @@ const ogTitle = computed(() => {
   return 'Cold Turkey Cape Town: the photographs'
 })
 
+const ogDescription = computed(() => {
+  const og: any = ogPhoto.value
+  if (og?.setName) return `A photograph from ${og.setName} — Cold Turkey Cape Town. Were you there?`
+  return 'Thousands of photographs from Cold Turkey Cape Town. Find the night you were there, and relive it.'
+})
+
 useSeoMeta({
   title: () => ogTitle.value,
   description:
     'Thousands of photographs from Cold Turkey Cape Town, the bi-weekly electronic music event. Find the night you were there.',
   ogTitle: () => ogTitle.value,
-  ogDescription:
-    'Thousands of photographs from Cold Turkey Cape Town. Find the night you were there, and relive it.',
+  ogDescription: () => ogDescription.value,
+  ogUrl: () => ogUrl.value,
   ogImage: () => ogImage.value,
   ogType: 'website',
   twitterCard: 'summary_large_image',
