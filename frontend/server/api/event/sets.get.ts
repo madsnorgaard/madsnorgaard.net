@@ -21,13 +21,17 @@ export default defineEventHandler(async (event) => {
     `${base}/wp-json/wp/v2/event-sets?parent=${parentId}&per_page=100&orderby=name&order=asc&_fields=id,name,slug,count,parent`
   )
 
-  const sets = (Array.isArray(children) ? children : []).map((t: any) => ({
-    id: t.id,
-    name: decodeEntities(t.name ?? ''),
-    slug: t.slug ?? '',
-    count: t.count ?? 0,
-    parent: t.parent ?? parentId,
-  }))
+  const sets = (Array.isArray(children) ? children : [])
+    .map((t: any) => ({
+      id: t.id,
+      name: decodeEntities(t.name ?? ''),
+      slug: t.slug ?? '',
+      count: Number(t.count ?? 0),
+      parent: t.parent ?? parentId,
+    }))
+    // Only nights that actually have photos — an empty set is a leftover term
+    // (e.g. from a folder-name mismatch on import) and must not show as a chip.
+    .filter((s) => s.count > 0)
 
   return { event: EVENT_SLUG, parentId, sets }
 })
