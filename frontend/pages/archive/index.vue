@@ -136,7 +136,9 @@ useHead({
 
 .collection-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  /* min(300px, 100%) so columns shrink below 300px on very narrow phones
+     instead of forcing a fixed track that overflows. */
+  grid-template-columns: repeat(auto-fill, minmax(min(300px, 100%), 1fr));
   gap: 1rem;
 }
 
