@@ -167,7 +167,9 @@ export default defineNuxtConfig({
         // CSP: allow Nuxt SSR inline scripts, Google Fonts, self for everything else
         'Content-Security-Policy': [
           "default-src 'self'",
-          "script-src 'self' 'unsafe-inline' https://analytics.theazanianprepper.online",
+          // w.soundcloud.com: the SoundCloud Widget API (player/api.js) that
+          // drives the Cold Turkey mix player's play/pause.
+          "script-src 'self' 'unsafe-inline' https://analytics.theazanianprepper.online https://w.soundcloud.com",
           "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
           "font-src 'self' https://fonts.gstatic.com",
           "img-src 'self' data: https:",
