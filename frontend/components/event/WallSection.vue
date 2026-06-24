@@ -3,47 +3,59 @@
     ref="el"
     class="wall-section"
     :class="{ 'wall-section--dark': darkroom }"
-    :style="!visible && collapsedHeight ? { height: collapsedHeight + 'px' } : null"
+    :style="spacerStyle"
   >
     <template v-if="visible">
-      <button
-        v-for="(photo, i) in photos"
-        :key="photo.id"
-        class="tile"
-        type="button"
-        :aria-label="`Open photo ${startIndex + i + 1}`"
-        @click="$emit('open', startIndex + i)"
+      <div
+        v-for="(row, ri) in rows"
+        :key="ri"
+        class="wall-row"
+        :style="{ height: row.height + 'px' }"
       >
-        <img
-          class="tile__img"
-          :src="photo.images?.medium || photo.images?.large || photo.images?.full || ''"
-          :srcset="srcset(photo)"
-          sizes="(max-width: 480px) 50vw, (max-width: 1024px) 33vw, 22vw"
-          :width="photo.images?.width || undefined"
-          :height="photo.images?.height || undefined"
-          :alt="photo.images?.alt || ''"
-          :style="photo.id === morphId ? { viewTransitionName: 'ct-hero-photo' } : undefined"
-          loading="lazy"
-          decoding="async"
-        />
-        <span class="tile__overlay" aria-hidden="true">
-          <span v-if="photo.likeCount" class="tile__likes">♥ {{ photo.likeCount }}</span>
-        </span>
-      </button>
+        <button
+          v-for="cell in row.items"
+          :key="cell.photo.id"
+          class="tile"
+          type="button"
+          :style="{ width: cell.width + 'px' }"
+          :aria-label="`Open photo ${cell.index + 1}`"
+          @click="$emit('open', cell.index)"
+        >
+          <img
+            class="tile__img"
+            :src="cell.photo.images?.medium || cell.photo.images?.large || cell.photo.images?.full || ''"
+            :srcset="srcset(cell.photo)"
+            sizes="(max-width: 480px) 50vw, (max-width: 1024px) 33vw, 22vw"
+            :alt="cell.photo.images?.alt || ''"
+            :style="cell.photo.id === morphId ? { viewTransitionName: 'ct-hero-photo' } : undefined"
+            loading="lazy"
+            decoding="async"
+          />
+          <span class="tile__overlay" aria-hidden="true">
+            <span v-if="cell.photo.likeCount" class="tile__likes">♥ {{ cell.photo.likeCount }}</span>
+          </span>
+        </button>
+      </div>
     </template>
   </section>
 </template>
 
 <script setup lang="ts">
-// One chunk (~one page) of the wall. Self-virtualizes: when scrolled far from
-// the viewport it collapses to a spacer of its last measured height, so the
-// live DOM never holds more than the few sections near the viewport - the key
-// to rendering thousands of photos smoothly.
-import type { EventPhoto } from '~/types/event'
+// One windowed block of the wall: a run of pre-computed justified rows. When
+// scrolled far from the viewport it collapses to a spacer of its height, so the
+// live DOM never holds more than the few blocks near the viewport - the key to
+// rendering thousands of photos smoothly.
+//
+// The justified-rows layout is computed once in the parent (PhotoWall), which
+// knows the container width; each row is a flex line whose tiles are sized so
+// the row spans the full width edge-to-edge, in strict given order. The parent
+// also passes an estimated block height (estHeight) so a block that starts life
+// off-screen reserves the right space before it has ever been measured.
+import type { EventPhoto, WallRow } from '~/types/event'
 
 const props = defineProps<{
-  photos: EventPhoto[]
-  startIndex: number
+  rows: WallRow[]
+  estHeight: number
   morphId?: number | null
   darkroom?: boolean
 }>()
@@ -52,7 +64,15 @@ defineEmits<{ (e: 'open', index: number): void }>()
 
 const el = ref<HTMLElement | null>(null)
 const visible = ref(true) // render on first paint (SSR-friendly + measurable)
-const collapsedHeight = ref(0)
+const measured = ref(0)
+
+// While collapsed, hold the (measured, else estimated) height so scroll position
+// is preserved and an unseen block still reserves its space.
+const spacerStyle = computed(() => {
+  if (visible.value) return null
+  const h = measured.value || props.estHeight
+  return h ? { height: `${h}px` } : null
+})
 
 function srcset(photo: EventPhoto): string {
   const img = photo.images
@@ -63,7 +83,6 @@ function srcset(photo: EventPhoto): string {
   return parts.join(', ')
 }
 
-// Measure height before collapsing so the spacer preserves scroll position.
 useIntersectionObserver(
   el,
   ([entry]) => {
@@ -71,7 +90,7 @@ useIntersectionObserver(
       visible.value = true
     } else {
       if (el.value && visible.value) {
-        collapsedHeight.value = el.value.offsetHeight
+        measured.value = el.value.offsetHeight
       }
       visible.value = false
     }
@@ -82,28 +101,25 @@ useIntersectionObserver(
 
 <style scoped>
 .wall-section {
-  columns: 5 220px;
-  column-gap: 4px;
   padding: 0 2px;
 }
 
-@media (max-width: 1024px) {
-  .wall-section { columns: 3 200px; }
-}
-@media (max-width: 480px) {
-  .wall-section { columns: 2 140px; }
+.wall-row {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 4px;
 }
 
 .tile {
   display: block;
-  width: 100%;
-  margin: 0 0 4px;
+  height: 100%;
+  flex: 0 0 auto;
+  margin: 0;
   padding: 0;
   border: none;
   background: var(--color-surface);
   cursor: pointer;
   position: relative;
-  break-inside: avoid;
   overflow: hidden;
   /* Lift toward the viewer on hover: the tile itself scales up and rises above
      its neighbours (z-index), so the photo reads as coming forward rather than
@@ -125,7 +141,10 @@ useIntersectionObserver(
 .tile__img {
   display: block;
   width: 100%;
-  height: auto;
+  height: 100%;
+  /* Tiles are sized to each photo's exact aspect ratio, so cover trims nothing
+     visible - it just guarantees the row stays gap-free under sub-pixel rounding. */
+  object-fit: cover;
   border-radius: inherit;
   transition: transform 500ms ease, filter 300ms ease;
 }
