@@ -12,6 +12,12 @@ export interface EventPhoto {
   setSlug: string | null
 }
 
+/** One justified row of the photo wall: tiles share a height and span full width. */
+export interface WallRow {
+  height: number
+  items: { photo: EventPhoto; index: number; width: number }[]
+}
+
 export interface EventPhotoListResponse {
   photos: EventPhoto[]
   total: number
