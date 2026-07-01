@@ -44,8 +44,13 @@ export default defineEventHandler(async (event) => {
 
   const nodeId = match.id
 
+  // field_video is a reference to a media--remote_video entity; ?include pulls
+  // that entity into `included`, where its field_media_oembed_video attribute
+  // carries the canonical watch URL (for example
+  // https://www.youtube.com/watch?v=…). Anonymous requests resolve it because
+  // the anonymous role holds the "view media" permission on Drupal.
   const data = await $fetch<any>(
-    `${base}/jsonapi/node/article/${nodeId}?include=field_tags,field_image`,
+    `${base}/jsonapi/node/article/${nodeId}?include=field_tags,field_image,field_video`,
     { headers: { Accept: 'application/vnd.api+json' } }
   ).catch(() => null)
 
@@ -71,7 +76,14 @@ function transformNode(node: any, included: any[]): DrupalBlogPost {
     coverImage,
     tags: resolveTags(node.relationships?.field_tags?.data ?? [], included),
     series: resolveSingleTerm(node.relationships?.field_series?.data, included),
+    videoUrl: resolveVideoUrl(node.relationships?.field_video?.data, included),
   }
+}
+
+function resolveVideoUrl(ref: any, included: any[]): string | undefined {
+  if (!ref) return undefined
+  const media = included.find((i: any) => i.type === ref.type && i.id === ref.id)
+  return media?.attributes?.field_media_oembed_video || undefined
 }
 
 function resolveImage(rel: any, included: any[]) {

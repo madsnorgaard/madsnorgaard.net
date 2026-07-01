@@ -36,6 +36,11 @@
         <img :src="post.coverImage.url" :alt="post.coverImage.alt || post.title" loading="eager">
       </figure>
 
+      <!-- Video from Drupal (field_video), near the top, breaks out to match the hero -->
+      <div v-if="post.videoUrl" class="post-video">
+        <VideoEmbed :url="post.videoUrl" :title="post.title" />
+      </div>
+
       <!-- Post body: Drupal provides sanitized HTML -->
       <!-- eslint-disable-next-line vue/no-v-html -->
       <article ref="bodyEl" class="post-body" v-html="post.body" />
@@ -122,6 +127,19 @@ useHead(() => ({
   display: block;
   border-radius: 8px;
   border: 1px solid var(--color-border);
+}
+
+/* Video breaks out to the same width as the featured image */
+.post-video {
+  position: relative;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(1080px, 92vw);
+  margin: 0 0 3rem;
+}
+
+.post-video :deep(.video-embed) {
+  margin: 0;
 }
 
 .post-body {

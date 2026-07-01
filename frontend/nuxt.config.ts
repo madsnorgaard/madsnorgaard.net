@@ -172,10 +172,12 @@ export default defineNuxtConfig({
           "script-src 'self' 'unsafe-inline' https://analytics.theazanianprepper.online https://w.soundcloud.com",
           "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
           "font-src 'self' https://fonts.gstatic.com",
+          // https: covers YouTube poster thumbnails from i.ytimg.com
           "img-src 'self' data: https:",
           "connect-src 'self' https://analytics.theazanianprepper.online",
-          // SoundCloud widget (Cold Turkey mix player on the photo wall)
-          "frame-src https://w.soundcloud.com",
+          // SoundCloud widget (Cold Turkey mix player); youtube-nocookie for the
+          // click-to-load VideoEmbed player on article pages
+          "frame-src https://w.soundcloud.com https://www.youtube-nocookie.com",
           "frame-ancestors 'none'",
           "base-uri 'self'",
           "form-action 'self'",
