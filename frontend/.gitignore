@@ -31,3 +31,6 @@ logs
 playwright-report/
 test-results/
 tests/e2e/screenshots/
+
+.jumbo/
+.jumbo/jumbo.db

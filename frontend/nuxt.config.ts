@@ -16,6 +16,15 @@ export default defineNuxtConfig({
     defaultLocale: 'en',
   },
 
+  // nuxt-seo-utils: keep share-relevant query params in the canonical / og:url
+  // (default whitelist drops them), so each ?photo=<id> share caches separately.
+  seo: {
+    canonicalQueryWhitelist: [
+      'page', 'sort', 'filter', 'search', 'q', 'category', 'tag',
+      'photo', 'set', 'favs',
+    ],
+  },
+
   sitemap: {
     sources: ['/api/__sitemap__/urls'],
     exclude: ['/api/**'],
@@ -48,7 +57,7 @@ export default defineNuxtConfig({
   image: {
     domains: ['photo.madsnorgaard.net'],
     quality: 80,
-    format: ['webp', 'jpg'],
+    format: ['avif', 'webp', 'jpg'],
   },
 
   runtimeConfig: {
@@ -127,6 +136,18 @@ export default defineNuxtConfig({
     // Redirects for old WordPress paths — indexed traffic belongs on photo.madsnorgaard.net
     '/one-picture-stories/**': { redirect: { to: 'https://photo.madsnorgaard.net/one-picture-stories/**', statusCode: 301 } },
 
+    // Event wall (Cold Turkey): short SWR on reads, NEVER cache the writes.
+    '/api/event/photos/**': { swr: 120 },
+    '/api/event/sets': { swr: 600 },
+    '/api/event/photo/**': { swr: 60 },
+    '/api/event/top': { swr: 300 },
+    '/api/event/like': { swr: false, cache: false },
+    '/api/event/there': { swr: false, cache: false },
+    // No caching: the same path serves GET (notes list) and POST (submit);
+    // caching the path wraps the POST and eats its body before readBody runs.
+    '/api/event/notes': { swr: false, cache: false },
+    '/api/event/favourites-zip': { swr: false, cache: false },
+
     // Photo API route caching
     '/api/photo/**': { swr: 300 },
     '/api/wp/stories/**': { swr: 300 },
@@ -146,11 +167,15 @@ export default defineNuxtConfig({
         // CSP: allow Nuxt SSR inline scripts, Google Fonts, self for everything else
         'Content-Security-Policy': [
           "default-src 'self'",
-          "script-src 'self' 'unsafe-inline' https://analytics.theazanianprepper.online",
+          // w.soundcloud.com: the SoundCloud Widget API (player/api.js) that
+          // drives the Cold Turkey mix player's play/pause.
+          "script-src 'self' 'unsafe-inline' https://analytics.theazanianprepper.online https://w.soundcloud.com",
           "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
           "font-src 'self' https://fonts.gstatic.com",
           "img-src 'self' data: https:",
           "connect-src 'self' https://analytics.theazanianprepper.online",
+          // SoundCloud widget (Cold Turkey mix player on the photo wall)
+          "frame-src https://w.soundcloud.com",
           "frame-ancestors 'none'",
           "base-uri 'self'",
           "form-action 'self'",

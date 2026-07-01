@@ -2,28 +2,19 @@
   <div class="container" style="padding-top: 4rem; padding-bottom: 4rem;">
     <h1 class="text-display text-display--section" style="margin-bottom: 4rem;">Projects</h1>
 
-    <!-- ─── Civic infrastructure ─────────────────────────────────────── -->
-    <section v-if="civicProjects?.length" style="margin-bottom: 4rem;">
-      <h2 class="text-label" style="margin-bottom: 1.5rem;">Civic infrastructure</h2>
-      <div class="projects-grid">
-        <ProjectsProjectCard
-          v-for="project in civicProjects"
-          :key="project.id"
-          :project="project"
-        />
-      </div>
-    </section>
-
-    <!-- ─── All projects ──────────────────────────────────────────────── -->
+    <!-- ─── Project grid with sphere filter ──────────────────────────── -->
     <section v-if="allProjects?.length" style="margin-bottom: 4rem;">
-      <h2 class="text-label" style="margin-bottom: 1.5rem;">All projects</h2>
-      <div class="projects-grid">
+      <ProjectsSphereFilter v-model="selectedSphere" :options="sphereOptions" />
+      <div v-if="filteredProjects.length" class="projects-grid">
         <ProjectsProjectCard
-          v-for="project in allProjects"
+          v-for="project in filteredProjects"
           :key="project.id"
           :project="project"
         />
       </div>
+      <p v-else class="text-mono" style="color: var(--color-muted)">
+        No projects in this sphere yet.
+      </p>
     </section>
 
     <!-- ─── Open source / GitHub ─────────────────────────────────────── -->
@@ -55,15 +46,32 @@
 <script setup lang="ts">
 import type { DrupalProject } from '~/types/drupal'
 import type { GitHubRepo } from '~/types/github'
+import type { SphereValue } from '~/types/sphere'
 
 const [{ data: allProjects }, { data: repos }] = await Promise.all([
   useFetch<DrupalProject[]>('/api/drupal/projects'),
   useFetch<GitHubRepo[]>('/api/github/repos'),
 ])
 
-const civicProjects = computed(() =>
-  allProjects.value?.filter((p) => p.category === 'civic') ?? []
-)
+const selectedSphere = ref<SphereValue>('all')
+
+const filteredProjects = computed(() => {
+  const list = allProjects.value ?? []
+  if (selectedSphere.value === 'all') return list
+  return list.filter((p) => p.category === selectedSphere.value)
+})
+
+const sphereOptions = computed(() => {
+  const list = allProjects.value ?? []
+  const countBy = (cat: string) => list.filter((p) => p.category === cat).length
+  return [
+    { value: 'all' as const,           label: 'All',         count: list.length },
+    { value: 'civic' as const,         label: 'Civic',       count: countBy('civic') },
+    { value: 'professional' as const,  label: 'Professional', count: countBy('professional') },
+    { value: 'open-source' as const,   label: 'Open source', count: countBy('open-source') },
+    { value: 'personal' as const,      label: 'Personal',    count: countBy('personal') },
+  ]
+})
 
 useHead({ title: 'Projects | Mads Nørgaard' })
 </script>
@@ -83,6 +91,13 @@ useHead({ title: 'Projects | Mads Nørgaard' })
 
 .repo-row:hover {
   color: var(--color-accent);
+}
+
+/* The name+description column must be allowed to shrink (min-width:0) so a long
+   description wraps instead of forcing the flex row past the viewport on narrow
+   phones. */
+.repo-row > div:first-child {
+  min-width: 0;
 }
 
 .repo-row__name {
