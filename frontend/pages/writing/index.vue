@@ -83,7 +83,17 @@ function formatDate(dateString: string) {
   })
 }
 
-useHead({ title: 'Writing | Mads Nørgaard' })
+// Filtered /writing?tag=… views are thin duplicates of /writing: keep them
+// crawlable but noindex, so only the main index competes for the query.
+if (currentTag.value) {
+  useRobotsRule('noindex, follow')
+}
+
+useHead(() => ({
+  title: currentTag.value
+    ? `Writing: ${currentTag.value} | Mads Nørgaard`
+    : 'Writing | Mads Nørgaard',
+}))
 </script>
 
 <style scoped>

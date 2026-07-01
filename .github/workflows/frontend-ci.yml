@@ -1,0 +1,35 @@
+name: Frontend CI
+
+# Catch the failure mode that has bitten prod deploys: a dependabot bump that
+# updates package.json but leaves package-lock.json out of sync, so
+# `npm ci --frozen-lockfile` (used in the Dockerfile) fails only at deploy time.
+# Running the same `npm ci` on every PR surfaces the drift before merge.
+
+on:
+  pull_request:
+    paths:
+      - 'frontend/**'
+  push:
+    branches: [main]
+    paths:
+      - 'frontend/**'
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: frontend/.nvmrc
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      # Same install the Docker build uses; fails fast if the lock file drifted.
+      - run: npm ci
+      - run: npm run build

@@ -18,6 +18,9 @@ interface SitemapUrl {
 export default defineSitemapEventHandler(async (event) => {
   const config = useRuntimeConfig(event)
   const drupalBase = config.drupalBaseUrl
+  // drupalBase is the internal Docker host (http://drupal:80) used for JSON:API;
+  // image <loc> entries must use the PUBLIC host or they are invalid in the sitemap.
+  const drupalPublic = process.env.DRUPAL_PUBLIC_URL || 'https://drupal.madsnorgaard.net'
   const photoBase = config.photoSiteUrl
   const urls: SitemapUrl[] = []
 
@@ -36,7 +39,7 @@ export default defineSitemapEventHandler(async (event) => {
       if (imageRef) {
         const file = included.find((i: any) => i.type === imageRef.type && i.id === imageRef.id)
         const uri = file?.attributes?.uri?.url
-        if (uri) images.push({ loc: `${drupalBase}${uri}`, title: node.attributes?.title })
+        if (uri) images.push({ loc: `${drupalPublic}${uri}`, title: node.attributes?.title })
       }
       urls.push({
         loc: `/writing/${slug}`,
