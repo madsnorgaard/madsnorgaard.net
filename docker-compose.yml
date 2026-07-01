@@ -20,10 +20,20 @@ services:
       PHOTO_SITE_URL: https://photo.madsnorgaard.net
     container_name: madsnorgaard_nuxt
     labels:
-      - traefik.http.routers.madsnorgaard_nuxt.rule=Host(`madsnorgaard.net`) || Host(`www.madsnorgaard.net`)
+      - traefik.http.routers.madsnorgaard_nuxt.rule=Host(`madsnorgaard.net`)
       - traefik.http.routers.madsnorgaard_nuxt.tls=true
       - traefik.http.routers.madsnorgaard_nuxt.tls.certresolver=lets-encrypt
       - traefik.http.services.madsnorgaard_nuxt.loadbalancer.server.port=3000
+      # Canonicalise www -> apex with a 301 so the two hosts don't split ranking
+      # signals. $${1} (not ${1}) so compose doesn't eat it as a variable.
+      - traefik.http.routers.madsnorgaard_nuxt_www.rule=Host(`www.madsnorgaard.net`)
+      - traefik.http.routers.madsnorgaard_nuxt_www.tls=true
+      - traefik.http.routers.madsnorgaard_nuxt_www.tls.certresolver=lets-encrypt
+      - traefik.http.routers.madsnorgaard_nuxt_www.service=madsnorgaard_nuxt
+      - traefik.http.routers.madsnorgaard_nuxt_www.middlewares=madsnorgaard-www-redirect
+      - traefik.http.middlewares.madsnorgaard-www-redirect.redirectregex.regex=^https?://www\.madsnorgaard\.net/(.*)
+      - traefik.http.middlewares.madsnorgaard-www-redirect.redirectregex.replacement=https://madsnorgaard.net/$${1}
+      - traefik.http.middlewares.madsnorgaard-www-redirect.redirectregex.permanent=true
     networks:
       - web
       - drupalmadsnorgaardnet_internal
