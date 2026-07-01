@@ -51,6 +51,7 @@
 <script setup lang="ts">
 import type { DrupalBlogPost } from '~/types/drupal'
 import { formatDate, readingTime } from '~/composables/useContentMeta'
+import { youTubeId } from '~/utils/youtube'
 
 const route = useRoute()
 
@@ -109,6 +110,36 @@ useHead(() => ({
     { property: 'article:published_time', content: post.value!.date },
   ],
 }))
+
+// Structured data: Article + breadcrumb, plus a VideoObject when the post has a
+// video so it is eligible for Google video rich results. nuxt-schema-org ships
+// with @nuxtjs/seo; author is linked to the site-level Person identity.
+const videoId = post.value?.videoUrl ? youTubeId(post.value.videoUrl) : null
+
+useSchemaOrg([
+  defineArticle({
+    headline: post.value!.title,
+    description: post.value!.teaser,
+    datePublished: post.value!.date,
+    dateModified: post.value!.date,
+    ...(post.value!.coverImage?.url ? { image: post.value!.coverImage.url } : {}),
+  }),
+  defineBreadcrumb({
+    itemListElement: [
+      { name: 'Writing', item: '/writing' },
+      { name: post.value!.title },
+    ],
+  }),
+  ...(videoId
+    ? [defineVideo({
+        name: post.value!.title,
+        description: post.value!.teaser,
+        thumbnailUrl: `https://i.ytimg.com/vi/${videoId}/maxresdefault.jpg`,
+        uploadDate: post.value!.date,
+        embedUrl: `https://www.youtube-nocookie.com/embed/${videoId}`,
+      })]
+    : []),
+])
 </script>
 
 <style scoped>
