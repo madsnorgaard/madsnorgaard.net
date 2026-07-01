@@ -32,6 +32,9 @@ export interface DrupalBlogPost {
   coverImage?: DrupalImage
   tags: DrupalTag[]
   series?: DrupalTag
+  // Canonical oEmbed video URL from field_video (media--remote_video). Undefined
+  // when the article has no video. See server/api/drupal/blog/[slug].get.ts.
+  videoUrl?: string
 }
 
 export interface DrupalProject {
