@@ -133,8 +133,18 @@ export default defineNuxtConfig({
 
   // HTTP security headers + page caching
   routeRules: {
-    // Redirects for old WordPress paths — indexed traffic belongs on photo.madsnorgaard.net
+    // Redirects for old WordPress paths — indexed traffic belongs on photo.madsnorgaard.net.
+    // These legacy routes proxied photo content onto the apex domain (duplicate content);
+    // 301 them to the canonical photo-site equivalents to consolidate crawl + signal.
     '/one-picture-stories/**': { redirect: { to: 'https://photo.madsnorgaard.net/one-picture-stories/**', statusCode: 301 } },
+    '/post/**': { redirect: { to: 'https://photo.madsnorgaard.net/**', statusCode: 301 } },
+    '/category/**': { redirect: { to: 'https://photo.madsnorgaard.net/category/**', statusCode: 301 } },
+    '/tag/**': { redirect: { to: 'https://photo.madsnorgaard.net/tag/**', statusCode: 301 } },
+    '/proj-cat/**': { redirect: { to: 'https://photo.madsnorgaard.net/proj-cat/**', statusCode: 301 } },
+    // /subject and /series have no photo-site equivalent (they 404 there): keep the
+    // pages working but noindex them so they stop showing as thin, un-indexed duplicates.
+    '/subject/**': { robots: false },
+    '/series/**': { robots: false },
 
     // Event wall (Cold Turkey): short SWR on reads, NEVER cache the writes.
     '/api/event/photos/**': { swr: 120 },
