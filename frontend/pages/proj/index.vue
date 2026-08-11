@@ -80,14 +80,9 @@ const { data } = await useFetch<any>('/api/wp/projects', {
   })),
 })
 
-// Collect unique categories from fetched projects
-const categories = computed(() => {
-  const map = new Map<string, { name: string; slug: string }>()
-  data.value?.projects?.forEach((p: any) =>
-    p.categories?.forEach((c: any) => map.set(c.slug, c))
-  )
-  return [...map.values()]
-})
+// Full category list so every pill stays visible while a filter is active
+const { data: catData } = await useFetch<any>('/api/wp/project-categories')
+const categories = computed(() => catData.value?.categories ?? [])
 
 function pageLink(page: number) {
   const q: Record<string, string> = { page: String(page) }
