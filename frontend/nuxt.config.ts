@@ -140,6 +140,14 @@ export default defineNuxtConfig({
     // internally.
     '/one-picture-stories/**': { redirect: { to: '/', statusCode: 301 } },
     '/proj-cat/**': { redirect: { to: '/archive', statusCode: 301 } },
+
+    // Drupal article bodies reference inline images by their site-relative
+    // path (/sites/default/files/...), which only exists on the Drupal host —
+    // proxy them through so they load same-origin on the apex.
+    '/sites/default/files/**': {
+      proxy: 'https://drupal.madsnorgaard.net/sites/default/files/**',
+      swr: 86400,
+    },
     // /subject and /series have no photo-site equivalent (they 404 there): keep the
     // pages working but noindex them so they stop showing as thin, un-indexed duplicates.
     '/subject/**': { robots: false },
@@ -188,7 +196,10 @@ export default defineNuxtConfig({
           "font-src 'self' https://fonts.gstatic.com",
           // https: covers YouTube poster thumbnails from i.ytimg.com
           "img-src 'self' data: https:",
-          "connect-src 'self' https://analytics.theazanianprepper.online",
+          // fonts.googleapis.com: the browser preloads the fonts stylesheet
+          // as a fetch, which connect-src governs (style-src alone still
+          // logged a violation on every page).
+          "connect-src 'self' https://analytics.theazanianprepper.online https://fonts.googleapis.com",
           // SoundCloud widget (Cold Turkey mix player); youtube-nocookie for the
           // click-to-load VideoEmbed player on article pages
           "frame-src https://w.soundcloud.com https://www.youtube-nocookie.com",

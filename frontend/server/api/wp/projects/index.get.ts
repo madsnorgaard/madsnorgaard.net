@@ -24,8 +24,14 @@ export default defineEventHandler(async (event) => {
     _embed: 'wp:featuredmedia,wp:term',
   })
 
+  // WP filters taxonomies by rest_base ("project-categories") and term ID,
+  // not by taxonomy name/slug - resolve the slug to its term ID first.
   if (query.project_cat && typeof query.project_cat === 'string' && isValidSlug(query.project_cat)) {
-    params.set('project_cat', query.project_cat)
+    const termId = await resolveProjectCat(base, query.project_cat)
+    if (!termId) {
+      return { projects: [], total: 0, totalPages: 0, page, perPage }
+    }
+    params.set('project-categories', String(termId))
   }
 
   const url = `${base}/wp-json/wp/v2/project?${params.toString()}`
@@ -35,6 +41,21 @@ export default defineEventHandler(async (event) => {
 
   return { projects, total, totalPages, page, perPage }
 })
+
+// slug -> term ID cache; terms are effectively static, avoid a WP roundtrip
+// on every filtered request.
+const catIdCache = new Map<string, number>()
+
+async function resolveProjectCat(base: string, slug: string): Promise<number | null> {
+  const cached = catIdCache.get(slug)
+  if (cached) return cached
+  const terms = await wpFetch<any[]>(
+    `${base}/wp-json/wp/v2/project-categories?slug=${encodeURIComponent(slug)}&_fields=id`
+  )
+  const id = Array.isArray(terms) && terms[0]?.id ? Number(terms[0].id) : null
+  if (id) catIdCache.set(slug, id)
+  return id
+}
 
 function toProject(post: any) {
   const media = post._embedded?.['wp:featuredmedia']?.[0]
