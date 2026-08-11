@@ -27,6 +27,9 @@ export async function wpFetch<T>(url: string): Promise<T | null> {
     }
 
     const resp = await fetch(url, { headers })
+    // A 4xx/5xx body (rate limit, WAF page) is still JSON-ish — treating it
+    // as data poisons downstream consumers (and SWR caches). Fail to null.
+    if (!resp.ok) return null
     const text = await resp.text()
     const start = text.search(/[\[{]/)
     if (start === -1) return null
@@ -52,6 +55,7 @@ export async function wpFetchWithHeaders<T>(
     }
 
     const resp = await fetch(url, { headers })
+    if (!resp.ok) return { data: null, total: 0, totalPages: 0 }
     const total = Number(resp.headers.get('X-WP-Total') ?? 0)
     const totalPages = Number(resp.headers.get('X-WP-TotalPages') ?? 0)
 
@@ -90,6 +94,7 @@ export async function wpPost<T>(url: string, body: unknown): Promise<T | null> {
       headers,
       body: JSON.stringify(body ?? {}),
     })
+    if (!resp.ok) return null
     const text = await resp.text()
     const start = text.search(/[\[{]/)
     if (start === -1) return null

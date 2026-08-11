@@ -133,14 +133,13 @@ export default defineNuxtConfig({
 
   // HTTP security headers + page caching
   routeRules: {
-    // Redirects for old WordPress paths — indexed traffic belongs on photo.madsnorgaard.net.
-    // These legacy routes proxied photo content onto the apex domain (duplicate content);
-    // 301 them to the canonical photo-site equivalents to consolidate crawl + signal.
-    '/one-picture-stories/**': { redirect: { to: 'https://photo.madsnorgaard.net/one-picture-stories/**', statusCode: 301 } },
-    '/post/**': { redirect: { to: 'https://photo.madsnorgaard.net/**', statusCode: 301 } },
-    '/category/**': { redirect: { to: 'https://photo.madsnorgaard.net/category/**', statusCode: 301 } },
-    '/tag/**': { redirect: { to: 'https://photo.madsnorgaard.net/tag/**', statusCode: 301 } },
-    '/proj-cat/**': { redirect: { to: 'https://photo.madsnorgaard.net/proj-cat/**', statusCode: 301 } },
+    // Since the 2026-08 headless cutover, photo.madsnorgaard.net 301s all its
+    // HTML here — this site is now the canonical home for posts/categories/tags,
+    // so the old outbound redirects are gone (they formed loops with the photo
+    // site's new redirects). Only paths with no apex page still redirect,
+    // internally.
+    '/one-picture-stories/**': { redirect: { to: '/', statusCode: 301 } },
+    '/proj-cat/**': { redirect: { to: '/archive', statusCode: 301 } },
     // /subject and /series have no photo-site equivalent (they 404 there): keep the
     // pages working but noindex them so they stop showing as thin, un-indexed duplicates.
     '/subject/**': { robots: false },
@@ -157,6 +156,11 @@ export default defineNuxtConfig({
     // caching the path wraps the POST and eats its body before readBody runs.
     '/api/event/notes': { swr: false, cache: false },
     '/api/event/favourites-zip': { swr: false, cache: false },
+
+    // OG cards set their own Cache-Control; the /** swr rule must not cache
+    // them — a transient WP failure would freeze the fallback redirect for
+    // every share of that photo until the cache expired.
+    '/og/**': { swr: false, cache: false },
 
     // Photo API route caching
     '/api/photo/**': { swr: 300 },
