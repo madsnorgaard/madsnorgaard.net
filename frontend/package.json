@@ -15,7 +15,7 @@
   },
   "dependencies": {
     "@nuxt/image": "^1.8.0",
-    "@nuxtjs/seo": "^5.3.0",
+    "@nuxtjs/seo": "^5.3.10",
     "@resvg/resvg-js": "^2.6.2",
     "@vueuse/nuxt": "^11.0.0",
     "ipx": "^3.1.1",
