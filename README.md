@@ -12,6 +12,11 @@ Drupal 11 as the content API. photo.madsnorgaard.net as the photo story backend.
 - **Docker + Traefik v3** — routing, SSL, Let's Encrypt
 - **GitHub Actions** — CI/CD, builds Nuxt image and deploys to VPS2
 
+> The original madsnorgaard.net WordPress (this repo's pre-Nuxt era) was fully
+> retired on 2026-08-11: the local DDEV copy is stopped/unlisted and archived
+> (DB dump + wp-content) at `~/archives/legacy-madsnorgaard-wp`. The gitignored
+> `wp-*` files on disk can be deleted whenever.
+
 ## Setup
 
 ```bash
