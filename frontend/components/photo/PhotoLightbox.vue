@@ -153,7 +153,9 @@ function onTouchEnd(e: TouchEvent) {
 }
 
 function close() {
-  // Parent owns the actual close (it may wrap it in a View Transition).
+  // Close v-model:active consumers directly; parents that bind :active
+  // one-way listen to `close` instead (e.g. to wrap it in a View Transition).
+  emit('update:active', false)
   emit('close')
 }
 
