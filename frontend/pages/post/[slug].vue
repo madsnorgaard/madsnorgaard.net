@@ -2,13 +2,11 @@
   <article v-if="post" class="post-page">
     <!-- Hero image (full-bleed) -->
     <div v-if="post.featuredImage?.src" class="post-page__hero">
-      <img
-        :src="post.featuredImage.src"
-        :alt="post.featuredImage.alt"
-        :width="post.featuredImage.width ?? undefined"
-        :height="post.featuredImage.height ?? undefined"
+      <WpImage
+        :image="post.featuredImage"
+        eager
+        sizes="100vw"
         class="post-page__image"
-        loading="eager"
       />
     </div>
 
@@ -65,6 +63,8 @@
 <script setup lang="ts">
 const route = useRoute()
 const { data: post } = await useFetch<any>(`/api/wp/posts/${route.params.slug}`)
+
+useHeroPreload(post.value?.featuredImage)
 
 if (!post.value) {
   throw createError({ statusCode: 404, statusMessage: 'Post not found' })

@@ -59,8 +59,11 @@
         >
           <img
             :src="block.image.src"
+            :srcset="block.image.srcset || undefined"
+            :sizes="block.image.srcset ? '(max-width: 719px) 100vw, 640px' : undefined"
             :alt="block.image.alt"
             loading="lazy"
+            decoding="async"
             class="project-detail__single-img"
           />
         </figure>
@@ -76,7 +79,15 @@
             class="composite__item"
             @click="openLightbox(block.startIndex + j)"
           >
-            <img :src="img.src" :alt="img.alt" loading="lazy" class="composite__image" />
+            <img
+              :src="img.src"
+              :srcset="img.srcset || undefined"
+              :sizes="img.srcset ? '(max-width: 719px) 33vw, 213px' : undefined"
+              :alt="img.alt"
+              loading="lazy"
+              decoding="async"
+              class="composite__image"
+            />
           </div>
         </div>
 
@@ -91,7 +102,15 @@
             class="gallery__item"
             @click="openLightbox(block.startIndex + j)"
           >
-            <img :src="img.src" :alt="img.alt" loading="lazy" class="gallery__image" />
+            <img
+              :src="img.src"
+              :srcset="img.srcset || undefined"
+              :sizes="img.srcset ? '(max-width: 480px) 100vw, (max-width: 768px) 50vw, 33vw' : undefined"
+              :alt="img.alt"
+              loading="lazy"
+              decoding="async"
+              class="gallery__image"
+            />
           </div>
         </div>
       </template>
@@ -105,7 +124,7 @@
 
     <!-- Lightbox overlay (shared component) -->
     <PhotoLightbox
-      :images="parsed.allImages"
+      :images="lightboxImages"
       v-model:index="lightbox.index"
       v-model:active="lightbox.active"
     />
@@ -125,7 +144,12 @@ if (!project.value) {
 // ─── Content types ──────────────────────────────────────────────
 
 interface GalleryImage {
+  /** Tile display source: the sized <img> from WP content, not the link target. */
   src: string
+  /** WP-generated responsive candidates carried through from content ('' if none). */
+  srcset: string
+  /** The original file (gallery <a href>), shown in the lightbox. */
+  full: string
   alt: string
   width: string
   height: string
@@ -165,10 +189,16 @@ const parsed = computed<{ blocks: ContentBlock[]; allImages: GalleryImage[] }>((
       const link = img.closest('a')
       const linkHref = link?.getAttribute('href') || ''
       const isImageUrl = /\.(jpe?g|png|gif|webp)(\?.*)?$/i.test(linkHref)
-      const src = isImageUrl ? linkHref : imgSrc
       const size = link?.getAttribute('data-size') || ''
       const [w, h] = size ? size.split('x') : ['', '']
-      imgs.push({ src, alt: img.getAttribute('alt') || '', width: w || '', height: h || '' })
+      imgs.push({
+        src: imgSrc,
+        srcset: img.getAttribute('srcset') || '',
+        full: isImageUrl ? linkHref : imgSrc,
+        alt: img.getAttribute('alt') || '',
+        width: w || '',
+        height: h || '',
+      })
     })
     return imgs
   }
@@ -229,6 +259,18 @@ const lightbox = reactive({
   active: false,
   index: 0,
 })
+
+// Lightbox gets the original file; srcset lets the browser fetch a smaller
+// candidate when the viewport doesn't need full resolution.
+const lightboxImages = computed(() =>
+  parsed.value.allImages.map(img => ({
+    src: img.full,
+    srcset: img.srcset || undefined,
+    alt: img.alt,
+    width: img.width,
+    height: img.height,
+  }))
+)
 
 function openLightbox(index: number) {
   lightbox.index = index

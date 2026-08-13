@@ -7,15 +7,12 @@
       aria-label="Toggle story caption"
       @click="captionOpen = !captionOpen"
     >
-      <img
+      <WpImage
         v-if="current.image"
-        :src="current.image.src"
-        :alt="current.image.alt"
-        :width="current.image.width ?? undefined"
-        :height="current.image.height ?? undefined"
+        :image="current.image"
+        sizes="(max-width: 900px) 100vw, 640px"
         class="ops__image"
         :class="{ 'ops__image--fading': fading }"
-        loading="lazy"
       />
 
       <!-- Caption overlay -->
@@ -39,6 +36,8 @@
 </template>
 
 <script setup lang="ts">
+import type { FeaturedImage } from '~/types/photo'
+
 type Story = {
   id: number
   title: string
@@ -46,7 +45,7 @@ type Story = {
   date: string
   slug: string
   url: string
-  image: { src: string; alt: string; width: number | null; height: number | null } | null
+  image: FeaturedImage | null
 }
 
 const props = defineProps<{

@@ -29,12 +29,7 @@ export default defineEventHandler(async (event) => {
     slug: post.slug ?? '',
     date: post.date ?? '',
     excerpt: stripTags(post.excerpt?.rendered ?? ''),
-    featuredImage: media ? {
-      src: media.source_url ?? null,
-      alt: media.alt_text || '',
-      width: media.media_details?.width ?? null,
-      height: media.media_details?.height ?? null,
-    } : null,
+    featuredImage: extractFeaturedImage(media),
     // Structured block data for the Vue block renderer
     blocks: post.blocks_data ?? [],
     // Resolved photo data keyed by photo ID

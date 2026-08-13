@@ -19,13 +19,11 @@
 
     <!-- Featured image (full-bleed) -->
     <div v-if="story.featuredImage?.src" class="story-page__featured">
-      <img
-        :src="story.featuredImage.src"
-        :alt="story.featuredImage.alt"
-        :width="story.featuredImage.width ?? undefined"
-        :height="story.featuredImage.height ?? undefined"
+      <WpImage
+        :image="story.featuredImage"
+        eager
+        sizes="100vw"
         class="story-page__featured-image"
-        loading="eager"
       />
     </div>
 
@@ -71,6 +69,8 @@ const { data: story } = await useFetch<Story>(`/api/wp/stories/${route.params.sl
 if (!story.value) {
   throw createError({ statusCode: 404, statusMessage: 'Story not found' })
 }
+
+useHeroPreload(story.value?.featuredImage)
 
 const pageTitle = story.value?.title || 'Stories'
 const pageDesc = story.value?.excerpt || `${pageTitle} - a documentary photo essay`

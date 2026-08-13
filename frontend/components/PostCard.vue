@@ -13,11 +13,11 @@
     <!-- Front face -->
     <div class="post-card-flip__face post-card-flip__front">
       <div class="post-card-flip__image">
-        <img
+        <WpImage
           v-if="post.featuredImage?.src"
-          :src="post.featuredImage.src"
-          :alt="post.featuredImage.alt"
-          loading="lazy"
+          :image="post.featuredImage"
+          :max-width="768"
+          sizes="(max-width: 640px) 100vw, 33vw"
         />
       </div>
       <div class="post-card-flip__body">
@@ -55,6 +55,8 @@
 </template>
 
 <script setup lang="ts">
+import type { FeaturedImage } from '~/types/photo'
+
 defineProps<{
   post: {
     id: number
@@ -62,7 +64,7 @@ defineProps<{
     slug: string
     date: string
     excerpt: string
-    featuredImage: { src: string | null; alt: string } | null
+    featuredImage: FeaturedImage | null
     categories: { id: number; name: string; slug: string }[]
     tags: { id: number; name: string; slug: string }[]
   }

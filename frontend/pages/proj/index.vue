@@ -30,10 +30,10 @@
         class="project-grid__item"
       >
         <div v-if="project.featuredImage?.src" class="project-grid__image-wrap">
-          <img
-            :src="project.featuredImage.src"
-            :alt="project.featuredImage.alt"
-            loading="lazy"
+          <WpImage
+            :image="project.featuredImage"
+            :max-width="1024"
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
             class="project-grid__image"
           />
         </div>

@@ -14,7 +14,9 @@
         >
           <img
             class="toppicks__img"
-            :src="p.images?.medium || p.images?.thumbnail || p.images?.large || ''"
+            :src="tileAttrs(p).src"
+            :srcset="tileAttrs(p).srcset"
+            :sizes="tileAttrs(p).srcset ? '144px' : undefined"
             :alt="p.images?.alt || 'Cold Turkey Cape Town photograph'"
             loading="lazy"
             decoding="async"
@@ -35,6 +37,12 @@ const { data } = await useAsyncData('ctct-top', () =>
   $fetch('/api/event/top', { query: { count: 12 } }),
 )
 const picks = computed<EventPhoto[]>(() => (data.value as any)?.photos ?? [])
+
+function tileAttrs(photo: EventPhoto): { src: string; srcset?: string } {
+  const built = buildSrcset(photo.images?.variants, 300)
+  if (built) return built
+  return { src: fallbackSrc(photo.images, 'small'), srcset: undefined }
+}
 </script>
 
 <style scoped>

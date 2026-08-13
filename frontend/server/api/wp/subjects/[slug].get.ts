@@ -58,13 +58,7 @@ function toPhotoSummary(post: any) {
     title: decodeEntities(post.title?.rendered ?? ''),
     slug: post.slug ?? '',
     archiveNumber: archiveNumber ? String(archiveNumber).padStart(3, '0') : null,
-    images: media ? {
-      thumbnail: media.media_details?.sizes?.thumbnail?.source_url ?? null,
-      medium: media.media_details?.sizes?.medium?.source_url ?? null,
-      large: media.media_details?.sizes?.large?.source_url ?? null,
-      full: media.source_url ?? null,
-      alt: media.alt_text || '',
-    } : null,
+    images: extractWpImages(media),
   }
 }
 
@@ -76,9 +70,6 @@ function toStorySummary(post: any) {
     slug: post.slug ?? '',
     date: post.date ?? '',
     excerpt: stripTags(post.excerpt?.rendered ?? ''),
-    featuredImage: media ? {
-      src: media.source_url ?? null,
-      alt: media.alt_text || '',
-    } : null,
+    featuredImage: extractFeaturedImage(media),
   }
 }

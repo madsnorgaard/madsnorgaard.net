@@ -5,11 +5,14 @@
     <div class="hero__drift" aria-hidden="true">
       <div class="hero__track">
         <img
-          v-for="(src, i) in doubled"
+          v-for="(thumb, i) in doubled"
           :key="i"
-          :src="src"
+          :src="thumb.src"
+          :srcset="thumb.srcset"
+          :sizes="thumb.srcset ? '(max-width: 640px) 39vh, 57vh' : undefined"
           alt=""
-          loading="eager"
+          :loading="i < 5 ? 'eager' : 'lazy'"
+          :fetchpriority="i < 2 ? 'high' : undefined"
           decoding="async"
           class="hero__thumb"
         />
@@ -34,15 +37,25 @@
 </template>
 
 <script setup lang="ts">
+import type { PhotoImages } from '~/types/photo'
+import { buildSrcset, fallbackSrc } from '~/utils/wp-srcset'
+
 const props = defineProps<{
-  thumbs: string[]
+  thumbs: PhotoImages[]
 }>()
 
 defineEmits<{ (e: 'enter'): void }>()
 
-// Duplicate the strip so the marquee loops seamlessly.
+// Duplicate the strip so the marquee loops seamlessly. The 38vh frames never
+// need more than a 768px file; the second (duplicated) half starts off-screen
+// and the marquee takes 45s to reach it, so it always lazy-loads.
 const doubled = computed(() => {
-  const t = props.thumbs.slice(0, 20)
+  const t = props.thumbs.slice(0, 20).map((images) => {
+    const built = buildSrcset(images.variants, 768)
+    return built
+      ? { src: built.src, srcset: built.srcset }
+      : { src: fallbackSrc(images, 'small'), srcset: undefined }
+  })
   return t.length ? [...t, ...t] : []
 })
 </script>

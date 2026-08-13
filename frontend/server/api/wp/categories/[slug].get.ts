@@ -52,15 +52,7 @@ function toPostSummary(post: any) {
     slug: post.slug ?? '',
     date: post.date ?? '',
     excerpt: stripTags(post.excerpt?.rendered ?? ''),
-    featuredImage: media ? {
-      src: media.source_url
-        ?? media.media_details?.sizes?.large?.source_url
-        ?? media.media_details?.sizes?.medium_large?.source_url
-        ?? null,
-      alt: media.alt_text || '',
-      width: media.media_details?.width ?? null,
-      height: media.media_details?.height ?? null,
-    } : null,
+    featuredImage: extractFeaturedImage(media),
     categories: extractTermGroup(post, 'category'),
     tags: extractTermGroup(post, 'post_tag'),
   }

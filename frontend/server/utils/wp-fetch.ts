@@ -160,27 +160,35 @@ export async function hydrateGalleryImages(html: string, base: string): Promise<
 
   // Batch-resolve the IDs to source URLs in a single REST call.
   const media = await wpFetch<any[]>(
-    `${base}/wp-json/wp/v2/media?include=${[...ids].join(',')}&per_page=100&_fields=id,source_url,alt_text`
+    `${base}/wp-json/wp/v2/media?include=${[...ids].join(',')}&per_page=100&_fields=id,source_url,alt_text,media_details`
   )
   if (!media?.length) return html
 
-  const byId = new Map<number, { src: string; alt: string }>()
+  const byId = new Map<number, { src: string; srcset: string; alt: string }>()
   for (const m of media) {
     if (m?.id && m?.source_url) {
-      byId.set(Number(m.id), { src: m.source_url, alt: m.alt_text || '' })
+      // These galleries render inside the 42rem article column, so 1024px
+      // candidates suffice; the original only serves DPR>1.5 fallback cases.
+      const variants = extractVariants(m).filter((v) => v.width <= 1024)
+      const src = variants.length ? variants[variants.length - 1].url : m.source_url
+      const srcset = variants.length > 1 ? variants.map((v) => `${v.url} ${v.width}w`).join(', ') : ''
+      byId.set(Number(m.id), { src, srcset, alt: m.alt_text || '' })
     }
   }
   if (byId.size === 0) return html
 
-  // Inject src (+ alt + lazy loading) into each matching img tag.
+  // Inject src (+ srcset + alt + lazy loading) into each matching img tag.
   return html.replace(imgRe, (tag) => {
     if (/\bsrc\s*=/i.test(tag)) return tag
     const m = tag.match(/\bdata-id\s*=\s*["']?(\d+)/i)
     const info = m && byId.get(Number(m[1]))
     if (!info) return tag
+    const srcsetAttr = info.srcset
+      ? ` srcset="${escapeAttr(info.srcset)}" sizes="(max-width: 719px) 100vw, 672px"`
+      : ''
     const altAttr = /\balt\s*=/i.test(tag) ? '' : ` alt="${escapeAttr(info.alt)}"`
     const loadingAttr = /\bloading\s*=/i.test(tag) ? '' : ' loading="lazy"'
-    return tag.replace(/^<img\b/i, `<img src="${escapeAttr(info.src)}"${altAttr}${loadingAttr}`)
+    return tag.replace(/^<img\b/i, `<img src="${escapeAttr(info.src)}"${srcsetAttr}${altAttr}${loadingAttr} decoding="async"`)
   })
 }
 
