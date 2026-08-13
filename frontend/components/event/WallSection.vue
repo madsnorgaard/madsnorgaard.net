@@ -23,8 +23,8 @@
         >
           <img
             class="tile__img"
-            :src="cell.photo.images?.medium || cell.photo.images?.large || cell.photo.images?.full || ''"
-            :srcset="srcset(cell.photo)"
+            :src="tileAttrs(cell.photo).src"
+            :srcset="tileAttrs(cell.photo).srcset"
             sizes="(max-width: 480px) 50vw, (max-width: 1024px) 33vw, 22vw"
             :alt="cell.photo.images?.alt || ''"
             :style="cell.photo.id === morphId ? { viewTransitionName: 'ct-hero-photo' } : undefined"
@@ -74,13 +74,13 @@ const spacerStyle = computed(() => {
   return h ? { height: `${h}px` } : null
 })
 
-function srcset(photo: EventPhoto): string {
-  const img = photo.images
-  if (!img) return ''
-  const parts: string[] = []
-  if (img.medium) parts.push(`${img.medium} 300w`)
-  if (img.large) parts.push(`${img.large} 1024w`)
-  return parts.join(', ')
+// True width descriptors from the per-image variants (300/768/1024), so the
+// browser stops over-fetching `large` for every tile. Falls back to the flat
+// fields for payloads cached before `variants` existed.
+function tileAttrs(photo: EventPhoto): { src: string; srcset?: string } {
+  const built = buildSrcset(photo.images?.variants, 1024)
+  if (built) return built
+  return { src: fallbackSrc(photo.images, 'small'), srcset: undefined }
 }
 
 useIntersectionObserver(

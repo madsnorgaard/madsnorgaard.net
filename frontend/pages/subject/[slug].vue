@@ -14,7 +14,7 @@
         <article v-for="story in data.stories" :key="story.id" class="story-card">
           <NuxtLink :to="`/stories/${story.slug}`" class="story-card__link">
             <div v-if="story.featuredImage?.src" class="story-card__thumb">
-              <img :src="story.featuredImage.src" :alt="story.featuredImage.alt" loading="lazy" class="story-card__image" />
+              <WpImage :image="story.featuredImage" :max-width="768" sizes="(max-width: 640px) 100vw, 200px" class="story-card__image" />
             </div>
             <div>
               <h3 class="story-card__title">{{ story.title }}</h3>
@@ -37,11 +37,12 @@
           :to="`/archive/${photo.slug}`"
           class="photo-grid__item"
         >
-          <img
+          <WpImage
             v-if="photo.images?.medium || photo.images?.large"
-            :src="(photo.images.medium || photo.images.large)!"
+            :image="photo.images"
+            :max-width="1024"
+            sizes="(max-width: 640px) 50vw, 33vw"
             :alt="photo.title"
-            loading="lazy"
             class="photo-grid__image"
           />
           <div class="photo-grid__overlay">

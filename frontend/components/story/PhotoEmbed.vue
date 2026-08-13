@@ -2,12 +2,15 @@
   <figure v-if="photo" :class="['photo-embed', alignClass]">
     <NuxtLink :to="`/archive/${photo.slug}`" class="photo-embed__link">
       <img
-        v-if="imageSrc"
-        :src="imageSrc"
+        v-if="imageAttrs"
+        :src="imageAttrs.src"
+        :srcset="imageAttrs.srcset"
+        :sizes="imageAttrs.srcset ? sizesAttr : undefined"
         :alt="photo.title"
-        :width="imageWidth"
-        :height="imageHeight"
+        :width="imageAttrs.width"
+        :height="imageAttrs.height"
         loading="lazy"
+        decoding="async"
         class="photo-embed__image"
       />
     </NuxtLink>
@@ -31,20 +34,17 @@ const alignClass = computed(() =>
   props.alignment !== 'none' ? `photo-embed--${props.alignment}` : ''
 )
 
-const imageSrc = computed(() => {
-  if (!props.photo?.images) return null
-  return props.photo.images.large?.url
-    ?? props.photo.images.full?.url
-    ?? props.photo.images.medium?.url
-    ?? null
-})
-
-const imageWidth = computed(() =>
-  props.photo?.images?.large?.width ?? props.photo?.images?.full?.width ?? undefined
+const imageAttrs = computed(() =>
+  buildSrcset(variantsFromResolved(props.photo?.images), 2048)
 )
 
-const imageHeight = computed(() =>
-  props.photo?.images?.large?.height ?? props.photo?.images?.full?.height ?? undefined
+// Wide/full alignments break out of the 42rem reading column.
+const sizesAttr = computed(() =>
+  props.alignment === 'wide' || props.alignment === 'full'
+    ? '100vw'
+    : props.alignment === 'left' || props.alignment === 'right'
+      ? '(max-width: 719px) 100vw, 320px'
+      : '(max-width: 719px) 100vw, 672px'
 )
 </script>
 

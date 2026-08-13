@@ -31,6 +31,8 @@
             <img
               :key="reel ? index : undefined"
               :src="current?.src ?? ''"
+              :srcset="current?.srcset || undefined"
+              :sizes="current?.srcset ? '92vw' : undefined"
               :alt="current?.alt ?? ''"
               class="lightbox__image"
               :class="{ 'lightbox__image--kenburns': reel, 'lightbox__image--nav': images.length > 1 }"
@@ -79,6 +81,8 @@
 
 export interface LightboxImage {
   src: string
+  /** Optional responsive candidates spanning up to the original. */
+  srcset?: string
   alt?: string
   width?: string | number | null
   height?: string | number | null

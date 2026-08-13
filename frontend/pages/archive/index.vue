@@ -30,11 +30,11 @@
         class="collection-grid__item"
       >
         <div class="collection-grid__image-wrap">
-          <img
+          <WpImage
             v-if="project.featuredImage?.src"
-            :src="project.featuredImage.src"
-            :alt="project.featuredImage.alt"
-            loading="lazy"
+            :image="project.featuredImage"
+            :max-width="1024"
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
             class="collection-grid__image"
           />
         </div>

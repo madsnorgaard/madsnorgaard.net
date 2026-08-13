@@ -15,9 +15,12 @@
       <figure v-for="(photo, i) in photos" :key="photo.id" class="frame">
         <img
           class="frame__img"
-          :src="photo.images?.medium || photo.images?.large || ''"
+          :src="tileAttrs(photo).src"
+          :srcset="tileAttrs(photo).srcset"
+          :sizes="tileAttrs(photo).srcset ? '(max-width: 640px) 45vw, 240px' : undefined"
           :alt="photo.images?.alt || ''"
           loading="lazy"
+          decoding="async"
         />
         <figcaption class="frame__no">{{ String(i + 1).padStart(2, '0') }}</figcaption>
       </figure>
@@ -30,6 +33,12 @@ import type { EventPhoto } from '~/types/event'
 
 defineProps<{ photos: EventPhoto[] }>()
 defineEmits<{ (e: 'close'): void }>()
+
+function tileAttrs(photo: EventPhoto): { src: string; srcset?: string } {
+  const built = buildSrcset(photo.images?.variants, 768)
+  if (built) return built
+  return { src: fallbackSrc(photo.images, 'small'), srcset: undefined }
+}
 
 function print() {
   window.print()

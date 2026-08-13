@@ -34,6 +34,7 @@ function hasImage(post: any): boolean {
 
 function toStory(post: any) {
   const media = post._embedded?.['wp:featuredmedia']?.[0]
+  const image = extractFeaturedImage(media)
   return {
     id:      post.id,
     title:   decodeEntities(post.title?.rendered ?? ''),
@@ -42,13 +43,9 @@ function toStory(post: any) {
     slug:    post.slug ?? '',
     url:     post.link ?? '',
     image: {
-      src:    media?.source_url
-           ?? media?.media_details?.sizes?.large?.source_url
-           ?? media?.media_details?.sizes?.medium_large?.source_url
-           ?? '',
-      alt:    media?.alt_text || post.title?.rendered || '',
-      width:  media?.media_details?.width  ?? null,
-      height: media?.media_details?.height ?? null,
+      ...image,
+      src: image?.src ?? '',
+      alt: media?.alt_text || post.title?.rendered || '',
     },
   }
 }

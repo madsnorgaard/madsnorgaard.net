@@ -13,7 +13,7 @@
     <!-- Front face -->
     <div class="project-card__face project-card__front">
       <div v-if="project.coverImage" class="project-card__image">
-        <img :src="project.coverImage.url" :alt="project.coverImage.alt || project.title" loading="lazy" />
+        <img :src="project.coverImage.url" :alt="project.coverImage.alt || project.title" loading="lazy" decoding="async" />
       </div>
       <div v-else class="project-card__image project-card__image--placeholder">
         <svg :id="`proj-bg-${project.id}`" viewBox="0 0 300 200"

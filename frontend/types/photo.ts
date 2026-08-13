@@ -1,3 +1,10 @@
+/** One renderable size of a WP image (uncropped, proportional). */
+export interface WpImageVariant {
+  url: string
+  width: number
+  height: number
+}
+
 /** Image data from WP featured media. */
 export interface PhotoImages {
   thumbnail: string | null
@@ -7,6 +14,21 @@ export interface PhotoImages {
   width: number | null
   height: number | null
   alt: string
+  /**
+   * Proportional size variants ascending by width, ending with the original.
+   * Absent in SWR-cached responses that predate this field — consumers must
+   * degrade to the flat fields above.
+   */
+  variants?: WpImageVariant[]
+}
+
+/** Shared featured-image shape for posts/stories/projects. */
+export interface FeaturedImage {
+  src: string | null
+  alt: string
+  width?: number | null
+  height?: number | null
+  variants?: WpImageVariant[]
 }
 
 /** A taxonomy term (series or subject). */
@@ -81,7 +103,7 @@ export interface Story {
   slug: string
   date: string
   excerpt: string
-  featuredImage: { src: string | null; alt: string; width?: number | null; height?: number | null } | null
+  featuredImage: FeaturedImage | null
   blocks: StoryBlock[]
   resolvedPhotos: Record<number, ResolvedPhoto>
   contentRendered: string
@@ -96,7 +118,7 @@ export interface StorySummary {
   slug: string
   date: string
   excerpt: string
-  featuredImage: { src: string | null; alt: string; width?: number | null; height?: number | null } | null
+  featuredImage: FeaturedImage | null
   series: TaxonomyTerm[]
   subjects: TaxonomyTerm[]
 }
@@ -118,7 +140,7 @@ export interface TaxonomyPageResponse {
     title: string
     slug: string
     archiveNumber: string | null
-    images: Omit<PhotoImages, 'width' | 'height'> | null
+    images: PhotoImages | null
   }>
   photosTotal: number
   photosTotalPages: number

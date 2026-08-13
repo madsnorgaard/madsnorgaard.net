@@ -2,14 +2,13 @@
   <div v-if="photo" class="container" style="padding-top: 4rem;">
     <!-- Hero image -->
     <div class="photo-detail__hero">
-      <img
+      <WpImage
         v-if="photo.images?.full || photo.images?.large"
-        :src="(photo.images.full || photo.images.large)!"
+        :image="photo.images"
+        eager
+        sizes="100vw"
         :alt="photo.title"
-        :width="photo.images?.width ?? undefined"
-        :height="photo.images?.height ?? undefined"
         class="photo-detail__image"
-        loading="eager"
       />
     </div>
 
@@ -67,6 +66,8 @@ import type { Photo } from '~/types/photo'
 
 const route = useRoute()
 const { data: photo } = await useFetch<Photo>(`/api/photo/${route.params.slug}`)
+
+useHeroPreload(photo.value?.images)
 
 if (!photo.value) {
   throw createError({ statusCode: 404, statusMessage: 'Photo not found' })

@@ -33,7 +33,7 @@
 
       <!-- Featured image from Drupal (field_image), breaks out wider than the text -->
       <figure v-if="post.coverImage?.url" class="post-hero">
-        <img :src="post.coverImage.url" :alt="post.coverImage.alt || post.title" loading="eager">
+        <img :src="post.coverImage.url" :alt="post.coverImage.alt || post.title" loading="eager" fetchpriority="high" decoding="async">
       </figure>
 
       <!-- Video from Drupal (field_video), near the top, breaks out to match the hero -->

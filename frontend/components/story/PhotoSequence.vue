@@ -8,10 +8,15 @@
       >
         <NuxtLink :to="`/archive/${photo.slug}`" class="photo-sequence__link">
           <img
-            v-if="getImageUrl(photo)"
-            :src="getImageUrl(photo)!"
+            v-if="getImageAttrs(photo)"
+            :src="getImageAttrs(photo)!.src"
+            :srcset="getImageAttrs(photo)!.srcset"
+            :sizes="getImageAttrs(photo)!.srcset ? '(max-width: 500px) 80vw, 400px' : undefined"
             :alt="photo.title"
+            :width="getImageAttrs(photo)!.width"
+            :height="getImageAttrs(photo)!.height"
             loading="lazy"
+            decoding="async"
             class="photo-sequence__image"
           />
         </NuxtLink>
@@ -40,11 +45,8 @@ const photos = computed(() =>
     .filter((p): p is ResolvedPhoto => !!p)
 )
 
-function getImageUrl(photo: ResolvedPhoto): string | null {
-  return photo.images?.medium?.url
-    ?? photo.images?.large?.url
-    ?? photo.images?.full?.url
-    ?? null
+function getImageAttrs(photo: ResolvedPhoto) {
+  return buildSrcset(variantsFromResolved(photo.images), 1024)
 }
 </script>
 

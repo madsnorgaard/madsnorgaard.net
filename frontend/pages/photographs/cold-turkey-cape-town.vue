@@ -244,7 +244,7 @@ const activeList = computed<EventPhoto[]>(() =>
 )
 
 const heroThumbs = computed(() =>
-  photos.value.slice(0, 20).map((p) => p.images?.medium || p.images?.large || '').filter(Boolean)
+  photos.value.slice(0, 20).map((p) => p.images).filter((i): i is NonNullable<typeof i> => !!i)
 )
 
 async function loadMore() {
@@ -290,13 +290,19 @@ const lightboxPhotos = computed<EventPhoto[]>(() =>
 )
 
 const lightboxImages = computed<LightboxImage[]>(() =>
-  lightboxPhotos.value.map((p) => ({
-    src: p.images?.large || p.images?.full || p.images?.medium || '',
-    alt: p.images?.alt || '',
-    width: p.images?.width ?? null,
-    height: p.images?.height ?? null,
-    id: p.id,
-  }))
+  lightboxPhotos.value.map((p) => {
+    // Uncapped: the srcset spans to the original so big retina screens keep
+    // full sharpness while laptops fetch the 1024/1536 candidate.
+    const built = buildSrcset(p.images?.variants)
+    return {
+      src: built?.src ?? (p.images?.large || p.images?.full || p.images?.medium || ''),
+      srcset: built?.srcset,
+      alt: p.images?.alt || '',
+      width: p.images?.width ?? null,
+      height: p.images?.height ?? null,
+      id: p.id,
+    }
+  })
 )
 
 const currentPhoto = computed<EventPhoto | null>(

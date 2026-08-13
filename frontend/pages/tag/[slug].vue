@@ -12,7 +12,7 @@
     <section v-if="data.posts?.length" class="posts-list">
       <article v-for="post in data.posts" :key="post.id" class="post-card">
         <NuxtLink v-if="post.featuredImage?.src" :to="`/post/${post.slug}`" class="post-card__thumb">
-          <img :src="post.featuredImage.src" :alt="post.featuredImage.alt" loading="lazy" class="post-card__image" />
+          <WpImage :image="post.featuredImage" :max-width="768" sizes="(max-width: 640px) 100vw, 200px" class="post-card__image" />
         </NuxtLink>
         <div class="post-card__body">
           <h2 class="post-card__title">

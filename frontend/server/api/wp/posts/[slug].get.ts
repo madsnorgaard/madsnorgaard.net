@@ -29,12 +29,7 @@ export default defineEventHandler(async (event) => {
     date: post.date ?? '',
     content: await hydrateGalleryImages(post.content?.rendered ?? '', base),
     excerpt: stripTags(post.excerpt?.rendered ?? ''),
-    featuredImage: media ? {
-      src: media.source_url ?? null,
-      alt: media.alt_text || '',
-      width: media.media_details?.width ?? null,
-      height: media.media_details?.height ?? null,
-    } : null,
+    featuredImage: extractFeaturedImage(media),
     categories: extractTermGroup(post, 'category'),
     tags: extractTermGroup(post, 'post_tag'),
   }
