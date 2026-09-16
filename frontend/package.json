@@ -25,7 +25,7 @@
     "vue-router": "^4.4.0"
   },
   "devDependencies": {
-    "@playwright/test": "^1.61.1",
+    "@playwright/test": "^1.63.0",
     "@types/node": "^22.20.2",
     "commander": "^15.0.0",
     "typescript": "^5.5.0"
