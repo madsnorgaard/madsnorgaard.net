@@ -1,4 +1,4 @@
-// Builds public/lab/world.json for the Nobel page: every country as an SVG
+// Builds public/lab-data/world.json for the Nobel page: every country as an SVG
 // path in the Equal Earth projection, plus a label point for drawing arcs.
 // Source: Natural Earth 1:110m (public domain), via world-atlas.
 //
@@ -82,5 +82,5 @@ const small = [
 ]
 for (const [name, lon, lat] of small) out.push({ name, d: '', c: px([lon, lat]) })
 
-fs.writeFileSync('public/lab/world.json', JSON.stringify({ source: 'Natural Earth 1:110m, via world-atlas', width: W, height: H, countries: out }))
-console.log(`wrote public/lab/world.json (${out.length} countries, ${W}x${H})`)
+fs.writeFileSync('public/lab-data/world.json', JSON.stringify({ source: 'Natural Earth 1:110m, via world-atlas', width: W, height: H, countries: out }))
+console.log(`wrote public/lab-data/world.json (${out.length} countries, ${W}x${H})`)

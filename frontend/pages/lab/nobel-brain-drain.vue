@@ -55,6 +55,11 @@
           Breslau in 1900 counts as born in Poland.
         </p>
         <p>
+          That rule moves one South African off this map. <strong>Albert Luthuli</strong> was born in
+          Bulawayo in 1898, so the Nobel Foundation files him under Zimbabwe, and his dot sits there.
+          Pick Zimbabwe to find him.
+        </p>
+        <p>
           "Working in" is the first affiliation the Nobel Foundation lists for the prize. Peace and Literature
           laureates usually have none, so the arcs are mostly science and economics.
         </p>
@@ -77,7 +82,7 @@
 </template>
 
 <script setup lang="ts">
-import type { NobelRow } from '~/types/lab'
+import type { NobelRow, WorldMap } from '~/types/lab'
 
 useSeoMeta({
   title: 'Born here, won there · Lab',
@@ -85,7 +90,7 @@ useSeoMeta({
 })
 
 const { data: nobel, error } = useFetch<{ rows: NobelRow[] }>('/api/lab/nobel', { server: false })
-const { data: world } = useFetch<any>('/lab/world.json', { server: false })
+const { data: world } = useFetch<WorldMap>('/lab-data/world.json', { server: false })
 
 const rows = computed(() => nobel.value?.rows ?? [])
 const failed = computed(() => !!error.value)

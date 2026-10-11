@@ -77,7 +77,7 @@ useSeoMeta({
   description: 'The border of South Africa and Lesotho redrawn with rotating Fourier epicycles. Drag the slider to add circles.',
 })
 
-const { data } = useFetch<{ outer: Pt[]; lesotho: Pt[] }>('/lab/za.json', { server: false })
+const { data } = useFetch<{ outer: Pt[]; lesotho: Pt[] }>('/lab-data/za.json', { server: false })
 
 const shapes = computed(() =>
   data.value

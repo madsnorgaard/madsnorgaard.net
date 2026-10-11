@@ -16,7 +16,9 @@ const ALIASES: Record<string, string> = {
   'republic of the congo': 'Congo',
   'ivory coast': "Côte d'Ivoire",
   'east timor': 'Timor-Leste',
+  // A label point on the map; the API spells it both ways.
   'guadeloupe island': 'Guadeloupe',
+  'guadeloupe, france': 'Guadeloupe',
   'tibet': 'China',
   // Part of the Kingdom of Denmark; too small to draw at this scale anyway.
   'faroe islands': 'Denmark',

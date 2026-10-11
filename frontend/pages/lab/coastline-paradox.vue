@@ -74,8 +74,8 @@ useSeoMeta({
   description: 'The coastline paradox, interactive: measure Denmark and South Africa with a shrinking ruler and watch the length change.',
 })
 
-const { data: dk } = useFetch<{ coast: Pt[][] }>('/lab/dk.json', { server: false })
-const { data: za } = useFetch<{ coast: Pt[][] }>('/lab/za.json', { server: false })
+const { data: dk } = useFetch<{ coast: Pt[][] }>('/lab-data/dk.json', { server: false })
+const { data: za } = useFetch<{ coast: Pt[][] }>('/lab-data/za.json', { server: false })
 
 const countries = computed(() =>
   dk.value && za.value
