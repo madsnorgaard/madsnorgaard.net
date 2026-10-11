@@ -50,7 +50,7 @@ const experiments = [
     n: '04',
     to: '/lab/nobel-brain-drain',
     title: 'Born here, won there',
-    desc: 'Every Nobel laureate as a line from birth country to the country they won from. Plus four Peace Prizes, one country.',
+    desc: 'Every Nobel laureate as a line from birth country to the country they won from. Plus five Peace Prizes, one country.',
   },
 ]
 </script>
