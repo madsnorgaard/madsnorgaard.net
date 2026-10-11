@@ -65,6 +65,8 @@ export default defineNuxtConfig({
     drupalBaseUrl: process.env.DRUPAL_BASE_URL || 'http://drupal:80',
     githubToken: process.env.GITHUB_TOKEN || '',
     photoSiteUrl: process.env.PHOTO_SITE_URL || 'https://photo.madsnorgaard.net',
+    // /lab Nobel page. Override with NUXT_NOBEL_API_BASE (e.g. a local mock).
+    nobelApiBase: 'https://api.nobelprize.org/2.1',
     public: {
       siteUrl: 'https://madsnorgaard.net',
     },
