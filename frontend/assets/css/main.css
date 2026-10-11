@@ -516,3 +516,107 @@ a {
   .app-cursor__ring--hover + .app-cursor__dot { opacity: 0; }
   .app-cursor__ring--click { transition: transform 0.1s, opacity 0.1s; transform: translate3d(var(--rx), var(--ry), 0) scale(1.5) !important; opacity: 0.4; }
 }
+
+/* ─── Lab (/lab): maths and data experiments ─────────────────────────── */
+
+.lab {
+  padding-top: 4rem;
+  padding-bottom: 5rem;
+}
+
+.lab__kicker {
+  margin-bottom: 1rem;
+}
+
+.lab__kicker a:hover {
+  color: var(--color-text);
+}
+
+.lab__title {
+  margin: 0 0 1.5rem;
+}
+
+.lab__intro {
+  max-width: 640px;
+  color: var(--color-muted);
+  font-size: 1.05rem;
+  line-height: 1.7;
+  margin: 0 0 2.5rem;
+}
+
+.lab__intro strong {
+  color: var(--color-text);
+  font-weight: 500;
+}
+
+.lab__body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 3rem;
+  margin-top: 4rem;
+  padding-top: 2.5rem;
+  border-top: 1px solid var(--color-border);
+}
+
+@media (max-width: 800px) {
+  .lab__body {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 2rem;
+  }
+}
+
+.lab__body h2 {
+  margin: 0 0 1rem;
+}
+
+.lab__body p {
+  color: var(--color-muted);
+  line-height: 1.7;
+  margin: 0 0 1rem;
+}
+
+.lab__body p strong {
+  color: var(--color-text);
+  font-weight: 500;
+}
+
+.lab__body a {
+  border-bottom: 1px solid var(--color-accent);
+}
+
+.lab__math {
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  line-height: 2;
+  color: var(--color-text);
+  background: var(--color-surface);
+  border-left: 2px solid var(--color-accent);
+  padding: 1rem 1.25rem;
+  margin: 0 0 1.25rem;
+  overflow-x: auto;
+  white-space: nowrap;
+}
+
+.lab__source {
+  margin-top: 3rem;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--color-muted);
+}
+
+.lab__source a {
+  border-bottom: 1px solid var(--color-border);
+}
+
+.lab__source a:hover {
+  border-color: var(--color-accent);
+  color: var(--color-text);
+}
+
+.lab-placeholder {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  max-height: 70vh;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+}

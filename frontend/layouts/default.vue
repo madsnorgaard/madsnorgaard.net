@@ -12,6 +12,7 @@
           <li><NuxtLink to="/writing">Writing</NuxtLink></li>
           <li><NuxtLink to="/projects">Projects</NuxtLink></li>
           <li><NuxtLink to="/archive">Photographs</NuxtLink></li>
+          <li><NuxtLink to="/lab">Lab</NuxtLink></li>
           <li><NuxtLink to="/with">Stack</NuxtLink></li>
         </ul>
       </nav>
