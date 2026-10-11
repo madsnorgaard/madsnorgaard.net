@@ -46,6 +46,12 @@ const experiments = [
     title: 'How long is Denmark?',
     desc: 'The coastline paradox with an adjustable ruler. Denmark shrinks fast. South Africa barely notices.',
   },
+  {
+    n: '04',
+    to: '/lab/nobel-brain-drain',
+    title: 'Born here, won there',
+    desc: 'Every Nobel laureate as a line from birth country to the country they won from. Plus four Peace Prizes, one country.',
+  },
 ]
 </script>
 
