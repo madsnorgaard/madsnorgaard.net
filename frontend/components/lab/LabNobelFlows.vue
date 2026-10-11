@@ -23,8 +23,7 @@
     </div>
 
     <figure class="nf__map">
-      <!-- Extra room on top so arcs bowing north over the Arctic are not clipped -->
-      <svg :viewBox="`0 -40 ${world.width} ${world.height + 40}`" role="img" :aria-label="mapLabel">
+      <svg :viewBox="vb.join(' ')" role="img" :aria-label="mapLabel" :style="{ '--u': `${vb[2] / 1000}px` }">
         <defs>
           <marker id="nf-tip-out" viewBox="0 0 6 6" refX="5" refY="3" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
             <path d="M0,0L6,3L0,6Z" fill="var(--color-accent)" />
@@ -39,41 +38,66 @@
             :key="c.name"
             :d="c.d"
             :class="{ 'is-selected': c.name === selected }"
+            vector-effect="non-scaling-stroke"
             @click="selectFromMap(c.name)"
           >
             <title>{{ c.name }}</title>
           </path>
         </g>
-        <g :class="['nf__arcs', { 'nf__arcs--all': selected === EVERYONE }]">
+        <g :class="['nf__arcs', { 'nf__arcs--all': isAll }]">
           <path
             v-for="a in arcs"
             :key="a.key"
             :d="a.d"
             :stroke-width="a.w"
+            vector-effect="non-scaling-stroke"
             :class="['nf__arc', `nf__arc--${a.type}`, { 'is-dim': hover && hover !== a.key, 'is-hot': hover === a.key }]"
-            :marker-end="selected === EVERYONE ? undefined : `url(#nf-tip-${a.type})`"
+            :marker-end="isAll ? undefined : `url(#nf-tip-${a.type})`"
             @mouseenter="hover = a.key"
             @mouseleave="hover = null"
           >
             <title>{{ a.from }} → {{ a.to }}: {{ a.names.join(', ') }}</title>
           </path>
         </g>
-        <circle
-          v-if="selectedPoint && stats.stayed"
-          :cx="selectedPoint[0]"
-          :cy="selectedPoint[1]"
-          :r="3 + Math.sqrt(stats.stayed) * 2.2"
-          class="nf__stay"
-        />
+        <!-- One dot per prize won at home, in a little spiral around the country -->
+        <g v-if="!isAll">
+          <circle
+            v-for="d in homeDots"
+            :key="d.key"
+            :cx="d.x"
+            :cy="d.y"
+            :r="vb[2] * 0.0055"
+            :class="['nf__home', `nf__home--${d.kind}`, { 'is-dim': hover && hover !== d.key, 'is-hot': hover === d.key }]"
+            @mouseenter="hover = d.key"
+            @mouseleave="hover = null"
+          >
+            <title>{{ d.label }}</title>
+          </circle>
+        </g>
+        <!-- Name labels at the far end of each group of arcs -->
+        <g v-if="!isAll" class="nf__labels" :font-size="targetBox[2] * 0.016">
+          <text
+            v-for="l in labels"
+            :key="l.key"
+            :x="l.x"
+            :y="l.y"
+            :text-anchor="l.anchor"
+            :class="`nf__label--${l.type}`"
+          >
+            <tspan :x="l.x" dy="0" class="nf__label-head">{{ l.head }}</tspan>
+            <tspan v-for="(line, i) in l.lines" :key="i" :x="l.x" dy="1.25em">{{ line }}</tspan>
+          </text>
+        </g>
       </svg>
       <figcaption class="nf__legend">
-        <template v-if="selected === EVERYONE">
+        <template v-if="isAll">
           <span><i class="nf__key nf__key--out" /> born in one country, working in another when they won</span>
         </template>
         <template v-else>
           <span><i class="nf__key nf__key--out" /> born in {{ selected }}, won from abroad</span>
           <span><i class="nf__key nf__key--in" /> born abroad, won from {{ selected }}</span>
-          <span><i class="nf__key nf__key--stay" /> born and won at home</span>
+          <span><i class="nf__key nf__key--dot" /> won at home</span>
+          <span><i class="nf__key nf__key--dot nf__key--peace" /> won at home, Peace or Literature</span>
         </template>
       </figcaption>
     </figure>
@@ -89,7 +113,7 @@
     <p v-if="headline" class="nf__headline">{{ headline }}</p>
 
     <div class="nf__table-wrap">
-      <table v-if="selected !== EVERYONE" class="nf__table">
+      <table v-if="!isAll" class="nf__table">
         <thead>
           <tr>
             <th>Year</th><th>Laureate</th><th>Prize</th><th>Born</th><th>Working in</th>
@@ -98,16 +122,16 @@
         <tbody>
           <tr
             v-for="r in listRows"
-            :key="`${r.id}-${r.year}`"
-            :class="{ 'is-hot': hover === pairKey(r) }"
-            @mouseenter="hover = pairKey(r)"
+            :key="rowKey(r)"
+            :class="{ 'is-hot': hover === rowKey(r) }"
+            @mouseenter="hover = rowKey(r)"
             @mouseleave="hover = null"
           >
             <td>{{ r.year }}</td>
             <td>{{ r.name }}</td>
             <td>{{ shortCat(r.cat) }}</td>
-            <td>{{ toMapName(r.born) ?? '-' }}</td>
-            <td>{{ toMapName(r.won) ?? '-' }}</td>
+            <td>{{ r.b ?? '-' }}</td>
+            <td>{{ r.w ?? '-' }}</td>
           </tr>
         </tbody>
       </table>
@@ -135,10 +159,12 @@
 import type { NobelRow } from '~/types/lab'
 import { toMapName } from '~/utils/lab-countries'
 
+type P = [number, number]
+
 interface World {
   width: number
   height: number
-  countries: { name: string; d: string; c: [number, number] }[]
+  countries: { name: string; d: string; c: P }[]
 }
 
 const props = withDefaults(defineProps<{
@@ -157,14 +183,24 @@ const quick = [
   { label: 'Everyone', value: EVERYONE },
 ]
 const selected = ref(props.initial)
+const isAll = computed(() => selected.value === EVERYONE)
 const hover = ref<string | null>(null)
 watch(selected, () => { hover.value = null })
 
 const centroids = computed(() => new Map(props.world.countries.map((c) => [c.name, c.c])))
-const selectedPoint = computed(() => centroids.value.get(selected.value))
 
-// Rows with both ends resolved to map names.
 const rows = computed(() => props.rows.map((r) => ({ ...r, b: toMapName(r.born), w: toMapName(r.won) })))
+type Row = (typeof rows.value)[number]
+const rowKey = (r: Pick<NobelRow, 'id' | 'year' | 'cat'>) => `${r.id}-${r.year}-${r.cat}`
+// "F.W. de Klerk" -> "de Klerk", "Allan M. Cormack" -> "Cormack"
+function surname(n: string) {
+  const words = n.split(' ').filter((w) => !/^(jr\.?|sr\.?|[a-z]\.)+$/i.test(w))
+  let i = words.length - 1
+  while (i > 0 && /^(de|van|von|der|den|le|la|du|da|di|ter)$/i.test(words[i - 1])) i--
+  return words.slice(i).join(' ') || n
+}
+const SHORT: Record<string, string> = { 'United States of America': 'USA', 'United Kingdom': 'UK' }
+const short = (c: string) => SHORT[c] ?? c
 
 const countryOptions = computed(() => {
   const n = new Map<string, number>()
@@ -178,21 +214,20 @@ function selectFromMap(name: string) {
   if (countryOptions.value.some((c) => c.name === name)) selected.value = name
 }
 
-const pairKey = (r: { born: string | null; won: string | null }) => `${toMapName(r.born)}|${toMapName(r.won)}`
-
 // ── Arcs ─────────────────────────────────────────────────────────────
-function arcPath(a: [number, number], b: [number, number], south = false) {
+// Outbound arcs bow north and inbound arcs bow south, so two countries trading
+// laureates both ways get two separate curves. `bend` fans out several people
+// travelling the same route.
+function arcPath(a: P, b: P, south = false, bend = 0.22) {
   const mx = (a[0] + b[0]) / 2
   const my = (a[1] + b[1]) / 2
   const dx = b[0] - a[0]
   const dy = b[1] - a[1]
-  const dist = Math.hypot(dx, dy)
-  // Perpendicular offset: outbound arcs bow north, inbound arcs bow south, so a
-  // pair of countries trading laureates both ways shows two separate curves.
+  const dist = Math.hypot(dx, dy) || 1
   let nx = -dy / dist
   let ny = dx / dist
   if ((ny > 0) !== south) { nx = -nx; ny = -ny }
-  const k = dist * 0.22
+  const k = dist * bend
   return `M${a[0]},${a[1]}Q${(mx + nx * k).toFixed(1)},${(my + ny * k).toFixed(1)} ${b[0]},${b[1]}`
 }
 
@@ -200,29 +235,181 @@ interface Arc { key: string; from: string; to: string; type: 'out' | 'in'; names
 
 const moves = computed(() => rows.value.filter((r) => r.b && r.w && r.b !== r.w))
 
-function aggregate(list: typeof moves.value, type: (r: (typeof moves.value)[number]) => 'out' | 'in'): Arc[] {
+// Everyone view: one arc per country pair, thicker when more people took it.
+const allFlows = computed(() => {
   const m = new Map<string, Arc>()
-  for (const r of list) {
+  for (const r of moves.value) {
     const a = centroids.value.get(r.b!)
     const b = centroids.value.get(r.w!)
     if (!a || !b) continue
     const key = `${r.b}|${r.w}`
-    const t = type(r)
-    const arc = m.get(key) ?? { key, from: r.b!, to: r.w!, type: t, names: [], d: arcPath(a, b, t === 'in'), w: 0 }
+    const arc = m.get(key) ?? { key, from: r.b!, to: r.w!, type: 'out' as const, names: [], d: arcPath(a, b), w: 0 }
     arc.names.push(`${r.name} (${r.year})`)
     m.set(key, arc)
   }
-  return [...m.values()].map((a) => ({ ...a, w: 1 + Math.log2(a.names.length) * 1.1 }))
-}
-
-const allFlows = computed(() => aggregate(moves.value, () => 'out').sort((a, b) => b.names.length - a.names.length))
+  return [...m.values()]
+    .map((a) => ({ ...a, w: 0.8 + Math.log2(a.names.length) * 0.9 }))
+    .sort((a, b) => b.names.length - a.names.length)
+})
 const topFlows = computed(() => allFlows.value.slice(0, 12))
 
-const arcs = computed(() => {
-  if (selected.value === EVERYONE) return [...allFlows.value].reverse()
+// Country view: one arc per person, fanned out when they share a route.
+const personArcs = computed<Arc[]>(() => {
   const X = selected.value
-  return aggregate(moves.value.filter((r) => r.b === X || r.w === X), (r) => (r.b === X ? 'out' : 'in'))
+  const groups = new Map<string, Row[]>()
+  for (const r of moves.value) {
+    if (r.b !== X && r.w !== X) continue
+    const key = `${r.b}|${r.w}`
+    groups.set(key, [...(groups.get(key) ?? []), r])
+  }
+  const out: Arc[] = []
+  for (const list of groups.values()) {
+    list.forEach((r, i) => {
+      const a = centroids.value.get(r.b!)
+      const b = centroids.value.get(r.w!)
+      if (!a || !b) return
+      const type = r.b === X ? 'out' : 'in'
+      const bend = 0.14 + (list.length > 1 ? (i / (list.length - 1)) * 0.2 : 0.08)
+      out.push({ key: rowKey(r), from: r.b!, to: r.w!, type, names: [`${r.name} (${r.year})`], d: arcPath(a, b, type === 'in', bend), w: 1.6 })
+    })
+  }
+  return out
 })
+
+const arcs = computed(() => (isAll.value ? [...allFlows.value].reverse() : personArcs.value))
+
+// ── Home dots ────────────────────────────────────────────────────────
+// Born here and either working here, or with no affiliation (most Peace and
+// Literature laureates), counts as won at home.
+const homeRows = computed(() =>
+  rows.value.filter((r) => r.b === selected.value && (r.w === selected.value || !r.w)),
+)
+const homeDots = computed(() => {
+  const c = centroids.value.get(selected.value)
+  if (!c) return []
+  const step = vb.value[2] * 0.016
+  return homeRows.value.map((r, i) => {
+    // Golden-angle spiral keeps dots evenly packed however many there are.
+    const ang = i * 2.39996
+    const rad = step * Math.sqrt(i + 0.6)
+    return {
+      key: rowKey(r),
+      x: c[0] + Math.cos(ang) * rad,
+      y: c[1] + Math.sin(ang) * rad,
+      kind: SCIENCE.has(r.cat) ? 'sci' : 'peace',
+      label: `${r.name}, ${shortCat(r.cat)} ${r.year}`,
+    }
+  })
+})
+
+// ── Labels ───────────────────────────────────────────────────────────
+interface Label { key: string; x: number; y: number; anchor: string; type: string; head: string; lines: string[] }
+const labels = computed<Label[]>(() => {
+  const X = selected.value
+  const c = centroids.value.get(X)
+  if (!c) return []
+  const out: Label[] = []
+  const groups = new Map<string, Row[]>()
+  for (const r of moves.value) {
+    if (r.b !== X && r.w !== X) continue
+    const other = r.b === X ? r.w! : r.b!
+    const key = `${r.b === X ? 'out' : 'in'}|${other}`
+    groups.set(key, [...(groups.get(key) ?? []), r])
+  }
+  // Lay out against where the zoom is heading, so labels do not jump about
+  // while it animates, and keep every block inside the frame.
+  const box = targetBox.value
+  const fs = box[2] * 0.016
+  const off = box[2] * 0.012
+  const fit = (l: Label): Label => {
+    const width = Math.max(l.head.length, ...l.lines.map((s) => s.length)) * fs * 0.62
+    const height = (l.lines.length + 1) * fs * 1.25
+    let { x, anchor, y } = l
+    if (anchor === 'end' && x - width < box[0] + off) { anchor = 'start'; x = box[0] + off }
+    if (anchor === 'start' && x + width > box[0] + box[2] - off) { anchor = 'end'; x = box[0] + box[2] - off }
+    y = Math.min(Math.max(y, box[1] + fs * 1.5), box[1] + box[3] - height)
+    return { ...l, x, y, anchor }
+  }
+  for (const [key, list] of groups) {
+    const [type, other] = key.split('|')
+    const p = centroids.value.get(other)
+    if (!p) continue
+    const right = p[0] >= c[0]
+    const names = list.map((r) => `${surname(r.name)} ${r.year}`)
+    out.push(fit({
+      key,
+      type,
+      x: p[0] + (right ? off : -off),
+      y: p[1] + (type === 'in' ? off * 2 : -off * (names.length + 0.5)),
+      anchor: right ? 'start' : 'end',
+      head: type === 'out' ? `to ${short(other)}` : `from ${short(other)}`,
+      lines: names.length > 6 ? [...names.slice(0, 5), `+${names.length - 5} more`] : names,
+    }))
+  }
+  if (homeRows.value.length) {
+    const names = homeRows.value.map((r) => `${surname(r.name)} ${r.year}`)
+    out.push(fit({
+      key: 'home',
+      type: 'home',
+      // Clear of the dot spiral, whose radius grows with the square root of the count.
+      x: c[0] + box[2] * 0.016 * Math.sqrt(homeRows.value.length + 0.6) + off,
+      y: c[1] + off * 2,
+      anchor: 'start',
+      head: `won at home: ${names.length}`,
+      lines: names.length > 8 ? [...names.slice(0, 7), `+${names.length - 7} more`] : names,
+    }))
+  }
+  return out
+})
+
+// ── Zoom ─────────────────────────────────────────────────────────────
+const FULL: [number, number, number, number] = [0, -40, props.world.width, props.world.height + 40]
+const ASPECT = FULL[2] / FULL[3]
+
+const targetBox = computed<[number, number, number, number]>(() => {
+  if (isAll.value) return FULL
+  const pts: P[] = []
+  const c = centroids.value.get(selected.value)
+  if (c) pts.push(c)
+  for (const a of personArcs.value) {
+    for (const n of [a.from, a.to]) {
+      const p = centroids.value.get(n)
+      if (p) pts.push(p)
+    }
+  }
+  if (!pts.length) return FULL
+  let x0 = Math.min(...pts.map((p) => p[0])), x1 = Math.max(...pts.map((p) => p[0]))
+  let y0 = Math.min(...pts.map((p) => p[1])), y1 = Math.max(...pts.map((p) => p[1]))
+  // Room for arcs bowing out, labels and the dot spiral.
+  const padX = Math.max(80, (x1 - x0) * 0.22)
+  const padY = Math.max(60, (y1 - y0) * 0.35)
+  x0 -= padX; x1 += padX; y0 -= padY; y1 += padY
+  let w = Math.max(x1 - x0, 320)
+  let h = Math.max(y1 - y0, w / ASPECT)
+  w = Math.max(w, h * ASPECT)
+  h = w / ASPECT
+  const cx = (x0 + x1) / 2, cy = (y0 + y1) / 2
+  if (w >= FULL[2]) return FULL
+  return [cx - w / 2, cy - h / 2, w, h]
+})
+
+const vb = ref<[number, number, number, number]>([...targetBox.value])
+let raf = 0
+watch(targetBox, (to) => {
+  cancelAnimationFrame(raf)
+  const from = [...vb.value] as typeof to
+  const reduced = import.meta.client && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  if (reduced) { vb.value = [...to]; return }
+  const t0 = performance.now()
+  const tick = (now: number) => {
+    const t = Math.min(1, (now - t0) / 700)
+    const e = t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2
+    vb.value = from.map((v, i) => v + (to[i] - v) * e) as typeof to
+    if (t < 1) raf = requestAnimationFrame(tick)
+  }
+  raf = requestAnimationFrame(tick)
+})
+onBeforeUnmount(() => cancelAnimationFrame(raf))
 
 // ── Stats ────────────────────────────────────────────────────────────
 const stats = computed(() => {
@@ -231,8 +418,7 @@ const stats = computed(() => {
   const sci = born.filter((r) => SCIENCE.has(r.cat) && r.w)
   const sciAbroad = sci.filter((r) => r.w !== X)
   const gain = rows.value.filter((r) => r.w === X && r.b && r.b !== X)
-  const stayed = born.filter((r) => r.w === X).length
-  return { born: born.length, sci: sci.length, sciAbroad: sciAbroad.length, gain: gain.length, stayed }
+  return { born: born.length, sci: sci.length, sciAbroad: sciAbroad.length, gain: gain.length, home: homeRows.value.length }
 })
 
 const everyoneStats = computed(() => {
@@ -243,7 +429,7 @@ const everyoneStats = computed(() => {
 const pct = (a: number, b: number) => (b ? `${Math.round((100 * a) / b)}%` : '-')
 
 const statTiles = computed(() => {
-  if (selected.value === EVERYONE) {
+  if (isAll.value) {
     const s = everyoneStats.value
     return [
       { label: 'Prizes to people', value: s.total.toLocaleString('en-GB') },
@@ -254,13 +440,14 @@ const statTiles = computed(() => {
   const s = stats.value
   return [
     { label: `Born in ${selected.value}`, value: String(s.born), note: 'prizes, all categories' },
+    { label: 'Won at home', value: String(s.home), note: 'incl. Peace and Literature' },
     { label: 'Science prizes won abroad', value: s.sci ? `${s.sciAbroad} of ${s.sci}` : '-', note: s.sci ? pct(s.sciAbroad, s.sci) : 'no science laureates' },
-    { label: 'Won from here, born elsewhere', value: String(s.gain) },
+    { label: 'Born elsewhere, won from here', value: String(s.gain) },
   ]
 })
 
 const headline = computed(() => {
-  if (selected.value === EVERYONE) return ''
+  if (isAll.value) return ''
   const s = stats.value
   if (!s.sci) return ''
   if (s.sciAbroad === s.sci) return `Every ${selected.value}-born science laureate was working abroad when they won.`
@@ -273,12 +460,14 @@ const listRows = computed(() => {
   return rows.value.filter((r) => r.b === X || r.w === X)
 })
 
-const shortCat = (c: string) => (c === 'Physiology or Medicine' ? 'Medicine' : c === 'Economic Sciences' ? 'Economics' : c)
+function shortCat(c: string) {
+  return c === 'Physiology or Medicine' ? 'Medicine' : c === 'Economic Sciences' ? 'Economics' : c
+}
 
 const mapLabel = computed(() =>
-  selected.value === EVERYONE
+  isAll.value
     ? 'World map with arcs from each Nobel laureate\'s birth country to the country they were working in when they won'
-    : `World map with arcs to and from ${selected.value} for Nobel laureates born or working there`,
+    : `Map of Nobel laureates born in or working in ${selected.value}: arcs for those who moved, dots for those who won at home`,
 )
 </script>
 
@@ -368,11 +557,6 @@ const mapLabel = computed(() =>
   opacity: 1;
   stroke-width: 3;
 }
-.nf__stay {
-  fill: none;
-  stroke: var(--color-text);
-  stroke-width: 1.5;
-}
 .nf__legend {
   display: flex;
   flex-wrap: wrap;
@@ -392,12 +576,6 @@ const mapLabel = computed(() =>
 }
 .nf__key--out { border-color: var(--color-accent); }
 .nf__key--in { border-color: #E8C26A; }
-.nf__key--stay {
-  width: 10px;
-  height: 10px;
-  border: 1.5px solid var(--color-text);
-  border-radius: 50%;
-}
 .nf__stats {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -455,5 +633,49 @@ const mapLabel = computed(() =>
 }
 .nf__table tr.is-hot td {
   color: var(--color-accent);
+}
+
+.nf__home {
+  stroke: var(--color-surface);
+  stroke-width: 0.6;
+  vector-effect: non-scaling-stroke;
+  transition: opacity 0.15s;
+}
+.nf__home--sci { fill: var(--color-text); }
+.nf__home--peace { fill: #E8C26A; }
+.nf__home.is-dim { opacity: 0.25; }
+.nf__home.is-hot { stroke: var(--color-accent); stroke-width: 2; }
+.nf__labels {
+  font-family: var(--font-mono);
+  pointer-events: none;
+}
+.nf__labels text {
+  fill: var(--color-muted);
+  paint-order: stroke;
+  stroke: var(--color-surface);
+  stroke-width: 3px;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+.nf__label-head {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.nf__label--out .nf__label-head { fill: var(--color-accent); }
+.nf__label--in .nf__label-head { fill: #E8C26A; }
+.nf__label--home .nf__label-head { fill: var(--color-text); }
+.nf__key--dot {
+  width: 9px;
+  height: 9px;
+  border: none;
+  border-radius: 50%;
+  background: var(--color-text);
+}
+.nf__key--peace { background: #E8C26A; }
+/* Too small to read on a phone; the table below carries the names. */
+@media (max-width: 600px) {
+  .nf__labels {
+    display: none;
+  }
 }
 </style>

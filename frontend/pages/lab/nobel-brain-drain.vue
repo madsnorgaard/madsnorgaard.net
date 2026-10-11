@@ -24,11 +24,12 @@
     </ClientOnly>
 
     <section class="nobel-peace">
-      <h2 class="text-label">Four Peace Prizes, one country</h2>
+      <h2 class="text-label">Five Peace Prizes, one country</h2>
       <p class="nobel-peace__lede">
         South Africa's science laureates left. Its Peace laureates are the opposite story: the prize came to South
-        Africa because of what happened in South Africa. Four South Africans have won it - more than any
-        other country in Africa - and every one of them is about the same fight.
+        Africa because of what happened in South Africa. Five South Africans have won it - more than any
+        other country in Africa. Four came out of the fight against apartheid. The fifth, in 2026, came out of
+        the courtroom.
       </p>
       <ol class="nobel-peace__line">
         <li v-for="p in peace" :key="p.name">
@@ -113,6 +114,12 @@ const peace = [
     name: 'F. W. de Klerk',
     note: 'The last apartheid-era president, who unbanned the liberation movements in 1990 and released Mandela.',
     url: 'https://www.sahistory.org.za/people/frederik-willem-de-klerk',
+  },
+  {
+    year: '2026',
+    name: 'Navi Pillay',
+    note: 'Born in Durban in 1941. Started out defending anti-apartheid activists, went on to lead the UN tribunal for the Rwandan genocide and serve as UN High Commissioner for Human Rights. Honoured for making sure war crimes and genocide are prosecuted. The first South African woman to win the Peace Prize.',
+    url: 'https://www.sahistory.org.za/people/navanethem-navi-pillay',
   },
 ]
 </script>
