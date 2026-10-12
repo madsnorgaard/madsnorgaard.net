@@ -14,17 +14,18 @@ const statValue = (page: Page, label: string | RegExp) =>
   page.locator('dl > div').filter({ has: page.locator('dt', { hasText: label }) }).locator('dd').first()
 
 test.describe('Lab index', () => {
-  test('lists the four experiments and links to each', async ({ page }) => {
+  test('lists the five experiments and links to each', async ({ page }) => {
     await page.goto('/lab')
     await expect(page.locator('h1')).toHaveText(/Maps, maths/)
     const items = page.locator('.lab-list__item')
-    await expect(items).toHaveCount(4)
+    await expect(items).toHaveCount(5)
     const hrefs = await items.evaluateAll((els) => els.map((a) => a.getAttribute('href')))
     expect(hrefs).toEqual([
       '/lab/fourier-south-africa',
       '/lab/fourier-denmark',
       '/lab/coastline-paradox',
-      '/lab/nobel-brain-drain',
+      '/lab/nobel-lines',
+      '/lab/draw',
     ])
   })
 
@@ -149,17 +150,18 @@ test.describe('Coastline paradox', () => {
   })
 })
 
-test.describe('Nobel brain drain', () => {
+test.describe('Nobel lines', () => {
   test.beforeEach(async ({ page }) => {
     await page.route('**/api/lab/nobel', (route) => route.fulfill({ json: nobelFixture }))
   })
 
-  test('opens on South Africa with arcs, home dots and the science-abroad headline', async ({ page }) => {
-    await page.goto('/lab/nobel-brain-drain')
+  test('opens on South Africa with arcs, home dots and a where-the-lines-go headline', async ({ page }) => {
+    await page.goto('/lab/nobel-lines')
     await expect(statValue(page, 'Born in South Africa')).toHaveText('10')
     await expect(statValue(page, 'Won at home')).toHaveText('6')
-    await expect(statValue(page, 'Science prizes won abroad')).toHaveText('4 of 4')
-    await expect(page.locator('.nf__headline')).toHaveText(/Every South Africa-born science laureate was working abroad/)
+    await expect(statValue(page, 'Won from abroad')).toHaveText('4')
+    await expect(page.locator('.nf__headline')).toHaveText(/^Lines out of South Africa end in United States of America \(4\)\.$/)
+    await expect(page.getByText(/four science lines out of South Africa/i)).toBeVisible()
     await expect(page.locator('.nf__arc')).toHaveCount(4)
     await expect(page.locator('.nf__home')).toHaveCount(6)
     await expect(page.locator('.nf__table tbody tr')).toHaveCount(10)
@@ -167,17 +169,18 @@ test.describe('Nobel brain drain', () => {
   })
 
   test('switches to Denmark via the chip', async ({ page }) => {
-    await page.goto('/lab/nobel-brain-drain')
+    await page.goto('/lab/nobel-lines')
     await page.getByRole('button', { name: 'Denmark' }).click()
     await expect(page.getByRole('button', { name: 'Denmark' })).toHaveAttribute('aria-pressed', 'true')
     await expect(statValue(page, 'Born in Denmark')).toHaveText(/^\d+$/)
-    await expect(page.locator('.nf__headline')).toHaveText(/Every Denmark-born science laureate won from home/)
+    await expect(statValue(page, 'Won from abroad')).toHaveText('0')
+    await expect(page.locator('.nf__headline')).toHaveText(/^Lines into Denmark come from United States of America \(1\)\.$/)
     await expect(page.locator('.nf__arc--in')).toHaveCount(1) // Mottelson, USA -> Denmark
     await expect(page.locator('.nf__legend')).toContainText('born abroad, won from Denmark')
   })
 
   test('Everyone shows one arc per route and a flows table', async ({ page }) => {
-    await page.goto('/lab/nobel-brain-drain')
+    await page.goto('/lab/nobel-lines')
     await page.getByRole('button', { name: 'Everyone' }).click()
     await expect(statValue(page, 'Prizes to people')).toHaveText(String(nobelFixture.rows.length))
     await expect(page.locator('.nf__table thead')).toContainText('Prizes')
@@ -187,16 +190,22 @@ test.describe('Nobel brain drain', () => {
   })
 
   test('Luthuli is explained and findable under Zimbabwe', async ({ page }) => {
-    await page.goto('/lab/nobel-brain-drain')
+    await page.goto('/lab/nobel-lines')
     await expect(page.getByText(/Albert Luthuli.*Bulawayo/)).toBeVisible()
     await page.locator('.nf__select select').selectOption('Zimbabwe')
     await expect(page.locator('.nf__table')).toContainText('Lutuli')
     await expect(page.locator('.nf__home--peace')).toHaveCount(1)
   })
 
+  test('the old brain-drain URL redirects to the new one', async ({ page }) => {
+    const res = await page.goto('/lab/nobel-brain-drain?country=Denmark')
+    expect(res?.request().redirectedFrom()?.url()).toContain('/lab/nobel-brain-drain')
+    expect(page.url()).toContain('/lab/nobel-lines')
+  })
+
   test('shows a friendly message when the Nobel API is down', async ({ page }) => {
     await page.route('**/api/lab/nobel', (route) => route.fulfill({ status: 502, json: { statusMessage: 'nope' } }))
-    await page.goto('/lab/nobel-brain-drain')
+    await page.goto('/lab/nobel-lines')
     await expect(page.locator('.lab-error')).toContainText('did not answer')
     await expect(page.locator('.nf')).toHaveCount(0)
   })

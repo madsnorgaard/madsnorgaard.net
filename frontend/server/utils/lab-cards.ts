@@ -9,6 +9,7 @@ import satori from 'satori'
 import { Resvg } from '@resvg/resvg-js'
 import { loadOgFonts } from './og-fonts'
 import { dft, evaluate, rmsError, snapN, type Pt, type Term } from '../../utils/lab-fourier'
+import { DRAW_STEPS, PRESETS, decodeOutline } from '../../utils/lab-sketch'
 import { measure, clampRuler } from '../../utils/lab-coastline'
 import { toMapName } from '../../utils/lab-countries'
 import type { NobelRow, WorldMap } from '../../types/lab'
@@ -31,8 +32,8 @@ const C = {
 // The graphic sits in a bordered box on the right of the card.
 const BOX = { x: 520, y: 56, w: 624, h: 518 }
 
-export type LabSlug = 'fourier-south-africa' | 'fourier-denmark' | 'coastline-paradox' | 'nobel-brain-drain'
-export const LAB_SLUGS: LabSlug[] = ['fourier-south-africa', 'fourier-denmark', 'coastline-paradox', 'nobel-brain-drain']
+export type LabSlug = 'fourier-south-africa' | 'fourier-denmark' | 'coastline-paradox' | 'nobel-lines' | 'draw'
+export const LAB_SLUGS: LabSlug[] = ['fourier-south-africa', 'fourier-denmark', 'coastline-paradox', 'nobel-lines', 'draw']
 
 export interface CardSpec {
   kicker: string
@@ -45,6 +46,7 @@ export interface CardQuery {
   n?: unknown
   ruler?: unknown
   country?: unknown
+  d?: unknown
 }
 
 const fmt = (v: number) => Math.round(v).toLocaleString('en-GB')
@@ -70,16 +72,12 @@ function spectrum(key: string, pts: Pt[]): Term[] {
   return t
 }
 
-function fourierCard(slug: 'fourier-south-africa' | 'fourier-denmark', q: CardQuery): CardSpec {
-  const za = slug === 'fourier-south-africa'
-  const shapes: { name: string; pts: Pt[]; color: string }[] = za
-    ? [
-        { name: 'South Africa', pts: zaData.outer as Pt[], color: C.accent },
-        { name: 'Lesotho', pts: zaData.lesotho as Pt[], color: C.gold },
-      ]
-    : dkData.islands.map((i) => ({ name: i.name, pts: i.pts as Pt[], color: C.accent }))
-  const n = snapN(q.n, za ? 150 : 80)
-  const t = 0.72  // mid-drawing, so the arms are out and most of the coast is in
+interface EpiShape { name: string; pts: Pt[]; color: string }
+
+// The epicycle drawing shared by the three machine cards: ghost outline,
+// trace up to t, arms and circles at t, plus arm count and error stats.
+function epicycleSpec(cacheKey: string, shapes: EpiShape[], n: number, head: Pick<CardSpec, 'kicker' | 'title'>): CardSpec {
+  const t = 0.72  // mid-drawing, so the arms are out and most of the outline is in
 
   let minX = 0, minY = 0, maxX = 0, maxY = 0
   for (const s of shapes) for (const [x, y] of s.pts) {
@@ -93,7 +91,7 @@ function fourierCard(slug: 'fourier-south-africa' | 'fourier-denmark', q: CardQu
   const ghosts: string[] = []
   const errors: number[] = []
   shapes.forEach((s, i) => {
-    const terms = spectrum(`${slug}:${i}`, s.pts)
+    const terms = cacheKey ? spectrum(`${cacheKey}:${i}`, s.pts) : dft(s.pts)
     totalArms += Math.min(n, terms.length)
     errors.push(rmsError(s.pts, terms, n))
     ghosts.push(`<path d="M${poly(s.pts)}Z" fill="none" stroke="${C.border}" stroke-width="${px(1, scale)}"/>`)
@@ -119,8 +117,7 @@ function fourierCard(slug: 'fourier-south-africa' | 'fourier-denmark', q: CardQu
 
   const err = (e: number) => (e < 0.005 ? 'exact' : `${e.toFixed(2)}%`)
   return {
-    kicker: za ? 'Lab / 01' : 'Lab / 02',
-    title: za ? 'South Africa, drawn by circles' : 'Denmark needs fifteen machines',
+    ...head,
     stats: [
       { label: 'Arms per outline', value: `N = ${n}` },
       { label: 'Rotating arms', value: fmt(totalArms) },
@@ -128,6 +125,29 @@ function fourierCard(slug: 'fourier-south-africa' | 'fourier-denmark', q: CardQu
     ],
     svg: `<g transform="${transform}">${ghosts.join('')}${parts.join('')}</g>`,
   }
+}
+
+function fourierCard(slug: 'fourier-south-africa' | 'fourier-denmark', q: CardQuery): CardSpec {
+  const za = slug === 'fourier-south-africa'
+  const shapes: EpiShape[] = za
+    ? [
+        { name: 'South Africa', pts: zaData.outer as Pt[], color: C.accent },
+        { name: 'Lesotho', pts: zaData.lesotho as Pt[], color: C.gold },
+      ]
+    : dkData.islands.map((i) => ({ name: i.name, pts: i.pts as Pt[], color: C.accent }))
+  return epicycleSpec(slug, shapes, snapN(q.n, za ? 150 : 80), {
+    kicker: za ? 'Lab / 01' : 'Lab / 02',
+    title: za ? 'South Africa, drawn by circles' : 'Denmark needs fifteen machines',
+  })
+}
+
+// /lab/draw: the visitor's own outline travels in ?d=; without one, the heart preset.
+function drawCard(q: CardQuery): CardSpec {
+  const pts = decodeOutline(q.d) ?? PRESETS.heart.pts()
+  return epicycleSpec('', [{ name: 'Your drawing', pts, color: C.accent }], snapN(q.n, 8, DRAW_STEPS), {
+    kicker: 'Lab / 05',
+    title: 'Drawn by circles',
+  })
 }
 
 // ── Coastline paradox ────────────────────────────────────────────────
@@ -174,7 +194,7 @@ function coastlineCard(q: CardQuery): CardSpec {
   }
 }
 
-// ── Nobel brain drain ────────────────────────────────────────────────
+// ── Nobel lines ───────────────────────────────────────────────────
 type P = [number, number]
 const EVERYONE = 'everyone'
 const SCIENCE = new Set(['Physics', 'Chemistry', 'Physiology or Medicine', 'Economic Sciences'])
@@ -288,13 +308,12 @@ function nobelCard(q: CardQuery, nobel: NobelRow[]): CardSpec {
     ]
   } else {
     const born = rows.filter((r) => r.b === X)
-    const sci = born.filter((r) => SCIENCE.has(r.cat) && r.w)
-    const sciAbroad = sci.filter((r) => r.w !== X)
+    const away = born.filter((r) => r.w && r.w !== X)
     const gain = rows.filter((r) => r.w === X && r.b && r.b !== X)
     stats = [
       { label: `Born in ${X}`, value: String(born.length) },
       { label: 'Won at home', value: String(homeRows.length) },
-      { label: 'Science prizes won abroad', value: sci.length ? `${sciAbroad.length} of ${sci.length}` : '-' },
+      { label: 'Won from abroad', value: String(away.length) },
       { label: 'Born elsewhere, won from here', value: String(gain.length) },
     ]
   }
@@ -364,8 +383,11 @@ export async function renderLabCard(slug: LabSlug, q: CardQuery, nobel?: () => P
     case 'coastline-paradox':
       spec = coastlineCard(q)
       break
-    case 'nobel-brain-drain':
+    case 'nobel-lines':
       spec = nobelCard(q, nobel ? await nobel() : [])
+      break
+    case 'draw':
+      spec = drawCard(q)
       break
   }
   return frame(spec)

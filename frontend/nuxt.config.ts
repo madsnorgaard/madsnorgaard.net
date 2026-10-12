@@ -23,7 +23,7 @@ export default defineNuxtConfig({
       'page', 'sort', 'filter', 'search', 'q', 'category', 'tag',
       'photo', 'set', 'favs',
       // /lab share state: arm count, ruler length, Nobel country
-      'n', 'ruler', 'country',
+      'n', 'ruler', 'country', 'd',
     ],
   },
 
@@ -144,6 +144,8 @@ export default defineNuxtConfig({
     // internally.
     '/one-picture-stories/**': { redirect: { to: '/', statusCode: 301 } },
     '/proj-cat/**': { redirect: { to: '/archive', statusCode: 301 } },
+    // The Nobel experiment shipped as /lab/nobel-brain-drain; the framing changed, so did the URL.
+    '/lab/nobel-brain-drain': { redirect: { to: '/lab/nobel-lines', statusCode: 301 } },
 
     // Drupal article bodies reference inline images by their site-relative
     // path (/sites/default/files/...), which only exists on the Drupal host —

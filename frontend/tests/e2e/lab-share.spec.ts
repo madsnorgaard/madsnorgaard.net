@@ -40,7 +40,7 @@ test.describe('Lab share cards (/og/lab)', () => {
   })
 
   test('the Nobel card renders, or falls back to the site card when the API is unreachable', async ({ request }) => {
-    const res = await request.get('/og/lab/nobel-brain-drain.png?country=Denmark', { maxRedirects: 0 })
+    const res = await request.get('/og/lab/nobel-lines.png?country=Denmark', { maxRedirects: 0 })
     if (res.status() === 302) {
       expect(res.headers()['location']).toBe('/og-image.png')
       test.info().annotations.push({ type: 'note', description: 'Nobel API unreachable: fallback card served' })
@@ -112,9 +112,9 @@ test.describe('Lab share control', () => {
 
   test('Nobel opens on the shared country and on everyone', async ({ page }) => {
     await page.route('**/api/lab/nobel', (route) => route.fulfill({ json: nobelFixture }))
-    await page.goto('/lab/nobel-brain-drain?country=Denmark')
+    await page.goto('/lab/nobel-lines?country=Denmark')
     await expect(page.getByRole('button', { name: 'Denmark' })).toHaveAttribute('aria-pressed', 'true')
-    await page.goto('/lab/nobel-brain-drain?country=everyone')
+    await page.goto('/lab/nobel-lines?country=everyone')
     await expect(page.getByRole('button', { name: 'Everyone' })).toHaveAttribute('aria-pressed', 'true')
     await page.locator('.lab-share').getByRole('button', { name: /share/i }).click()
     await expect(page.locator('.lab-share__link', { hasText: 'X' })).toHaveAttribute('href', /country%3Deveryone/)

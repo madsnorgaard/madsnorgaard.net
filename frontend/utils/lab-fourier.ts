@@ -8,10 +8,10 @@ export type Pt = [number, number]
 export const EPI_STEPS = [1, 2, 3, 5, 8, 13, 20, 30, 50, 80, 120, 150, 200, 300, 500, 800]
 
 // Nearest slider step to a requested N, so a shared ?n= always lands on a real position.
-export function snapN(n: unknown, fallback: number): number {
+export function snapN(n: unknown, fallback: number, steps: number[] = EPI_STEPS): number {
   const v = Number(n)
   if (!Number.isFinite(v) || v <= 0) return fallback
-  return EPI_STEPS.reduce((best, s) => (Math.abs(s - v) < Math.abs(best - v) ? s : best), EPI_STEPS[0])
+  return steps.reduce((best, s) => (Math.abs(s - v) < Math.abs(best - v) ? s : best), steps[0])
 }
 
 export interface Term {

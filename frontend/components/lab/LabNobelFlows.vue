@@ -419,10 +419,9 @@ onBeforeUnmount(() => cancelAnimationFrame(raf))
 const stats = computed(() => {
   const X = selected.value
   const born = rows.value.filter((r) => r.b === X)
-  const sci = born.filter((r) => SCIENCE.has(r.cat) && r.w)
-  const sciAbroad = sci.filter((r) => r.w !== X)
+  const away = born.filter((r) => r.w && r.w !== X)
   const gain = rows.value.filter((r) => r.w === X && r.b && r.b !== X)
-  return { born: born.length, sci: sci.length, sciAbroad: sciAbroad.length, gain: gain.length, home: homeRows.value.length }
+  return { born: born.length, away: away.length, gain: gain.length, home: homeRows.value.length }
 })
 
 const everyoneStats = computed(() => {
@@ -445,18 +444,31 @@ const statTiles = computed(() => {
   return [
     { label: `Born in ${selected.value}`, value: String(s.born), note: 'prizes, all categories' },
     { label: 'Won at home', value: String(s.home), note: 'incl. Peace and Literature' },
-    { label: 'Science prizes won abroad', value: s.sci ? `${s.sciAbroad} of ${s.sci}` : '-', note: s.sci ? pct(s.sciAbroad, s.sci) : 'no science laureates' },
+    { label: 'Won from abroad', value: String(s.away), note: s.born ? pct(s.away, s.born) : undefined },
     { label: 'Born elsewhere, won from here', value: String(s.gain) },
   ]
 })
 
+// Where the selected country's lines go: the top partners on each side.
+function partners(list: Row[], key: 'b' | 'w') {
+  const n = new Map<string, number>()
+  for (const r of list) n.set(r[key]!, (n.get(r[key]!) ?? 0) + 1)
+  const top = [...n.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+  const shown = top.slice(0, 3).map(([c, k]) => `${c} (${k})`)
+  const rest = top.length - shown.length
+  if (rest) shown.push(`${rest} other ${rest === 1 ? 'country' : 'countries'}`)
+  return shown.length > 1 ? `${shown.slice(0, -1).join(', ')} and ${shown.at(-1)}` : shown[0] ?? ''
+}
+
 const headline = computed(() => {
   if (isAll.value) return ''
-  const s = stats.value
-  if (!s.sci) return ''
-  if (s.sciAbroad === s.sci) return `Every ${selected.value}-born science laureate was working abroad when they won.`
-  if (s.sciAbroad === 0) return `Every ${selected.value}-born science laureate won from home.`
-  return ''
+  const X = selected.value
+  const out = partners(rows.value.filter((r) => r.b === X && r.w && r.w !== X), 'w')
+  const inn = partners(rows.value.filter((r) => r.w === X && r.b && r.b !== X), 'b')
+  const parts: string[] = []
+  if (out) parts.push(`Lines out of ${X} end in ${out}.`)
+  if (inn) parts.push(`Lines into ${X} come from ${inn}.`)
+  return parts.join(' ')
 })
 
 const listRows = computed(() => {
