@@ -4,6 +4,13 @@
 
 import type { Pt } from './lab-fourier'
 
+// Clamp a requested ruler length (a shared ?ruler= value) to the slider's range.
+export function clampRuler(v: unknown, fallback = 50, min = 1, max = 200): number {
+  const r = Number(v)
+  if (!Number.isFinite(r) || r <= 0) return fallback
+  return Math.min(max, Math.max(min, r))
+}
+
 export interface Walk {
   length: number     // steps * ruler + the leftover bit at the end
   steps: number

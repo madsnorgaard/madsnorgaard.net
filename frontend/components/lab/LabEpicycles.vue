@@ -45,7 +45,7 @@
 </template>
 
 <script setup lang="ts">
-import { dft, evaluate, rmsError, type Pt, type Term } from '~/utils/lab-fourier'
+import { dft, evaluate, rmsError, EPI_STEPS, type Pt, type Term } from '~/utils/lab-fourier'
 
 interface Shape {
   name: string
@@ -61,12 +61,14 @@ const props = withDefaults(defineProps<{
   maxStatRows?: number
   ariaLabel?: string
 }>(), {
-  steps: () => [1, 2, 3, 5, 8, 13, 20, 30, 50, 80, 120, 150, 200, 300, 500, 800],
+  steps: () => EPI_STEPS,
   defaultN: 150,
   period: 14,
   maxStatRows: 3,
   ariaLabel: 'An outline being drawn by chains of rotating circles',
 })
+
+const emit = defineEmits<{ 'update:n': [n: number] }>()
 
 const canvas = ref<HTMLCanvasElement | null>(null)
 const wrap = ref<HTMLDivElement | null>(null)
@@ -247,6 +249,7 @@ function togglePlay() {
   if (playing.value && t >= 1) { t = 0; hold = 0 }
 }
 
+watch(n, (v) => emit('update:n', v), { immediate: true })
 watch(n, () => {
   rebuildPaths()
   if (reduced && !playing.value) t = 1
