@@ -250,7 +250,19 @@ function nobelCard(q: CardQuery, nobel: NobelRow[]): CardSpec {
       const key = `${r.b}|${r.w}`
       groups.set(key, [...(groups.get(key) ?? []), r])
     }
+    // Same rule as the page: busy countries get one arc per route, weighted by count.
+    const nMoves = [...groups.values()].reduce((k, l) => k + l.length, 0)
+    const dense = groups.size > 6 || nMoves > 14
     for (const list of groups.values()) {
+      if (dense) {
+        const r = list[0]
+        const a = centroids.get(r.b!), b = centroids.get(r.w!)
+        if (!a || !b) continue
+        pts.push(a, b)
+        const out = r.b === X
+        arcs.push(`<path d="${arcPath(a, b, !out, 0.18)}" stroke-width="${(1.2 + Math.log2(list.length) * 1.1).toFixed(2)}" stroke="${out ? C.accent : C.gold}" stroke-opacity="${out ? 0.75 : 0.8}"/>`)
+        continue
+      }
       list.forEach((r, i) => {
         const a = centroids.get(r.b!), b = centroids.get(r.w!)
         if (!a || !b) return
@@ -285,10 +297,12 @@ function nobelCard(q: CardQuery, nobel: NobelRow[]): CardSpec {
   // Home dots in the same golden-angle spiral as the page.
   const homeRows = all ? [] : rows.filter((r) => r.b === X && (r.w === X || !r.w))
   const c0 = centroids.get(X)
+  // The spiral shrinks past ten dots so a big country's cluster stays the size of a small one's.
+  const shrink = Math.min(1, Math.sqrt(10 / Math.max(1, homeRows.length)))
   const dots = c0
     ? homeRows.map((r, i) => {
-        const ang = i * 2.39996, rad = vb[2] * 0.016 * Math.sqrt(i + 0.6)
-        return `<circle cx="${(c0[0] + Math.cos(ang) * rad).toFixed(1)}" cy="${(c0[1] + Math.sin(ang) * rad).toFixed(1)}" r="${(vb[2] * 0.0055).toFixed(2)}" fill="${SCIENCE.has(r.cat) ? C.text : C.gold}" stroke="${C.surface}" stroke-width="${px(0.6, scale)}"/>`
+        const ang = i * 2.39996, rad = vb[2] * 0.016 * shrink * Math.sqrt(i + 0.6)
+        return `<circle cx="${(c0[0] + Math.cos(ang) * rad).toFixed(1)}" cy="${(c0[1] + Math.sin(ang) * rad).toFixed(1)}" r="${(vb[2] * 0.0055 * Math.max(0.45, shrink)).toFixed(2)}" fill="${SCIENCE.has(r.cat) ? C.text : C.gold}" stroke="${C.surface}" stroke-width="${px(0.6, scale)}"/>`
       }).join('')
     : ''
 

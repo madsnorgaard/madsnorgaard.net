@@ -66,7 +66,7 @@
             :key="d.key"
             :cx="d.x"
             :cy="d.y"
-            :r="vb[2] * 0.0055"
+            :r="dotR"
             :class="['nf__home', `nf__home--${d.kind}`, { 'is-dim': hover && hover !== d.key, 'is-hot': hover === d.key }]"
             @mouseenter="hover = d.key"
             @mouseleave="hover = null"
@@ -123,8 +123,8 @@
           <tr
             v-for="r in listRows"
             :key="rowKey(r)"
-            :class="{ 'is-hot': hover === rowKey(r) }"
-            @mouseenter="hover = rowKey(r)"
+            :class="{ 'is-hot': hover === hoverKey(r) }"
+            @mouseenter="hover = hoverKey(r)"
             @mouseleave="hover = null"
           >
             <td>{{ r.year }}</td>
@@ -257,8 +257,11 @@ const allFlows = computed(() => {
 })
 const topFlows = computed(() => allFlows.value.slice(0, 12))
 
-// Country view: one arc per person, fanned out when they share a route.
-const personArcs = computed<Arc[]>(() => {
+// Country view. Quiet countries get one arc per person, fanned out when they
+// share a route. Busy ones (Germany, the USA, the UK) would drown the map in
+// arcs and names, so they get one arc per route, thicker the more people took
+// it, and labels with counts instead of names.
+const routeGroups = computed(() => {
   const X = selected.value
   const groups = new Map<string, Row[]>()
   for (const r of moves.value) {
@@ -266,7 +269,42 @@ const personArcs = computed<Arc[]>(() => {
     const key = `${r.b}|${r.w}`
     groups.set(key, [...(groups.get(key) ?? []), r])
   }
+  return groups
+})
+const DENSE_ROUTES = 6
+const DENSE_MOVES = 14
+const DENSE_HOME = 10
+const dense = computed(() => {
+  const n = [...routeGroups.value.values()].reduce((k, l) => k + l.length, 0)
+  return routeGroups.value.size > DENSE_ROUTES || n > DENSE_MOVES
+})
+const routeKey = (r: Row) => `${r.b}|${r.w}`
+// What a table row lights up on the map: its own arc, or the whole route when arcs are bundled.
+const hoverKey = (r: Row) => (dense.value && r.b && r.w && r.b !== r.w ? routeKey(r) : rowKey(r))
+
+const personArcs = computed<Arc[]>(() => {
+  const X = selected.value
+  const groups = routeGroups.value
   const out: Arc[] = []
+  if (dense.value) {
+    for (const [key, list] of groups) {
+      const r = list[0]
+      const a = centroids.value.get(r.b!)
+      const b = centroids.value.get(r.w!)
+      if (!a || !b) continue
+      const type = r.b === X ? 'out' : 'in'
+      out.push({
+        key,
+        from: r.b!,
+        to: r.w!,
+        type,
+        names: list.map((p) => `${p.name} (${p.year})`),
+        d: arcPath(a, b, type === 'in', 0.18),
+        w: 1.2 + Math.log2(list.length) * 1.1,
+      })
+    }
+    return out.sort((a, b) => a.names.length - b.names.length)
+  }
   for (const list of groups.values()) {
     list.forEach((r, i) => {
       const a = centroids.value.get(r.b!)
@@ -288,10 +326,13 @@ const arcs = computed(() => (isAll.value ? [...allFlows.value].reverse() : perso
 const homeRows = computed(() =>
   rows.value.filter((r) => r.b === selected.value && (r.w === selected.value || !r.w)),
 )
+// Past ten dots the spiral shrinks, so sixty German prizes take the same room as ten Danish ones.
+const dotShrink = computed(() => Math.min(1, Math.sqrt(DENSE_HOME / Math.max(1, homeRows.value.length))))
+const dotR = computed(() => vb.value[2] * 0.0055 * Math.max(0.45, dotShrink.value))
 const homeDots = computed(() => {
   const c = centroids.value.get(selected.value)
   if (!c) return []
-  const step = vb.value[2] * 0.016
+  const step = vb.value[2] * 0.016 * dotShrink.value
   return homeRows.value.map((r, i) => {
     // Golden-angle spiral keeps dots evenly packed however many there are.
     const ang = i * 2.39996
@@ -320,13 +361,14 @@ const labels = computed<Label[]>(() => {
     const key = `${r.b === X ? 'out' : 'in'}|${other}`
     groups.set(key, [...(groups.get(key) ?? []), r])
   }
+  const busy = dense.value
   // Lay out against where the zoom is heading, so labels do not jump about
   // while it animates, and keep every block inside the frame.
   const box = targetBox.value
   const fs = box[2] * 0.016
   const off = box[2] * 0.012
   const fit = (l: Label): Label => {
-    const width = Math.max(l.head.length, ...l.lines.map((s) => s.length)) * fs * 0.62
+    const width = Math.max(l.head.length, ...l.lines.map((s) => s.length)) * fs * 0.7
     const height = (l.lines.length + 1) * fs * 1.25
     let { x, anchor, y } = l
     if (anchor === 'end' && x - width < box[0] + off) { anchor = 'start'; x = box[0] + off }
@@ -334,37 +376,72 @@ const labels = computed<Label[]>(() => {
     y = Math.min(Math.max(y, box[1] + fs * 1.5), box[1] + box[3] - height)
     return { ...l, x, y, anchor }
   }
-  for (const [key, list] of groups) {
+  // Busy countries: the biggest routes only, as "to USA · 11", no names.
+  const ranked = [...groups].sort((a, b) => b[1].length - a[1].length || a[0].localeCompare(b[0]))
+  for (const [key, list] of busy ? ranked.slice(0, MAX_DENSE_LABELS) : ranked) {
     const [type, other] = key.split('|')
     const p = centroids.value.get(other)
     if (!p) continue
     const right = p[0] >= c[0]
-    const names = list.map((r) => `${surname(r.name)} ${r.year}`)
+    const names = busy ? [] : list.map((r) => `${surname(r.name)} ${r.year}`)
+    const head = `${type === 'out' ? 'to' : 'from'} ${short(other)}${busy ? ` · ${list.length}` : ''}`
     out.push(fit({
       key,
       type,
       x: p[0] + (right ? off : -off),
       y: p[1] + (type === 'in' ? off * 2 : -off * (names.length + 0.5)),
       anchor: right ? 'start' : 'end',
-      head: type === 'out' ? `to ${short(other)}` : `from ${short(other)}`,
+      head,
       lines: names.length > 6 ? [...names.slice(0, 5), `+${names.length - 5} more`] : names,
     }))
   }
   if (homeRows.value.length) {
-    const names = homeRows.value.map((r) => `${surname(r.name)} ${r.year}`)
+    const names = busy ? [] : homeRows.value.map((r) => `${surname(r.name)} ${r.year}`)
     out.push(fit({
       key: 'home',
       type: 'home',
       // Clear of the dot spiral, whose radius grows with the square root of the count.
-      x: c[0] + box[2] * 0.016 * Math.sqrt(homeRows.value.length + 0.6) + off,
+      x: c[0] + box[2] * 0.016 * dotShrink.value * Math.sqrt(homeRows.value.length + 0.6) + off,
       y: c[1] + off * 2,
       anchor: 'start',
-      head: `won at home: ${names.length}`,
+      head: `won at home: ${homeRows.value.length}`,
       lines: names.length > 8 ? [...names.slice(0, 7), `+${names.length - 7} more`] : names,
     }))
   }
-  return out
+  return spread(out, fs, box)
 })
+
+const MAX_DENSE_LABELS = 8
+
+// Labels that land on top of each other get pushed down, in reading order,
+// until they clear whatever was placed before them. Cheap, and enough for the
+// handful of blocks a country gets.
+function spread(labels: Label[], fs: number, box: [number, number, number, number]): Label[] {
+  const gap = fs * 0.6
+  // A pushed label sits exactly one gap below its neighbour; the epsilon keeps
+  // float noise from counting that as a hit and pushing it again.
+  const eps = 0.01
+  const bounds = (l: Label) => {
+    const w = Math.max(l.head.length, ...l.lines.map((s) => s.length)) * fs * 0.7
+    const h = (l.lines.length + 1) * fs * 1.25
+    const x0 = l.anchor === 'start' ? l.x : l.x - w
+    return { x0, x1: x0 + w, y0: l.y - fs, y1: l.y - fs + h }
+  }
+  const placed: ReturnType<typeof bounds>[] = []
+  return [...labels].sort((a, b) => a.y - b.y).map((l) => {
+    let cur = { ...l }
+    for (let tries = 0; tries < 12; tries++) {
+      const b = bounds(cur)
+      const hit = placed.find((p) => b.x0 < p.x1 + gap - eps && b.x1 > p.x0 - gap + eps && b.y0 < p.y1 + gap - eps && b.y1 > p.y0 - gap + eps)
+      if (!hit) break
+      const y = hit.y1 + gap + fs
+      if (y + (b.y1 - b.y0) - fs > box[1] + box[3]) break
+      cur = { ...cur, y }
+    }
+    placed.push(bounds(cur))
+    return cur
+  })
+}
 
 // ── Zoom ─────────────────────────────────────────────────────────────
 const FULL: [number, number, number, number] = [0, -40, props.world.width, props.world.height + 40]
