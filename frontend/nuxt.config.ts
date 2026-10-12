@@ -23,7 +23,7 @@ export default defineNuxtConfig({
       'page', 'sort', 'filter', 'search', 'q', 'category', 'tag',
       'photo', 'set', 'favs',
       // /lab share state: arm count, ruler length, Nobel country
-      'n', 'ruler', 'country',
+      'n', 'ruler', 'country', 'd',
     ],
   },
 

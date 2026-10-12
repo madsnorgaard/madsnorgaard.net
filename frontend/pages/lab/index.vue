@@ -60,6 +60,12 @@ const experiments = [
     title: 'Born here, won there',
     desc: 'Every Nobel laureate as a line from birth country to the country they won from. Plus five Peace Prizes, one country.',
   },
+  {
+    n: '05',
+    to: '/lab/draw',
+    title: 'Draw it, then let the circles draw it',
+    desc: 'Your own shape, traced back by a chain of spinning circles. Share the drawing as a link.',
+  },
 ]
 </script>
 
