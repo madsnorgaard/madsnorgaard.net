@@ -15,6 +15,8 @@
 
     <ClientOnly>
       <LabEpicycles
+        page="102"
+        label="Lab · Fourier / DK"
         v-if="shapes.length"
         :shapes="shapes"
         :default-n="initialN"

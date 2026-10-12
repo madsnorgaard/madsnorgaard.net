@@ -1,11 +1,26 @@
 <template>
-  <figure class="epi">
-    <div ref="wrap" class="epi__stage">
-      <canvas ref="canvas" class="epi__canvas" role="img" :aria-label="ariaLabel" />
-    </div>
+  <div class="epi">
+    <LabScreen :page="page" :label="label">
+      <template #readout>N={{ n }} · {{ totalArms.toLocaleString('en-GB') }} arms</template>
+      <div ref="wrap" class="epi__stage">
+        <canvas ref="canvas" class="epi__canvas" role="img" :aria-label="ariaLabel" />
+      </div>
+      <template #footer>
+        <dl class="lab-readouts epi__stats">
+          <div>
+            <dt>Rotating arms</dt>
+            <dd>{{ totalArms.toLocaleString('en-GB') }}</dd>
+          </div>
+          <div v-for="s in statRows" :key="s.name">
+            <dt>{{ s.name }} RMS error</dt>
+            <dd>{{ s.err }}</dd>
+          </div>
+        </dl>
+      </template>
+    </LabScreen>
 
     <div class="epi__controls">
-      <label class="epi__slider">
+      <label class="lab-slider epi__slider">
         <span class="text-label">Arms per outline</span>
         <input
           v-model.number="stepIndex"
@@ -15,37 +30,27 @@
           step="1"
           :aria-valuetext="`N = ${n}`"
         >
-        <span class="epi__n">N = {{ n }}</span>
+        <span class="lab-led epi__n">N = {{ n }}</span>
       </label>
 
       <div class="epi__buttons">
-        <button type="button" class="epi__btn" @click="togglePlay">
-          {{ playing ? 'Pause' : 'Play' }}
+        <button type="button" class="lab-btn" :class="{ 'lab-btn--lit': playing }" @click="togglePlay">
+          <span class="lab-btn__glyph" aria-hidden="true">{{ playing ? '❚❚' : '▶' }}</span>{{ playing ? 'Pause' : 'Play' }}
         </button>
-        <button type="button" class="epi__btn" :aria-pressed="showArms" @click="showArms = !showArms">
-          {{ showArms ? 'Hide arms' : 'Show arms' }}
+        <button type="button" class="lab-btn" :aria-pressed="showArms" @click="showArms = !showArms">
+          <span class="lab-btn__glyph" aria-hidden="true">◎</span>{{ showArms ? 'Hide arms' : 'Show arms' }}
         </button>
-        <button type="button" class="epi__btn" :aria-pressed="showGhost" @click="showGhost = !showGhost">
-          {{ showGhost ? 'Hide outline' : 'Show outline' }}
+        <button type="button" class="lab-btn" :aria-pressed="showGhost" @click="showGhost = !showGhost">
+          <span class="lab-btn__glyph" aria-hidden="true">▢</span>{{ showGhost ? 'Hide outline' : 'Show outline' }}
         </button>
       </div>
     </div>
-
-    <dl class="epi__stats">
-      <div>
-        <dt class="text-label">Rotating arms</dt>
-        <dd>{{ totalArms.toLocaleString('en-GB') }}</dd>
-      </div>
-      <div v-for="s in statRows" :key="s.name">
-        <dt class="text-label">{{ s.name }} RMS error</dt>
-        <dd>{{ s.err }}</dd>
-      </div>
-    </dl>
-  </figure>
+  </div>
 </template>
 
 <script setup lang="ts">
 import { dft, evaluate, rmsError, EPI_STEPS, type Pt, type Term } from '~/utils/lab-fourier'
+import { beamPath, beamDot, SCREEN } from '~/utils/lab-beam'
 
 interface Shape {
   name: string
@@ -60,12 +65,16 @@ const props = withDefaults(defineProps<{
   period?: number          // seconds per full drawing
   maxStatRows?: number
   ariaLabel?: string
+  page?: string | number   // teletext page number on the screen header
+  label?: string
 }>(), {
   steps: () => EPI_STEPS,
   defaultN: 150,
   period: 14,
   maxStatRows: 3,
   ariaLabel: 'An outline being drawn by chains of rotating circles',
+  page: '101',
+  label: 'Lab · Fourier',
 })
 
 const emit = defineEmits<{ 'update:n': [n: number] }>()
@@ -128,7 +137,7 @@ function layout() {
   const bw = maxX - minX, bh = maxY - minY
   W = el.clientWidth
   H = Math.min(window.innerHeight * 0.78, W * (bh / bw) + 40)
-  const pad = 24
+  const pad = 28
   scale = Math.min((W - 2 * pad) / bw, (H - 2 * pad) / bh)
   ox = W / 2 - ((minX + maxX) / 2) * scale
   oy = H / 2 + ((minY + maxY) / 2) * scale
@@ -158,12 +167,13 @@ function draw() {
   ctx.clearRect(0, 0, W, H)
 
   const accent = cssVar('--color-accent', '#D0243E')
-  const border = cssVar('--color-border', '#2A2A2A')
   const text = cssVar('--color-text', '#F0EDE6')
 
+  // The target outline as a faint dotted burn-in behind the beam.
   if (showGhost.value) {
-    ctx.strokeStyle = border
+    ctx.strokeStyle = SCREEN.ghost
     ctx.lineWidth = 1
+    ctx.setLineDash([2, 4])
     for (const s of props.shapes) {
       ctx.beginPath()
       s.pts.forEach((p, i) => {
@@ -173,21 +183,21 @@ function draw() {
       ctx.closePath()
       ctx.stroke()
     }
+    ctx.setLineDash([])
   }
 
-  // Traces up to the current t
-  ctx.lineWidth = 1.6
-  ctx.lineJoin = 'round'
+  // Traces up to the current t: a glowing beam, white-hot where it is freshest.
   paths.value.forEach((path, i) => {
     const upto = Math.floor(Math.min(1, t) * (path.length - 1))
     if (upto < 1) return
-    ctx.strokeStyle = props.shapes[i].color || accent
-    ctx.beginPath()
-    for (let j = 0; j <= upto; j++) {
-      const [x, y] = toScreen(path[j])
-      j ? ctx.lineTo(x, y) : ctx.moveTo(x, y)
+    const color = props.shapes[i].color || accent
+    const pts: Pt[] = []
+    for (let j = 0; j <= upto; j++) pts.push(toScreen(path[j]))
+    beamPath(ctx, pts, color, { width: 1.5, alpha: 0.9 })
+    if (t < 1) {
+      const from = Math.max(0, upto - Math.ceil(path.length * 0.04))
+      beamPath(ctx, pts.slice(from), color, { width: 1.8, bloom: 1.6, hot: true })
     }
-    ctx.stroke()
   })
 
   if (showArms.value && t < 1) {
@@ -195,7 +205,7 @@ function draw() {
       const joints: Pt[] = []
       evaluate(spectra.value[i], n.value, t, [0, 0], joints)
       // Circles
-      ctx.strokeStyle = 'rgba(240, 237, 230, 0.10)'
+      ctx.strokeStyle = SCREEN.circle
       ctx.lineWidth = 1
       for (let j = 1; j < joints.length - 1; j++) {
         const r = spectra.value[i][j].amp * scale
@@ -206,26 +216,21 @@ function draw() {
         ctx.stroke()
       }
       // Arms
-      ctx.strokeStyle = 'rgba(240, 237, 230, 0.55)'
+      ctx.strokeStyle = SCREEN.arm
+      ctx.lineWidth = 1
       ctx.beginPath()
       joints.forEach((p, j) => {
         const [x, y] = toScreen(p)
         j ? ctx.lineTo(x, y) : ctx.moveTo(x, y)
       })
       ctx.stroke()
-      // Pen tip
+      // Pen tip: the hot spot of the beam
       const [tx, ty] = toScreen(joints[joints.length - 1])
-      ctx.fillStyle = text
-      ctx.beginPath()
-      ctx.arc(tx, ty, 2.5, 0, Math.PI * 2)
-      ctx.fill()
+      beamDot(ctx, tx, ty, 2.4, props.shapes[i].color || accent, true)
     }
     // Hub
     const [hx, hy] = toScreen([0, 0])
-    ctx.fillStyle = text
-    ctx.beginPath()
-    ctx.arc(hx, hy, 3, 0, Math.PI * 2)
-    ctx.fill()
+    beamDot(ctx, hx, hy, 2.2, text)
   }
 }
 
@@ -275,13 +280,8 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
-.epi {
-  margin: 0;
-}
 .epi__stage {
   width: 100%;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
 }
 .epi__canvas {
   display: block;
@@ -296,54 +296,11 @@ onBeforeUnmount(() => {
   margin-top: 1rem;
 }
 .epi__slider {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
   flex: 1 1 320px;
-}
-.epi__slider input {
-  flex: 1;
-  accent-color: var(--color-accent);
-}
-.epi__n {
-  font-family: var(--font-mono);
-  font-size: 0.875rem;
-  min-width: 5.5rem;
-  text-align: right;
 }
 .epi__buttons {
   display: flex;
   gap: 0.5rem;
   flex-wrap: wrap;
-}
-.epi__btn {
-  font-family: var(--font-mono);
-  font-size: 0.75rem;
-  letter-spacing: 0.04em;
-  color: var(--color-text);
-  background: transparent;
-  border: 1px solid var(--color-border);
-  padding: 0.4rem 0.75rem;
-  cursor: pointer;
-}
-.epi__btn:hover,
-.epi__btn:focus-visible {
-  border-color: var(--color-accent);
-}
-.epi__stats {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem 2.5rem;
-  margin: 1.5rem 0 0;
-  padding-top: 1rem;
-  border-top: 1px solid var(--color-border);
-}
-.epi__stats dt {
-  margin-bottom: 0.2rem;
-}
-.epi__stats dd {
-  margin: 0;
-  font-family: var(--font-mono);
-  font-size: 0.95rem;
 }
 </style>

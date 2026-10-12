@@ -96,9 +96,10 @@ export function decodeOutline(s: unknown): Pt[] | null {
 }
 
 // ── Presets to start from ────────────────────────────────────────────
-export const PRESETS: Record<string, { label: string; pts: () => Pt[] }> = {
+export const PRESETS: Record<string, { label: string; glyph: string; pts: () => Pt[] }> = {
   heart: {
     label: 'Heart',
+    glyph: '♥',
     pts: () => {
       const raw: Pt[] = []
       for (let i = 0; i < 200; i++) {
@@ -110,6 +111,7 @@ export const PRESETS: Record<string, { label: string; pts: () => Pt[] }> = {
   },
   star: {
     label: 'Star',
+    glyph: '★',
     pts: () => {
       const raw: Pt[] = []
       for (let i = 0; i < 10; i++) {

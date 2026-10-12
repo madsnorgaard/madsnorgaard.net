@@ -1,6 +1,6 @@
 <template>
   <div class="container lab">
-    <p class="text-label lab__kicker">Lab</p>
+    <p class="text-label lab__kicker">Lab · P100</p>
     <h1 class="text-display text-display--section lab__title">
       Maps, maths and other nerdy things
     </h1>
@@ -12,7 +12,7 @@
     <ul class="lab-list">
       <li v-for="e in experiments" :key="e.to">
         <NuxtLink :to="e.to" class="lab-list__item">
-          <span class="text-label">{{ e.n }}</span>
+          <span class="lab-list__page">P1{{ e.n }}</span>
           <span class="lab-list__title">{{ e.title }}</span>
           <span class="lab-list__desc">{{ e.desc }}</span>
         </NuxtLink>
@@ -78,14 +78,27 @@ const experiments = [
 }
 .lab-list__item {
   display: grid;
-  grid-template-columns: 3rem minmax(0, 1fr);
+  grid-template-columns: 3.5rem minmax(0, 1fr);
   gap: 0.25rem 1rem;
   padding: 1.75rem 0;
   border-bottom: 1px solid var(--color-border);
 }
-.lab-list__item .text-label {
+.lab-list__page {
   grid-row: span 2;
-  padding-top: 0.6rem;
+  align-self: start;
+  justify-self: start;
+  margin-top: 0.45rem;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  color: #fff;
+  background: var(--color-accent);
+  padding: 0.05rem 0.4rem;
+  transition: box-shadow 0.15s;
+}
+.lab-list__item:hover .lab-list__page,
+.lab-list__item:focus-visible .lab-list__page {
+  box-shadow: 0 0 10px rgba(208, 36, 62, 0.7);
 }
 .lab-list__title {
   font-family: var(--font-display);
