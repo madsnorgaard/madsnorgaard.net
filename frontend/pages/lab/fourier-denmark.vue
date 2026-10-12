@@ -72,7 +72,7 @@ useSeoMeta({
   description: 'Jutland and fourteen Danish islands redrawn at the same time by fifteen chains of rotating Fourier epicycles.',
 })
 
-const { data } = useFetch<{ islands: { name: string; pts: Pt[] }[] }>('/lab/dk.json', { server: false })
+const { data } = useFetch<{ islands: { name: string; pts: Pt[] }[] }>('/lab-data/dk.json', { server: false })
 
 const shapes = computed(() => data.value?.islands.map((i) => ({ name: i.name, pts: i.pts })) ?? [])
 const count = computed(() => data.value?.islands.length ?? 15)

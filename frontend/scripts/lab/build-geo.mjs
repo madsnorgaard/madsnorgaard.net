@@ -6,8 +6,8 @@
 //   node scripts/lab/build-geo.mjs
 //
 // Output (coordinates in km, x = east, y = north, local equirectangular):
-//   public/lab/za.json  South Africa outer border, Lesotho, coastline lines
-//   public/lab/dk.json  Denmark islands, coastline lines
+//   public/lab-data/za.json  South Africa outer border, Lesotho, coastline lines
+//   public/lab-data/dk.json  Denmark islands, coastline lines
 import fs from 'node:fs'
 import { createRequire } from 'node:module'
 import { feature, mesh } from 'topojson-client'
@@ -65,7 +65,7 @@ const coastOf = (name, project, maxDist) =>
   const main = za.geometry.coordinates
     .map((poly) => poly.map((r) => r.map(p)))
     .sort((a, b) => Math.abs(signedArea(b[0])) - Math.abs(signedArea(a[0])))[0]
-  fs.writeFileSync('public/lab/za.json', JSON.stringify({
+  fs.writeFileSync('public/lab-data/za.json', JSON.stringify({
     source: 'Natural Earth 1:10m, via world-atlas',
     outer: resample(main[0], 1400),
     lesotho: resample(main[1], 360),
@@ -93,10 +93,10 @@ const coastOf = (name, project, maxDist) =>
     const per = ring.slice(1).reduce((s, q, i) => s + Math.hypot(q[0] - ring[i][0], q[1] - ring[i][1]), 0)
     return { name, area: Math.round(Math.abs(signedArea(ring))), pts: resample(ring, Math.max(64, Math.min(1200, Math.round(per * 0.55)))) }
   }).sort((a, b) => b.area - a.area)
-  fs.writeFileSync('public/lab/dk.json', JSON.stringify({
+  fs.writeFileSync('public/lab-data/dk.json', JSON.stringify({
     source: 'Natural Earth 1:10m, via world-atlas',
     islands,
     coast: coastOf('Denmark', p, 600),
   }))
 }
-console.log('wrote public/lab/za.json, public/lab/dk.json')
+console.log('wrote public/lab-data/za.json, public/lab-data/dk.json')

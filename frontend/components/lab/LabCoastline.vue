@@ -54,7 +54,7 @@
       <figcaption class="text-label">
         Measured length against ruler length (log-log)
       </figcaption>
-      <svg :viewBox="`0 0 ${CW} ${CH}`" class="coast__chart-svg" role="img" aria-label="Log-log chart: coastline length falls as the ruler gets longer, much faster for Denmark than for South Africa">
+      <svg ref="chartSvg" :viewBox="`0 0 ${CW} ${CH}`" class="coast__chart-svg" role="img" aria-label="Log-log chart: coastline length falls as the ruler gets longer, much faster for Denmark than for South Africa">
         <!-- grid -->
         <g class="coast__grid">
           <template v-for="r in xTicks" :key="`x${r}`">
@@ -151,13 +151,25 @@ const curves = computed(() => props.countries.map((c) => {
 const dims = computed(() => curves.value.map((s) => fractalDimension(s.filter((p) => p.r <= 20))))
 
 // ── Chart scales ─────────────────────────────────────────────────────
-const CW = 720, CH = 340, PL = 64, PR = 16, PT = 16, PB = 40
+// The viewBox tracks the rendered width so one SVG unit stays one CSS pixel
+// and the tick labels keep their size on a phone instead of shrinking with the chart.
+const chartSvg = ref<SVGSVGElement | null>(null)
+const CW = ref(720)
+const CH = computed(() => Math.round(Math.min(340, Math.max(240, CW.value * 0.55))))
+const PL = 64, PR = 16, PT = 16, PB = 40
+let ro: ResizeObserver | null = null
+onMounted(() => {
+  ro = new ResizeObserver(([e]) => { CW.value = Math.max(300, Math.round(e.contentRect.width)) })
+  if (chartSvg.value) ro.observe(chartSvg.value)
+})
+onBeforeUnmount(() => ro?.disconnect())
+
 const yMin = computed(() => Math.min(...curves.value.flat().map((p) => p.L).filter((v) => v > 0)) * 0.85)
 const yMax = computed(() => Math.max(...curves.value.flat().map((p) => p.L)) * 1.15)
-const sx = (r: number) => PL + (Math.log(r / props.minRuler) / Math.log(props.maxRuler / props.minRuler)) * (CW - PL - PR)
+const sx = (r: number) => PL + (Math.log(r / props.minRuler) / Math.log(props.maxRuler / props.minRuler)) * (CW.value - PL - PR)
 const sy = (L: number) => {
   const v = Math.max(L, yMin.value)
-  return CH - PB - (Math.log(v / yMin.value) / Math.log(yMax.value / yMin.value)) * (CH - PT - PB)
+  return CH.value - PB - (Math.log(v / yMin.value) / Math.log(yMax.value / yMin.value)) * (CH.value - PT - PB)
 }
 const xTicks = computed(() => [1, 2, 5, 10, 20, 50, 100, 200].filter((r) => r >= props.minRuler && r <= props.maxRuler))
 const yTicks = computed(() => [300, 500, 1000, 2000, 3000, 5000].filter((L) => L >= yMin.value && L <= yMax.value))

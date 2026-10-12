@@ -137,7 +137,7 @@
       </table>
       <table v-else class="nf__table">
         <thead>
-          <tr><th>From</th><th>To</th><th>Laureates</th></tr>
+          <tr><th>From</th><th>To</th><th>Prizes</th></tr>
         </thead>
         <tbody>
           <tr
