@@ -17,7 +17,8 @@
       <LabEpicycles
         v-if="shapes.length"
         :shapes="shapes"
-        :default-n="80"
+        :default-n="initialN"
+        @update:n="n = $event"
         :max-stat-rows="3"
         aria-label="The outlines of Jutland and fourteen Danish islands being drawn by chains of rotating circles"
       />
@@ -25,6 +26,12 @@
         <div class="lab-placeholder" />
       </template>
     </ClientOnly>
+    <LabShare
+      slug="fourier-denmark"
+      title="Denmark needs fifteen machines"
+      :text="`Jutland and fourteen Danish islands drawn by ${n} rotating circles each`"
+      :state="{ n: n === 80 ? undefined : n }"
+    />
 
     <div class="lab__body">
       <section>
@@ -65,11 +72,25 @@
 </template>
 
 <script setup lang="ts">
-import type { Pt } from '~/utils/lab-fourier'
+import { snapN, type Pt } from '~/utils/lab-fourier'
+
+const route = useRoute()
+const siteUrl = (useRuntimeConfig().public?.siteUrl as string) || 'https://madsnorgaard.net'
+
+const initialN = snapN(route.query.n, 80)
+const n = ref(initialN)
+const ogImage = computed(() =>
+  `${siteUrl}/og/lab/fourier-denmark.png${route.query.n ? `?n=${snapN(route.query.n, 80)}` : ''}`,
+)
 
 useSeoMeta({
   title: 'Denmark needs fifteen machines · Lab',
   description: 'Jutland and fourteen Danish islands redrawn at the same time by fifteen chains of rotating Fourier epicycles.',
+  ogImage: () => ogImage.value,
+  ogImageWidth: 1200,
+  ogImageHeight: 630,
+  twitterCard: 'summary_large_image',
+  twitterImage: () => ogImage.value,
 })
 
 const { data } = useFetch<{ islands: { name: string; pts: Pt[] }[] }>('/lab-data/dk.json', { server: false })

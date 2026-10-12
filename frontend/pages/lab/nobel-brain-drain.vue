@@ -13,7 +13,7 @@
     </p>
 
     <ClientOnly>
-      <LabNobelFlows v-if="rows.length && world" :rows="rows" :world="world" />
+      <LabNobelFlows v-if="rows.length && world" :rows="rows" :world="world" :initial="initialCountry" @update:selected="country = $event" />
       <div v-else-if="failed" class="lab-error">
         The Nobel Prize API did not answer just now. Try again in a minute.
       </div>
@@ -22,6 +22,12 @@
         <div class="lab-placeholder lab-placeholder--wide" />
       </template>
     </ClientOnly>
+    <LabShare
+      slug="nobel-brain-drain"
+      title="Born here, won there"
+      :text="country === 'everyone' ? 'Every Nobel laureate as a line from birth country to the country they won from' : `Nobel laureates born in or working in ${country}, as lines on a map`"
+      :state="{ country: country === 'South Africa' ? undefined : country }"
+    />
 
     <section class="nobel-peace">
       <h2 class="text-label">Five Peace Prizes, one country</h2>
@@ -84,9 +90,26 @@
 <script setup lang="ts">
 import type { NobelRow, WorldMap } from '~/types/lab'
 
+const route = useRoute()
+const siteUrl = (useRuntimeConfig().public?.siteUrl as string) || 'https://madsnorgaard.net'
+
+// ?country=Denmark or ?country=everyone from a shared link.
+const initialCountry = typeof route.query.country === 'string' && route.query.country.trim()
+  ? route.query.country.trim()
+  : 'South Africa'
+const country = ref(initialCountry)
+const ogImage = computed(() =>
+  `${siteUrl}/og/lab/nobel-brain-drain.png${route.query.country ? `?country=${encodeURIComponent(initialCountry)}` : ''}`,
+)
+
 useSeoMeta({
   title: 'Born here, won there · Lab',
   description: 'Every Nobel laureate drawn as a line from birth country to the country they won from. South Africa, Denmark and the rest of the world.',
+  ogImage: () => ogImage.value,
+  ogImageWidth: 1200,
+  ogImageHeight: 630,
+  twitterCard: 'summary_large_image',
+  twitterImage: () => ogImage.value,
 })
 
 const { data: nobel, error } = useFetch<{ rows: NobelRow[] }>('/api/lab/nobel', { server: false })

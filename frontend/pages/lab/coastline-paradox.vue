@@ -14,11 +14,17 @@
     </p>
 
     <ClientOnly>
-      <LabCoastline v-if="countries.length" :countries="countries" />
+      <LabCoastline v-if="countries.length" :countries="countries" :default-ruler="initialRuler" @update:ruler="ruler = $event" />
       <template #fallback>
         <div class="lab-placeholder" />
       </template>
     </ClientOnly>
+    <LabShare
+      slug="coastline-paradox"
+      title="How long is Denmark?"
+      :text="`How long is Denmark? Depends on the ruler. Measured with a ${rulerLabel} km one`"
+      :state="{ ruler: rulerParam }"
+    />
 
     <div class="lab__body">
       <section>
@@ -68,10 +74,28 @@
 
 <script setup lang="ts">
 import type { Pt } from '~/utils/lab-fourier'
+import { clampRuler } from '~/utils/lab-coastline'
+
+const route = useRoute()
+const siteUrl = (useRuntimeConfig().public?.siteUrl as string) || 'https://madsnorgaard.net'
+
+const initialRuler = clampRuler(route.query.ruler)
+const ruler = ref(initialRuler)
+const rulerLabel = computed(() => (ruler.value < 10 ? ruler.value.toFixed(1) : String(Math.round(ruler.value))))
+// Round the shared value so the URL stays readable; the card clamps it again.
+const rulerParam = computed(() => (Math.abs(ruler.value - 50) < 0.01 ? undefined : rulerLabel.value))
+const ogImage = computed(() =>
+  `${siteUrl}/og/lab/coastline-paradox.png${route.query.ruler ? `?ruler=${clampRuler(route.query.ruler)}` : ''}`,
+)
 
 useSeoMeta({
   title: 'How long is Denmark? · Lab',
   description: 'The coastline paradox, interactive: measure Denmark and South Africa with a shrinking ruler and watch the length change.',
+  ogImage: () => ogImage.value,
+  ogImageWidth: 1200,
+  ogImageHeight: 630,
+  twitterCard: 'summary_large_image',
+  twitterImage: () => ogImage.value,
 })
 
 const { data: dk } = useFetch<{ coast: Pt[][] }>('/lab-data/dk.json', { server: false })

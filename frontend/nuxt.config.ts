@@ -22,6 +22,8 @@ export default defineNuxtConfig({
     canonicalQueryWhitelist: [
       'page', 'sort', 'filter', 'search', 'q', 'category', 'tag',
       'photo', 'set', 'favs',
+      // /lab share state: arm count, ruler length, Nobel country
+      'n', 'ruler', 'country',
     ],
   },
 

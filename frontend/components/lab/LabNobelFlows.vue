@@ -173,6 +173,8 @@ const props = withDefaults(defineProps<{
   initial?: string
 }>(), { initial: 'South Africa' })
 
+const emit = defineEmits<{ 'update:selected': [country: string] }>()
+
 const EVERYONE = '__everyone__'
 const GOLD = '#E8C26A'
 const SCIENCE = new Set(['Physics', 'Chemistry', 'Physiology or Medicine', 'Economic Sciences'])
@@ -182,8 +184,10 @@ const quick = [
   { label: 'Denmark', value: 'Denmark' },
   { label: 'Everyone', value: EVERYONE },
 ]
-const selected = ref(props.initial)
+// A shared link says ?country=everyone for the all-laureates view.
+const selected = ref(props.initial.toLowerCase() === 'everyone' ? EVERYONE : props.initial)
 const isAll = computed(() => selected.value === EVERYONE)
+watch(selected, (s) => emit('update:selected', s === EVERYONE ? 'everyone' : s), { immediate: true })
 const hover = ref<string | null>(null)
 watch(selected, () => { hover.value = null })
 

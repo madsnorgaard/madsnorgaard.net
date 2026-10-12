@@ -104,8 +104,11 @@ const props = withDefaults(defineProps<{
   defaultRuler: 50,
 })
 
+const emit = defineEmits<{ 'update:ruler': [ruler: number] }>()
+
 const rulerLog = ref(Math.log10(props.defaultRuler))
 const ruler = computed(() => 10 ** rulerLog.value)
+watch(ruler, (r) => emit('update:ruler', r), { immediate: true })
 
 const fmtKm = (v: number) => Math.round(v).toLocaleString('en-GB')
 const fmtRuler = (r: number) => (r < 10 ? r.toFixed(1) : Math.round(r).toString())

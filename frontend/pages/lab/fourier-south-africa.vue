@@ -17,13 +17,20 @@
       <LabEpicycles
         v-if="shapes.length"
         :shapes="shapes"
-        :default-n="150"
+        :default-n="initialN"
+        @update:n="n = $event"
         aria-label="The outline of South Africa and Lesotho being drawn by chains of rotating circles"
       />
       <template #fallback>
         <div class="lab-placeholder" />
       </template>
     </ClientOnly>
+    <LabShare
+      slug="fourier-south-africa"
+      title="South Africa, drawn by circles"
+      :text="`South Africa and Lesotho drawn by ${n} rotating circles each`"
+      :state="{ n: n === 150 ? undefined : n }"
+    />
 
     <div class="lab__body">
       <section>
@@ -70,11 +77,26 @@
 </template>
 
 <script setup lang="ts">
-import type { Pt } from '~/utils/lab-fourier'
+import { snapN, type Pt } from '~/utils/lab-fourier'
+
+const route = useRoute()
+const siteUrl = (useRuntimeConfig().public?.siteUrl as string) || 'https://madsnorgaard.net'
+
+// ?n=<arms> comes from a shared link: open at that position and preview it.
+const initialN = snapN(route.query.n, 150)
+const n = ref(initialN)
+const ogImage = computed(() =>
+  `${siteUrl}/og/lab/fourier-south-africa.png${route.query.n ? `?n=${snapN(route.query.n, 150)}` : ''}`,
+)
 
 useSeoMeta({
   title: 'South Africa, drawn by circles · Lab',
   description: 'The border of South Africa and Lesotho redrawn with rotating Fourier epicycles. Drag the slider to add circles.',
+  ogImage: () => ogImage.value,
+  ogImageWidth: 1200,
+  ogImageHeight: 630,
+  twitterCard: 'summary_large_image',
+  twitterImage: () => ogImage.value,
 })
 
 const { data } = useFetch<{ outer: Pt[]; lesotho: Pt[] }>('/lab-data/za.json', { server: false })

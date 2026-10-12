@@ -22,9 +22,17 @@
 </template>
 
 <script setup lang="ts">
+const siteUrl = (useRuntimeConfig().public?.siteUrl as string) || 'https://madsnorgaard.net'
+const ogImage = `${siteUrl}/og/lab/fourier-south-africa.png`
+
 useSeoMeta({
   title: 'Lab · Mads Nørgaard',
   description: 'Interactive maths and map experiments using South Africa and Denmark: Fourier epicycles, the coastline paradox and more.',
+  ogImage,
+  ogImageWidth: 1200,
+  ogImageHeight: 630,
+  twitterCard: 'summary_large_image',
+  twitterImage: ogImage,
 })
 
 const experiments = [
