@@ -32,8 +32,8 @@ const C = {
 // The graphic sits in a bordered box on the right of the card.
 const BOX = { x: 520, y: 56, w: 624, h: 518 }
 
-export type LabSlug = 'fourier-south-africa' | 'fourier-denmark' | 'coastline-paradox' | 'nobel-brain-drain' | 'draw'
-export const LAB_SLUGS: LabSlug[] = ['fourier-south-africa', 'fourier-denmark', 'coastline-paradox', 'nobel-brain-drain', 'draw']
+export type LabSlug = 'fourier-south-africa' | 'fourier-denmark' | 'coastline-paradox' | 'nobel-lines' | 'draw'
+export const LAB_SLUGS: LabSlug[] = ['fourier-south-africa', 'fourier-denmark', 'coastline-paradox', 'nobel-lines', 'draw']
 
 export interface CardSpec {
   kicker: string
@@ -194,7 +194,7 @@ function coastlineCard(q: CardQuery): CardSpec {
   }
 }
 
-// ── Nobel brain drain ────────────────────────────────────────────────
+// ── Nobel lines ───────────────────────────────────────────────────
 type P = [number, number]
 const EVERYONE = 'everyone'
 const SCIENCE = new Set(['Physics', 'Chemistry', 'Physiology or Medicine', 'Economic Sciences'])
@@ -308,13 +308,12 @@ function nobelCard(q: CardQuery, nobel: NobelRow[]): CardSpec {
     ]
   } else {
     const born = rows.filter((r) => r.b === X)
-    const sci = born.filter((r) => SCIENCE.has(r.cat) && r.w)
-    const sciAbroad = sci.filter((r) => r.w !== X)
+    const away = born.filter((r) => r.w && r.w !== X)
     const gain = rows.filter((r) => r.w === X && r.b && r.b !== X)
     stats = [
       { label: `Born in ${X}`, value: String(born.length) },
       { label: 'Won at home', value: String(homeRows.length) },
-      { label: 'Science prizes won abroad', value: sci.length ? `${sciAbroad.length} of ${sci.length}` : '-' },
+      { label: 'Won from abroad', value: String(away.length) },
       { label: 'Born elsewhere, won from here', value: String(gain.length) },
     ]
   }
@@ -384,7 +383,7 @@ export async function renderLabCard(slug: LabSlug, q: CardQuery, nobel?: () => P
     case 'coastline-paradox':
       spec = coastlineCard(q)
       break
-    case 'nobel-brain-drain':
+    case 'nobel-lines':
       spec = nobelCard(q, nobel ? await nobel() : [])
       break
     case 'draw':

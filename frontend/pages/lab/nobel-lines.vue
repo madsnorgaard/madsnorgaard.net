@@ -8,8 +8,9 @@
     </h1>
     <p class="lab__intro">
       Every Nobel laureate has two places attached: where they were born and where they were
-      working when the prize came. <strong>Draw a line between the two</strong> and you get a map of where
-      talent grows and where it ends up. South Africa grows plenty of it. Its scientists mostly did their prize-winning work somewhere else.
+      working when the prize came. <strong>Draw a line between the two</strong> and you get a map of the
+      prize itself: who it reaches, and from where. Most lines end in the same few places. Pick a country and
+      see which way its lines run.
     </p>
 
     <ClientOnly>
@@ -23,7 +24,7 @@
       </template>
     </ClientOnly>
     <LabShare
-      slug="nobel-brain-drain"
+      slug="nobel-lines"
       title="Born here, won there"
       :text="country === 'everyone' ? 'Every Nobel laureate as a line from birth country to the country they won from' : `Nobel laureates born in or working in ${country}, as lines on a map`"
       :state="{ country: country === 'South Africa' ? undefined : country }"
@@ -32,10 +33,9 @@
     <section class="nobel-peace">
       <h2 class="text-label">Five Peace Prizes, one country</h2>
       <p class="nobel-peace__lede">
-        South Africa's science laureates left. Its Peace laureates are the opposite story: the prize came to South
-        Africa because of what happened in South Africa. Five South Africans have won it - more than any
-        other country in Africa. Four came out of the fight against apartheid. The fifth, in 2026, came out of
-        the courtroom.
+        The prize came to South Africa for what happened in South Africa. Five South Africans have won the
+        Peace Prize, more than any other country in Africa. Four came out of the fight against apartheid. The
+        fifth, in 2026, came out of the courtroom.
       </p>
       <ol class="nobel-peace__line">
         <li v-for="p in peace" :key="p.name">
@@ -66,6 +66,12 @@
           Pick Zimbabwe to find him.
         </p>
         <p>
+          The four science lines out of South Africa belong to Max Theiler, Allan Cormack, Sydney Brenner and
+          Michael Levitt. All four left between 1918 and the 1960s, from universities that segregation and then
+          apartheid kept almost entirely white. The lines say who those universities let in, not where talent
+          comes from.
+        </p>
+        <p>
           "Working in" is the first affiliation the Nobel Foundation lists for the prize. Peace and Literature
           laureates usually have none, so the arcs are mostly science and economics.
         </p>
@@ -73,8 +79,8 @@
       <section>
         <h2 class="text-label">Try this</h2>
         <p>
-          Switch to Denmark. Click the USA on the map and watch the gold lines arrive from everywhere.
-          Then pick <strong>Everyone</strong> and find the thickest arc on the map.
+          Click the USA on the map and watch the gold lines arrive from everywhere. Then pick
+          <strong>Everyone</strong> and find the thickest arc. Try Sweden, home of the prize, and count the dots.
         </p>
       </section>
     </div>
@@ -99,7 +105,7 @@ const initialCountry = typeof route.query.country === 'string' && route.query.co
   : 'South Africa'
 const country = ref(initialCountry)
 const ogImage = computed(() =>
-  `${siteUrl}/og/lab/nobel-brain-drain.png${route.query.country ? `?country=${encodeURIComponent(initialCountry)}` : ''}`,
+  `${siteUrl}/og/lab/nobel-lines.png${route.query.country ? `?country=${encodeURIComponent(initialCountry)}` : ''}`,
 )
 
 useSeoMeta({
