@@ -1,6 +1,6 @@
 <template>
   <div class="coast">
-    <label class="coast__slider">
+    <label class="lab-slider coast__slider">
       <span class="text-label">Ruler length</span>
       <input
         v-model.number="rulerLog"
@@ -10,17 +10,13 @@
         step="0.01"
         :aria-valuetext="`${fmtRuler(ruler)} kilometres`"
       >
-      <span class="coast__value">{{ fmtRuler(ruler) }} km</span>
+      <span class="lab-led coast__value">{{ fmtRuler(ruler) }} km</span>
     </label>
 
     <div class="coast__maps">
-      <figure v-for="(c, i) in countries" :key="c.name" class="coast__map">
-        <figcaption class="coast__cap">
-          <span class="text-label" :style="{ color: c.color }">{{ c.name }}</span>
-          <span class="coast__len">{{ fmtKm(current[i].length) }} km</span>
-          <span class="coast__steps">{{ current[i].steps.toLocaleString('en-GB') }} steps × {{ fmtRuler(ruler) }} km</span>
-        </figcaption>
-        <svg :viewBox="c.viewBox" class="coast__svg" role="img" :aria-label="`${c.name} coastline measured with a ${fmtRuler(ruler)} km ruler`">
+      <LabScreen v-for="(c, i) in countries" :key="c.name" page="103" :label="`Lab · ${c.name}`" class="coast__map">
+        <template #readout>{{ fmtRuler(ruler) }} km ruler</template>
+        <svg :viewBox="c.viewBox" class="coast__svg" role="img" :aria-label="`${c.name} coastline measured with a ${fmtRuler(ruler)} km ruler`" :style="{ '--glow': c.color }">
           <g transform="scale(1,-1)">
             <path :d="c.coastPath" class="coast__line" vector-effect="non-scaling-stroke" />
             <path :d="walkPath(current[i].walks)" class="coast__walk" :style="{ stroke: c.color }" vector-effect="non-scaling-stroke" />
@@ -47,13 +43,17 @@
             />
           </g>
         </svg>
-      </figure>
+        <template #footer>
+          <div class="coast__cap">
+            <span class="coast__len" :style="{ color: c.color }">{{ fmtKm(current[i].length) }} km</span>
+            <span class="coast__steps">{{ current[i].steps.toLocaleString('en-GB') }} steps × {{ fmtRuler(ruler) }} km</span>
+          </div>
+        </template>
+      </LabScreen>
     </div>
 
-    <figure class="coast__chart">
-      <figcaption class="text-label">
-        Measured length against ruler length (log-log)
-      </figcaption>
+    <LabScreen page="103" label="Lab · Length against ruler (log-log)" :graticule="false" class="coast__chart">
+      <div class="coast__chart-pad">
       <svg ref="chartSvg" :viewBox="`0 0 ${CW} ${CH}`" class="coast__chart-svg" role="img" aria-label="Log-log chart: coastline length falls as the ruler gets longer, much faster for Denmark than for South Africa">
         <!-- grid -->
         <g class="coast__grid">
@@ -69,7 +69,7 @@
         </g>
         <line :x1="sx(ruler)" :x2="sx(ruler)" :y1="PT" :y2="CH - PB" class="coast__marker" />
         <g v-for="(c, i) in countries" :key="c.name">
-          <path :d="curvePath(curves[i])" fill="none" :style="{ stroke: c.color }" stroke-width="2" />
+          <path :d="curvePath(curves[i])" fill="none" :style="{ stroke: c.color, color: c.color }" stroke-width="2" />
           <circle :cx="sx(ruler)" :cy="sy(current[i].length)" r="4.5" :style="{ fill: c.color }" />
           <text
             :x="sx(minRuler) + 6"
@@ -79,7 +79,8 @@
           >{{ c.name }} · D ≈ {{ dims[i].toFixed(2) }}</text>
         </g>
       </svg>
-    </figure>
+      </div>
+    </LabScreen>
   </div>
 </template>
 
@@ -182,20 +183,7 @@ const curvePath = (s: { r: number; L: number }[]) =>
 
 <style scoped>
 .coast__slider {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
   margin-bottom: 1.5rem;
-}
-.coast__slider input {
-  flex: 1;
-  accent-color: var(--color-accent);
-}
-.coast__value {
-  font-family: var(--font-mono);
-  font-size: 0.875rem;
-  min-width: 4.5rem;
-  text-align: right;
 }
 .coast__maps {
   display: grid;
@@ -207,24 +195,19 @@ const curvePath = (s: { r: number; L: number }[]) =>
     grid-template-columns: minmax(0, 1fr);
   }
 }
-.coast__map {
-  margin: 0;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  padding: 1rem;
-}
 .coast__cap {
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
   gap: 0.25rem 1rem;
-  margin-bottom: 0.75rem;
 }
 .coast__len {
-  font-family: var(--font-display);
-  font-size: 1.75rem;
-  font-weight: 700;
+  font-family: var(--font-mono);
+  font-size: 1.25rem;
+  font-weight: 500;
   line-height: 1;
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 0 10px currentColor;
 }
 .coast__steps {
   font-family: var(--font-mono);
@@ -236,38 +219,45 @@ const curvePath = (s: { r: number; L: number }[]) =>
   width: 100%;
   height: auto;
   aspect-ratio: 1.15;
+  padding: 0.75rem;
 }
 .coast__line {
   fill: none;
-  stroke: var(--color-muted);
+  stroke: var(--color-text);
   stroke-width: 1;
-  opacity: 0.55;
+  stroke-dasharray: 2 3;
+  opacity: 0.3;
 }
 .coast__walk {
   fill: none;
   stroke-width: 1.6;
   stroke-linejoin: round;
+  filter: drop-shadow(0 0 3px var(--glow)) drop-shadow(0 0 1px var(--glow));
+}
+.coast__svg circle {
+  filter: drop-shadow(0 0 2px var(--glow));
 }
 .coast__bar {
   stroke: var(--color-text);
   stroke-width: 3;
+  filter: drop-shadow(0 0 3px rgba(240, 237, 230, 0.8));
 }
 .coast__chart {
   margin: 2rem 0 0;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  padding: 1rem;
 }
-.coast__chart figcaption {
-  margin-bottom: 0.75rem;
+.coast__chart-pad {
+  padding: 0.75rem 0.5rem 0.25rem;
 }
 .coast__chart-svg {
   display: block;
   width: 100%;
   height: auto;
 }
+.coast__chart-svg path[fill='none'] {
+  filter: drop-shadow(0 0 3px currentColor);
+}
 .coast__grid line {
-  stroke: var(--color-border);
+  stroke: var(--lab-axis);
   stroke-width: 1;
 }
 .coast__grid text {

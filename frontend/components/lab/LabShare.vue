@@ -1,13 +1,11 @@
 <template>
   <div class="lab-share">
-    <button class="lab-share__btn" type="button" :disabled="busy" @click="save">
-      <span aria-hidden="true">↓</span>
-      {{ saved ? 'Saved' : 'Save image' }}
+    <button class="lab-btn lab-share__btn" type="button" :disabled="busy" @click="save">
+      <span class="lab-btn__glyph" aria-hidden="true">●</span>{{ saved ? 'Saved' : 'Save image' }}
     </button>
     <span class="lab-share__wrap">
-      <button class="lab-share__btn" type="button" aria-label="Share this experiment" @click.stop="onShare">
-        <span aria-hidden="true">⤴</span>
-        {{ copied ? 'Link copied' : 'Share' }}
+      <button class="lab-btn lab-share__btn" type="button" aria-label="Share this experiment" @click.stop="onShare">
+        <span class="lab-btn__glyph" aria-hidden="true">⏏</span>{{ copied ? 'Link copied' : 'Share' }}
       </button>
       <span v-if="menuOpen" class="lab-share__menu" @click.stop>
         <a class="lab-share__link" :href="waUrl" target="_blank" rel="noopener noreferrer">WhatsApp</a>
@@ -141,30 +139,14 @@ onBeforeUnmount(() => document.removeEventListener('click', close))
   position: relative;
   display: inline-flex;
 }
-.lab-share__btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  font-family: var(--font-mono);
-  font-size: 0.75rem;
-  letter-spacing: 0.04em;
-  color: var(--color-text);
-  background: transparent;
-  border: 1px solid var(--color-border);
-  padding: 0.4rem 0.75rem;
-  cursor: pointer;
-}
-.lab-share__btn:hover,
-.lab-share__btn:focus-visible {
-  border-color: var(--color-accent);
-}
 .lab-share__btn:disabled {
-  opacity: 0.6;
   cursor: wait;
 }
 .lab-share__hint {
   font-family: var(--font-mono);
-  font-size: 0.7rem;
+  font-size: 0.65rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
   color: var(--color-muted);
 }
 .lab-share__menu {
@@ -174,7 +156,7 @@ onBeforeUnmount(() => document.removeEventListener('click', close))
   display: flex;
   flex-direction: column;
   min-width: 9rem;
-  background: var(--color-surface);
+  background: #0b0b0b;
   border: 1px solid var(--color-border);
   z-index: 5;
 }
