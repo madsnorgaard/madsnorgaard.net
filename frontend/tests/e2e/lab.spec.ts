@@ -189,6 +189,23 @@ test.describe('Nobel lines', () => {
     await expect(page.locator('.nf__home')).toHaveCount(0)
   })
 
+  test('a busy country gets one arc per route, count labels and a compact dot cluster', async ({ page }) => {
+    await page.goto('/lab/nobel-lines')
+    await page.locator('.nf__select select').selectOption('United States of America')
+    const usa = nobelFixture.rows.filter((r) => r.born === 'USA' || r.won === 'USA')
+    const routes = new Set(usa.filter((r) => r.won && r.born !== r.won).map((r) => `${r.born}|${r.won}`))
+    await expect(page.locator('.nf__arc')).toHaveCount(routes.size)
+    await expect(page.locator('.nf__home')).toHaveCount(usa.filter((r) => r.born === 'USA' && (!r.won || r.won === 'USA')).length)
+    const labels = page.locator('.nf__labels text')
+    expect(await labels.count()).toBeLessThanOrEqual(9)
+    await expect(labels.filter({ hasText: /from UK · \d+/ })).toHaveCount(1)
+    // Counts instead of names: every label is a single line.
+    expect(await page.locator('.nf__labels tspan').count()).toBe(await labels.count())
+    // Hovering a row lights up its whole route.
+    await page.locator('.nf__table tbody tr', { hasText: 'United Kingdom' }).first().hover()
+    await expect(page.locator('.nf__arc.is-hot')).toHaveCount(1)
+  })
+
   test('Luthuli is explained and findable under Zimbabwe', async ({ page }) => {
     await page.goto('/lab/nobel-lines')
     await expect(page.getByText(/Albert Luthuli.*Bulawayo/)).toBeVisible()
