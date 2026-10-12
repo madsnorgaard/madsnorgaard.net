@@ -14,17 +14,18 @@ const statValue = (page: Page, label: string | RegExp) =>
   page.locator('dl > div').filter({ has: page.locator('dt', { hasText: label }) }).locator('dd').first()
 
 test.describe('Lab index', () => {
-  test('lists the four experiments and links to each', async ({ page }) => {
+  test('lists the five experiments and links to each', async ({ page }) => {
     await page.goto('/lab')
     await expect(page.locator('h1')).toHaveText(/Maps, maths/)
     const items = page.locator('.lab-list__item')
-    await expect(items).toHaveCount(4)
+    await expect(items).toHaveCount(5)
     const hrefs = await items.evaluateAll((els) => els.map((a) => a.getAttribute('href')))
     expect(hrefs).toEqual([
       '/lab/fourier-south-africa',
       '/lab/fourier-denmark',
       '/lab/coastline-paradox',
       '/lab/nobel-brain-drain',
+      '/lab/draw',
     ])
   })
 
