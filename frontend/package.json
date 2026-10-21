@@ -31,6 +31,7 @@
     "typescript": "^5.5.0"
   },
   "overrides": {
-    "@bomb.sh/tab": "0.0.22"
+    "@bomb.sh/tab": "0.0.22",
+    "fflate": "0.7.5"
   }
 }
