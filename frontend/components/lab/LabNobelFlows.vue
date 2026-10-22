@@ -5,7 +5,7 @@
         v-for="q in quick"
         :key="q.value"
         type="button"
-        class="nf__chip"
+        class="lab-btn nf__chip"
         :aria-pressed="selected === q.value"
         @click="selected = q.value"
       >
@@ -22,7 +22,8 @@
       </label>
     </div>
 
-    <figure class="nf__map">
+    <LabScreen page="104" :label="`Lab · ${isAll ? 'Everyone' : selected}`" class="nf__map">
+      <template #readout>{{ arcs.length }} lines</template>
       <svg :viewBox="vb.join(' ')" role="img" :aria-label="mapLabel" :style="{ '--u': `${vb[2] / 1000}px` }">
         <defs>
           <marker id="nf-tip-out" viewBox="0 0 6 6" refX="5" refY="3" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
@@ -89,7 +90,8 @@
           </text>
         </g>
       </svg>
-      <figcaption class="nf__legend">
+      <template #footer>
+      <div class="nf__legend">
         <template v-if="isAll">
           <span><i class="nf__key nf__key--out" /> born in one country, working in another when they won</span>
         </template>
@@ -99,8 +101,9 @@
           <span><i class="nf__key nf__key--dot" /> won at home</span>
           <span><i class="nf__key nf__key--dot nf__key--peace" /> won at home, Peace or Literature</span>
         </template>
-      </figcaption>
-    </figure>
+      </div>
+      </template>
+    </LabScreen>
 
     <dl class="nf__stats">
       <div v-for="s in statTiles" :key="s.label">
@@ -572,7 +575,6 @@ const mapLabel = computed(() =>
   align-items: center;
   margin-bottom: 1rem;
 }
-.nf__chip,
 .nf__select select {
   font-family: var(--font-mono);
   font-size: 0.75rem;
@@ -587,14 +589,6 @@ const mapLabel = computed(() =>
   background: var(--color-surface);
   max-width: 100%;
 }
-.nf__chip[aria-pressed='true'] {
-  border-color: var(--color-accent);
-  background: var(--color-accent-dim);
-}
-.nf__chip:hover,
-.nf__chip:focus-visible {
-  border-color: var(--color-accent);
-}
 .visually-hidden {
   position: absolute;
   width: 1px;
@@ -602,26 +596,21 @@ const mapLabel = computed(() =>
   overflow: hidden;
   clip: rect(0 0 0 0);
 }
-.nf__map {
-  margin: 0;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  padding: 0.75rem;
-}
 .nf__map svg {
   display: block;
   width: 100%;
   height: auto;
+  padding: 0.5rem;
 }
 .nf__land path {
-  fill: #232323;
-  stroke: var(--color-bg);
+  fill: #171717;
+  stroke: #000;
   stroke-width: 0.5;
   cursor: pointer;
   transition: fill 0.15s;
 }
 .nf__land path:hover {
-  fill: #2f2f2f;
+  fill: #242424;
 }
 .nf__land path.is-selected {
   fill: var(--color-accent-dim);
@@ -634,11 +623,16 @@ const mapLabel = computed(() =>
 }
 .nf__arc--out {
   stroke: var(--color-accent);
-  opacity: 0.75;
+  opacity: 0.85;
+  filter: drop-shadow(0 0 3px var(--color-accent));
 }
 .nf__arc--in {
   stroke: #E8C26A;
-  opacity: 0.8;
+  opacity: 0.85;
+  filter: drop-shadow(0 0 3px #E8C26A);
+}
+.nf__arcs--all .nf__arc {
+  filter: none;
 }
 .nf__arcs--all .nf__arc--out {
   opacity: 0.28;
@@ -653,10 +647,10 @@ const mapLabel = computed(() =>
 .nf__legend {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem 1.5rem;
-  margin-top: 0.75rem;
+  gap: 0.35rem 1.5rem;
   font-family: var(--font-mono);
-  font-size: 0.7rem;
+  font-size: 0.65rem;
+  letter-spacing: 0.04em;
   color: var(--color-muted);
 }
 .nf__key {
@@ -680,10 +674,13 @@ const mapLabel = computed(() =>
 }
 .nf__stats dd {
   margin: 0;
-  font-family: var(--font-display);
-  font-weight: 700;
+  font-family: var(--font-mono);
+  font-weight: 500;
   font-size: 2rem;
   line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+  color: var(--lab-gold);
+  text-shadow: 0 0 12px rgba(232, 194, 106, 0.45);
 }
 .nf__stats dd.nf__note {
   font-family: var(--font-mono);
@@ -729,13 +726,14 @@ const mapLabel = computed(() =>
 }
 
 .nf__home {
-  stroke: var(--color-surface);
+  stroke: #000;
   stroke-width: 0.6;
+  filter: drop-shadow(0 0 2px currentColor);
   vector-effect: non-scaling-stroke;
   transition: opacity 0.15s;
 }
-.nf__home--sci { fill: var(--color-text); }
-.nf__home--peace { fill: #E8C26A; }
+.nf__home--sci { fill: var(--color-text); color: var(--color-text); }
+.nf__home--peace { fill: #E8C26A; color: #E8C26A; }
 .nf__home.is-dim { opacity: 0.25; }
 .nf__home.is-hot { stroke: var(--color-accent); stroke-width: 2; }
 .nf__labels {
@@ -745,7 +743,7 @@ const mapLabel = computed(() =>
 .nf__labels text {
   fill: var(--color-muted);
   paint-order: stroke;
-  stroke: var(--color-surface);
+  stroke: #000;
   stroke-width: 3px;
   stroke-linejoin: round;
   vector-effect: non-scaling-stroke;

@@ -14,23 +14,27 @@
     </p>
 
     <ClientOnly>
-      <LabSketchPad ref="pad" @stroke="onStroke" @preset="onPreset" @clear="onClear" />
-      <div v-if="outline.length" class="draw__machine">
-        <LabEpicycles
-          :key="outlineKey"
-          :shapes="[{ name: 'Your drawing', pts: outline }]"
-          :steps="DRAW_STEPS"
-          :default-n="initialN"
-          :period="8"
-          aria-label="Your drawing being traced by chains of rotating circles"
-          @update:n="n = $event"
-        />
-        <LabShare
-          slug="draw"
-          title="Drawn by circles"
-          :text="`My drawing, redrawn by ${n} spinning circles`"
-          :state="{ d: outlineKey, n: n === 8 ? undefined : n }"
-        />
+      <div class="draw__grid" :class="{ 'draw__grid--two': outline.length }">
+        <LabSketchPad ref="pad" @stroke="onStroke" @preset="onPreset" @clear="onClear" />
+        <div v-if="outline.length" class="draw__machine">
+          <LabEpicycles
+            :key="outlineKey"
+            page="105"
+            label="Lab · Circles"
+            :shapes="[{ name: 'Your drawing', pts: outline }]"
+            :steps="DRAW_STEPS"
+            :default-n="initialN"
+            :period="8"
+            aria-label="Your drawing being traced by chains of rotating circles"
+            @update:n="n = $event"
+          />
+          <LabShare
+            slug="draw"
+            title="Drawn by circles"
+            :text="`My drawing, redrawn by ${n} spinning circles`"
+            :state="{ d: outlineKey, n: n === 8 ? undefined : n }"
+          />
+        </div>
       </div>
       <template #fallback>
         <div class="lab-placeholder" />
@@ -127,7 +131,16 @@ useSeoMeta({
 </script>
 
 <style scoped>
-.draw__machine {
-  margin-top: 2rem;
+.draw__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 2rem;
+  align-items: start;
+}
+/* Pad and machine side by side once there is a machine and room for it. */
+@media (min-width: 960px) {
+  .draw__grid--two {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+  }
 }
 </style>

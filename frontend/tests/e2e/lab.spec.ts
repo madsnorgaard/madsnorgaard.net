@@ -29,6 +29,11 @@ test.describe('Lab index', () => {
     ])
   })
 
+  test('shows teletext page numbers on the list', async ({ page }) => {
+    await page.goto('/lab')
+    await expect(page.locator('.lab-list__page')).toHaveText(['P101', 'P102', 'P103', 'P104', 'P105'])
+  })
+
   test('is reachable from the site nav', async ({ page }) => {
     await page.goto('/')
     await page.getByRole('link', { name: 'Lab', exact: true }).click()
@@ -68,18 +73,29 @@ test.describe('Fourier: South Africa', () => {
     await expect(statValue(page, 'Lesotho RMS error')).toHaveText('exact')
   })
 
+  test('the figure is an instrument screen with a page header and a ticking clock', async ({ page }) => {
+    const screen = page.locator('.screen').first()
+    await expect(screen.locator('.screen__page')).toHaveText('P101')
+    await expect(screen.locator('.screen__label')).toHaveText(/Fourier \/ ZA/i)
+    await expect(screen.locator('.screen__readout')).toHaveText(/N=150 · 300 arms/)
+    const clock = screen.locator('.screen__clock')
+    await expect(clock).toHaveText(/^\d\d [A-Z]{3} \d\d:\d\d:\d\d$/)
+    const before = await clock.textContent()
+    await expect.poll(() => clock.textContent(), { timeout: 3000 }).not.toBe(before)
+  })
+
   test('play, arms and outline toggles flip their labels', async ({ page }) => {
     const play = page.getByRole('button', { name: /pause|play/i })
-    await expect(play).toHaveText('Pause')
+    await expect(play).toHaveText(/Pause/)
     await play.click()
-    await expect(play).toHaveText('Play')
+    await expect(play).toHaveText(/Play/)
     const arms = page.getByRole('button', { name: /arms/i })
     await arms.click()
-    await expect(arms).toHaveText('Show arms')
+    await expect(arms).toHaveText(/Show arms/)
     await expect(arms).toHaveAttribute('aria-pressed', 'false')
     const ghost = page.getByRole('button', { name: /outline/i })
     await ghost.click()
-    await expect(ghost).toHaveText('Show outline')
+    await expect(ghost).toHaveText(/Show outline/)
   })
 
   test('the canvas has no page-level horizontal overflow on a phone', async ({ page }) => {

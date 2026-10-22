@@ -15,6 +15,8 @@
 
     <ClientOnly>
       <LabEpicycles
+        page="101"
+        label="Lab · Fourier / ZA"
         v-if="shapes.length"
         :shapes="shapes"
         :default-n="initialN"

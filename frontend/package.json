@@ -20,17 +20,18 @@
     "@vueuse/nuxt": "^11.0.0",
     "ipx": "^3.1.1",
     "nuxt": "^3.21.11",
-    "satori": "^0.33.5",
+    "satori": "^0.47.1",
     "vue": "^3.5.43",
     "vue-router": "^4.4.0"
   },
   "devDependencies": {
-    "@playwright/test": "^1.63.0",
-    "@types/node": "^22.20.4",
+    "@playwright/test": "^1.64.0",
+    "@types/node": "^22.20.5",
     "commander": "^15.0.0",
     "typescript": "^5.5.0"
   },
   "overrides": {
-    "@bomb.sh/tab": "0.0.22"
+    "@bomb.sh/tab": "0.0.22",
+    "fflate": "0.7.5"
   }
 }
