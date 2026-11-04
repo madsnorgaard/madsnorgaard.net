@@ -86,7 +86,7 @@ function formatDate(dateString: string) {
 const firstImage = computed(() => data.value?.stories?.[0]?.featuredImage?.src || '')
 
 useHead({
-  title: 'Stories | Mads Nørgaard',
+  title: 'Stories',
   meta: [
     { name: 'description',         content: 'Documentary photo essays by Mads Nørgaard' },
     { property: 'og:title',        content: 'Stories | Mads Nørgaard' },

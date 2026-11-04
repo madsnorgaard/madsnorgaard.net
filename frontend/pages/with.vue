@@ -79,5 +79,5 @@ const stack = [
   },
 ]
 
-useHead({ title: 'Stack | Mads Nørgaard' })
+useHead({ title: 'Stack' })
 </script>

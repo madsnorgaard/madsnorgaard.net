@@ -73,7 +73,7 @@ const sphereOptions = computed(() => {
   ]
 })
 
-useHead({ title: 'Projects | Mads Nørgaard' })
+useHead({ title: 'Projects' })
 </script>
 
 <style scoped>
