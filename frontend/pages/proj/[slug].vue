@@ -132,6 +132,7 @@
 </template>
 
 <script setup lang="ts">
+import { extractContentImages, photoCredit } from '~/utils/photo-credit'
 import { formatDate, readingTime } from '~/composables/useContentMeta'
 
 const route = useRoute()
@@ -284,7 +285,10 @@ const _desc = project.value?.excerpt || `${_title} - documentary photography col
 const _img = project.value?.featuredImage?.src || ''
 
 useHead({
-  title: `${_title} | Archive`,
+  // Name in the title so Google Images and the name + photographer queries
+  // land here; titleTemplate off because the name is already in it.
+  title: `${_title} - photographs by Mads Nørgaard`,
+  titleTemplate: '%s',
   meta: [
     { name: 'description',         content: _desc },
     { property: 'og:title',        content: _title },
@@ -298,6 +302,28 @@ useHead({
     { name: 'twitter:image',       content: _img },
   ],
 })
+
+// One ImageObject per photo, credited to the photographer. Parsed with a regex
+// rather than the DOMParser gallery above so it is present in the server HTML.
+const schemaImages = extractContentImages(
+  project.value?.content ?? '',
+  _img ? [{ url: _img, alt: project.value?.featuredImage?.alt || '' }] : [],
+)
+
+useSchemaOrg([
+  defineBreadcrumb({
+    itemListElement: [
+      { name: 'Archive', item: '/archive' },
+      { name: _title },
+    ],
+  }),
+  ...schemaImages.map(img => defineImage({
+    url: img.url,
+    name: img.alt || _title,
+    caption: img.alt || _title,
+    ...photoCredit(),
+  })),
+])
 </script>
 
 <style scoped>
