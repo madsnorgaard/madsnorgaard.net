@@ -112,6 +112,8 @@ const ogImageUrl = `https://madsnorgaard.net/og-image.png?availability=${ogAvail
 
 useHead({
   title: 'Mads Nørgaard: Developer + DevOps',
+  // The title already carries the name; skip the site-wide "| Mads Nørgaard" suffix.
+  titleTemplate: '%s',
   meta: [
     { property: 'og:url',          content: 'https://madsnorgaard.net' },
     { property: 'og:type',         content: 'website' },

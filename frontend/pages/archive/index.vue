@@ -94,7 +94,7 @@ function pageLink(page: number) {
 const firstImage = computed(() => data.value?.projects?.[0]?.featuredImage?.src || '')
 
 useHead({
-  title: 'Archive | Mads Nørgaard',
+  title: 'Archive',
   meta: [
     { name: 'description',         content: 'Documentary photography archive by Mads Nørgaard. Cape Town, Johannesburg, Denmark and beyond.' },
     { property: 'og:title',        content: 'Archive | Mads Nørgaard' },

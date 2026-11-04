@@ -52,6 +52,7 @@
 import type { DrupalBlogPost } from '~/types/drupal'
 import { formatDate, readingTime } from '~/composables/useContentMeta'
 import { youTubeId } from '~/utils/youtube'
+import { isChangelogPost } from '~/utils/changelog'
 
 const route = useRoute()
 
@@ -59,6 +60,13 @@ const { data: post, error } = await useFetch<DrupalBlogPost>(`/api/drupal/blog/$
 
 if (error.value) {
   throw createError({ statusCode: 404, statusMessage: 'Post not found' })
+}
+
+// Commit-log posts (tagged "changelog" in Drupal) stay readable and linked but
+// are kept out of the index: they are thin and dilute what the site ranks for.
+// The sitemap source applies the same rule (server/api/__sitemap__/urls.ts).
+if (isChangelogPost(post.value)) {
+  useRobotsRule('noindex, follow')
 }
 
 // Progressive enhancement: add a copy button to each code block in the
@@ -100,7 +108,7 @@ onMounted(() => {
 })
 
 useHead(() => ({
-  title: `${post.value!.title} | Mads Nørgaard`,
+  title: post.value!.title,
   meta: [
     { name: 'description', content: post.value!.teaser },
     { property: 'og:url',              content: `https://madsnorgaard.net/writing/${route.params.slug}` },

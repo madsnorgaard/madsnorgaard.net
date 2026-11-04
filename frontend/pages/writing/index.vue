@@ -91,8 +91,8 @@ if (currentTag.value) {
 
 useHead(() => ({
   title: currentTag.value
-    ? `Writing: ${currentTag.value} | Mads Nørgaard`
-    : 'Writing | Mads Nørgaard',
+    ? `Writing: ${currentTag.value}`
+    : 'Writing',
 }))
 </script>
 

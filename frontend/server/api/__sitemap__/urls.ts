@@ -1,6 +1,7 @@
 // Dynamic sitemap source: fetches all published content slugs from Drupal + WP
 // Includes image entries for Google Image indexing
 import { defineSitemapEventHandler } from '#imports'
+import { isChangelogTag } from '~/utils/changelog'
 
 interface SitemapImage {
   loc: string
@@ -27,11 +28,18 @@ export default defineSitemapEventHandler(async (event) => {
   // Blog posts from Drupal (with cover images)
   try {
     const blogData = await $fetch<any>(
-      `${drupalBase}/jsonapi/node/article?filter[status]=1&sort=-created&page[limit]=100&include=field_image&fields[node--article]=title,created,changed,path&fields[file--file]=uri`,
+      `${drupalBase}/jsonapi/node/article?filter[status]=1&sort=-created&page[limit]=100&include=field_image,field_tags&fields[node--article]=title,created,changed,path,field_tags&fields[file--file]=uri&fields[taxonomy_term--tags]=name`,
       { headers: { Accept: 'application/vnd.api+json' } },
     )
     const included = blogData?.included ?? []
     for (const node of blogData?.data ?? []) {
+      // Commit-log posts (tagged "changelog") are noindexed, so keep them out.
+      const tagRefs: any[] = node.relationships?.field_tags?.data ?? []
+      const isChangelog = tagRefs.some((ref: any) => {
+        const term = included.find((i: any) => i.type === ref.type && i.id === ref.id)
+        return isChangelogTag(term?.attributes?.name)
+      })
+      if (isChangelog) continue
       const alias = node.attributes?.path?.alias
       const slug = alias?.replace(/^\/(blog|article)\//, '') || node.id
       const images: SitemapImage[] = []

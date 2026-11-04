@@ -11,8 +11,8 @@ export default defineNuxtConfig({
 
   site: {
     url: 'https://madsnorgaard.net',
-    name: 'Mads Norgaard',
-    description: 'Self-taught senior developer and DevOps engineer. 15 years building on Drupal, PHP, Docker, Linux. Documentary photographer.',
+    name: 'Mads Nørgaard',
+    description: 'Mads Nørgaard is a Danish senior developer and DevOps engineer working with Drupal, Nuxt, Docker and Linux. Technical lead at South African History Online. Documentary photographer.',
     defaultLocale: 'en',
   },
 
@@ -42,15 +42,47 @@ export default defineNuxtConfig({
     ],
   },
 
+  // Person identity for the site-wide JSON-LD graph. The bare name is shared
+  // with an unrelated fashion brand, so the entity is pinned down with
+  // alternate spellings, a disambiguating description, location, employer,
+  // topics and every profile that is about this person (sameAs).
   schemaOrg: {
     identity: {
       type: 'Person',
-      name: 'Mads Norgaard',
+      name: 'Mads Nørgaard',
+      alternateName: ['Mads Norgaard', 'Mads Noergaard'],
       url: 'https://madsnorgaard.net',
       image: 'https://madsnorgaard.net/og-image.png',
-      jobTitle: 'Senior Developer & DevOps Engineer',
+      jobTitle: 'Senior Developer and DevOps Engineer',
+      description: 'Mads Nørgaard is a Danish senior developer and DevOps engineer working with Drupal, Nuxt, Docker and Linux. Technical lead at South African History Online. Documentary photographer.',
+      disambiguatingDescription: 'Danish software developer and documentary photographer. Not the fashion designer or the clothing brand.',
+      nationality: 'Danish',
+      homeLocation: {
+        '@type': 'Place',
+        name: 'Skanderborg, Denmark',
+        address: { '@type': 'PostalAddress', addressLocality: 'Skanderborg', addressCountry: 'DK' },
+      },
+      worksFor: {
+        '@type': 'Organization',
+        name: 'Eksponent',
+        url: 'https://eksponent.com',
+      },
+      knowsAbout: [
+        'Drupal',
+        'DevOps',
+        'Headless CMS',
+        'Nuxt',
+        'Docker',
+        'Linux',
+        'Civic tech',
+        'Documentary photography',
+      ],
       sameAs: [
         'https://github.com/madsnorgaard',
+        'https://www.linkedin.com/in/mads-norgaard/',
+        'https://www.drupal.org/u/madsnorgaard',
+        'https://www.thedroptimes.com/people/34313/madsnorgaard',
+        'https://www.facebook.com/MadsNorgaardPhotographer',
         'https://photo.madsnorgaard.net',
       ],
     },
@@ -83,7 +115,7 @@ export default defineNuxtConfig({
         {
           name: 'description',
           content:
-            'Self-taught senior developer and DevOps engineer. 15 years building on Drupal, PHP, Docker, Linux. Documentary photographer.',
+            'Mads Nørgaard is a Danish senior developer and DevOps engineer working with Drupal, Nuxt, Docker and Linux. Technical lead at South African History Online. Documentary photographer.',
         },
       ],
       link: [

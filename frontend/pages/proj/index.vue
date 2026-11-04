@@ -93,7 +93,7 @@ function pageLink(page: number) {
 const firstImage = computed(() => data.value?.projects?.[0]?.featuredImage?.src || '')
 
 useHead({
-  title: 'Portfolio | Mads Nørgaard',
+  title: 'Portfolio',
   meta: [
     { name: 'description',         content: 'Documentary photography portfolio by Mads Nørgaard' },
     { property: 'og:title',        content: 'Portfolio | Mads Nørgaard' },

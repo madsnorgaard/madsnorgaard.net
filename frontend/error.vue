@@ -364,7 +364,7 @@ onMounted(() => {
 })
 
 useHead({
-  title: `${code.value} | Mads Nørgaard`,
+  title: `${code.value}`,
   meta: [
     { name: 'robots', content: 'noindex' },
   ],
