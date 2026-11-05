@@ -63,6 +63,7 @@
 
 <script setup lang="ts">
 import type { Photo } from '~/types/photo'
+import { isoDateOrUndefined, photoCredit, yearOf } from '~/utils/photo-credit'
 
 const route = useRoute()
 const { data: photo } = await useFetch<Photo>(`/api/photo/${route.params.slug}`)
@@ -84,8 +85,13 @@ const pageDesc = photo.value?.excerpt || `${photo.value?.title} - ${photo.value?
 const pageImage = photo.value?.images?.full || photo.value?.images?.large || ''
 const pageUrl = `https://madsnorgaard.net/archive/${route.params.slug}`
 
+// "Title, place, year - photograph by Mads Nørgaard": the name next to the
+// place and year is what a name + photographer query matches on.
+const titleParts = [pageTitle, photo.value?.location, yearOf(photo.value?.dateTaken)].filter(Boolean)
+
 useHead({
-  title: `${pageTitle} | Archive`,
+  title: `${titleParts.join(', ')} - photograph by Mads Nørgaard`,
+  titleTemplate: '%s',
   meta: [
     { name: 'description',         content: pageDesc },
     { property: 'og:title',        content: pageTitle },
@@ -99,6 +105,25 @@ useHead({
     { name: 'twitter:image',       content: pageImage },
   ],
 })
+
+useSchemaOrg([
+  defineBreadcrumb({
+    itemListElement: [
+      { name: 'Archive', item: '/archive' },
+      { name: pageTitle },
+    ],
+  }),
+  ...(pageImage
+    ? [defineImage({
+        url: pageImage,
+        name: pageTitle,
+        caption: pageDesc,
+        ...(isoDateOrUndefined(photo.value?.dateTaken) ? { dateCreated: isoDateOrUndefined(photo.value?.dateTaken) } : {}),
+        ...(photo.value?.location ? { contentLocation: { '@type': 'Place', name: photo.value.location } } : {}),
+        ...photoCredit(),
+      })]
+    : []),
+])
 </script>
 
 <style scoped>
